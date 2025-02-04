@@ -33,6 +33,7 @@
         <email-producer-java.version>3.0.3</email-producer-java.version>
         <kafka-clients.version>3.1.0</kafka-clients.version>
         <logback-classic.version>1.5.16</logback-classic.version>
+        <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
     </properties>
     <profiles>
         <profile>
@@ -54,6 +55,11 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <dependency>
+            <groupId>uk.gov.service.notify</groupId>
+            <artifactId>notifications-java-client</artifactId>
+            <version>${gov-uk-notify.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
