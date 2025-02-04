@@ -31,7 +31,7 @@
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <flapdoodle.version>4.16.1</flapdoodle.version>
         <email-producer-java.version>3.0.3</email-producer-java.version>
-        <kafka-clients.version>3.1.0</kafka-clients.version>
+        <kafka-clients.version>3.7.1</kafka-clients.version>
         <logback-classic.version>1.5.16</logback-classic.version>
     </properties>
     <profiles>
