@@ -2,8 +2,7 @@
 
 ## 1.0) Introduction
 
-This module accepts a call into a REST API endpoint and sends a request to gov.uk notify to send either a letter or an
-email.
+This module accepts a call into a REST API endpoint and sends that information to a kafka topic.
 
 ## 2.0) Prerequisites
 
@@ -26,6 +25,7 @@ These modules and services can be enabled by running the following commands in t
 
 - `./bin/chs-dev modules enable platform`
 - `./bin/chs-dev modules enable chs-notification-sender-api`
+- `./bin/chs-dev modules enable chs-notification-kafka-consumer`
 
 To run this Microservice in development mode, the following command can also be executed in the `docker-chs-development`
 directory:
