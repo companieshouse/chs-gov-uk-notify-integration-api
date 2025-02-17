@@ -11,6 +11,7 @@
     <version>unversioned</version>
     <name>chs-gov-uk-notify-integration-api</name>
     <description>A service for sending emails and letters via Gov.uk Notify.</description>
+
     <properties>
         <java.version>21</java.version>
         <spring-boot.version>3.4.1</spring-boot.version>
@@ -35,6 +36,7 @@
         <logback-classic.version>1.5.16</logback-classic.version>
         <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
     </properties>
+
     <profiles>
         <profile>
             <id>sonar-pr-analysis</id>
@@ -43,6 +45,13 @@
             </properties>
         </profile>
     </profiles>
+
+	<scm>
+		<connection>scm:git:git://github.com/companieshouse/chs-gov-uk-notify-integration-api.git</connection>
+		<developerConnection>scm:git:ssh://github.com/companieshouse/chs-gov-uk-notify-integration-api.git</developerConnection>
+		<url>http://github.com/companieshouse/chs-gov-uk-notify-integration-api/tree/main</url>
+	</scm>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
