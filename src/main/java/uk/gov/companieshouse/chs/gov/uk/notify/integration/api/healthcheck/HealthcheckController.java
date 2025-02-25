@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.xxxx.api.controller;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.healthcheck;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
