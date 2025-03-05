@@ -1,13 +1,13 @@
 # Define all hardcoded local variable and local variables looked up from data resources
 locals {
-  stack_name                 = "identity" # this must match the stack name the service deploys into
+  stack_name                 = "notifications" # this must match the stack name the service deploys into
   name_prefix                = "${local.stack_name}-${var.environment}"
   global_prefix              = "global-${var.environment}"
   service_name               = "chs-gov-uk-notify-integration-api"
   container_port             = "8080" # default Java port to match start script
   docker_repo                = "chs-gov-uk-notify-integration-api"
   lb_listener_rule_priority  = 20
-  lb_listener_paths          = ["/acsps/*/memberships*", "/acsps/memberships/*", "/user/acsps/memberships*", "/chs-gov-uk-notify-integration-api/healthcheck"]
+  lb_listener_paths          = ["/chs-gov-uk-notify-integration-api/letter", "/chs-gov-uk-notify-integration-api/email", "/chs-gov-uk-notify-integration-api/healthcheck"]
   healthcheck_path           = "/chs-gov-uk-notify-integration-api/healthcheck" #healthcheck path for chs-gov-uk-notify-integration-api service
   healthcheck_matcher        = "200"
   application_subnet_ids     = data.aws_subnets.application.ids
