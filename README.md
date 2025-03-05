@@ -4,18 +4,14 @@
 
 This module accepts a call into a REST API endpoint and sends that information to a kafka topic.
 
+The design for this module and the service it is a part of is here : https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service
+
 ## 2.0) Prerequisites
 
 This Microservice has the following dependencies:
 
 - [Java 21](https://www.oracle.com/java/technologies/downloads/#java21)
 - [Maven](https://maven.apache.org/download.cgi)
-
-## 3.0) Tilt
-
-This section explains how the endpoints in this Microservice can be executed in Tilt. In particular, Section 3.1
-describes the steps that can be taken to run the Microservice in Tilt, Section 3.2 explains how the database can be
-populated with test data, and Section 3.3 describes the endpoints that can be executed based on this test data.
 
 ### 3.1) Running the Microservice
 
@@ -52,12 +48,29 @@ can use these headers to enrich the request with additional headers.
 The High Level Design for the Microservice is available
 at: [HLD](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service)
 
-The remainder of this section lists the endpoints that are available in this Microservice, and provides links to
+
+
+
+# OWASP Dependency check
+
+to run a check for dependency security vulnerabilities run the following command:
+
+```shell
+mvn dependency-check:check
+```
+
+# Endpoints
+
+The remainder of this section lists the endpoints that are available in this microservice, and provides links to
 detailed documentation about these endpoints e.g. required headers, path variables, query params, request bodies, and
 their behaviour.
 
 | Method | Path     | Description                                 | Documentation                                                                                                                                                                |
 |--------|----------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST   | /letters | This endpoint can be used to send a letter. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| POST   | /emails  | This endpoint can be used to send an email. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| POST   | /letter  | This endpoint can be used to send a letter. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| POST   | /email   | This endpoint can be used to send an email. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| GET |  http://127.0.0.1:9000/actuator/health | this endpoint is used to check that the service is running | |
+
+
+
 
