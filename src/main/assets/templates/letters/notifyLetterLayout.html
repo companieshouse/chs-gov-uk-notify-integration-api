@@ -1,0 +1,64 @@
+<link th:fragment="head()" href="notifyLetterLayout.css" media="all" rel="stylesheet" type="text/css"/>
+<link th:fragment="head()" href="common/font-awesome.css"
+      rel="stylesheet"
+      type="text/css"
+      media="all"/>
+
+<div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
+    <!-- Headers -->
+    <div class="p1-header-left frame title">
+        <div class="content logo" th:insert="~{logo}">
+        </div>
+    </div>
+    <div class="p1-header-centre">
+    </div>
+    <div class="p1-header-right frame title">
+        <div class="content" th:insert="${letterTitle}">
+        </div>
+    </div>
+    <div class="pages-2-onwards-header-left frame title">
+        <div class="content pages-2-onwards-logo" th:insert="~{pages-2-onwards-logo}">
+        </div>
+    </div>
+    <!-- Footers -->
+    <div class="p1-footer-left frame title">
+        <div class="content page-1-footer-artwork" th:insert="~{page-1-footer-artwork}">
+        </div>
+    </div>
+    <div class="pages-2-onwards-footer-left frame title">
+        <div class="content pages-2-onwards-footer-artwork" th:insert="~{pages-2-onwards-footer-artwork}">
+        </div>
+    </div>
+    <!-- Content -->
+    <div class="frame address-and-date-ref-block">
+        <div class="frame column address">
+            <div class="content">
+                <table id="address-table">
+                    <tr th:text="${address_line_1}"></tr>
+                    <tr th:text="${address_line_2}"></tr>
+                    <tr th:text="${address_line_3}" th:if="${address_line_3 != null}"></tr>
+                    <tr th:text="${address_line_4}" th:if="${address_line_4 != null}"></tr>
+                    <tr th:text="${address_line_5}" th:if="${address_line_5 != null}"></tr>
+                    <tr th:text="${address_line_6}" th:if="${address_line_6 != null}"></tr>
+                    <tr th:text="${postcode_or_country}"></tr>
+                </table>
+            </div>
+        </div>
+        <div class="frame column date-and-ref">
+            <div class="content">
+                <table>
+                    <tr class="date-and-reference-label">Date:</tr>
+                    <tr>[[${date}]]</tr>
+                    <tr class="date-and-reference-spacing"></tr>
+                    <tr class="date-and-reference-label">[[${referenceLabel}]]</tr>
+                    <tr>[[${referenceValue}]]</tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="frame">
+        <div class="content">
+            <th:block th:replace="${content}"/>
+        </div>
+    </div>
+</div>
