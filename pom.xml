@@ -22,7 +22,7 @@
         <structured-logging.version>3.0.26</structured-logging.version>
         <log4j-version>2.24.2</log4j-version>
         <rest-service-common-library-version>2.0.2</rest-service-common-library-version>
-        <private-api-sdk-java.version>4.0.273</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.278</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.8</api-security-java-version>
         <org.mapstruct.version>1.6.2</org.mapstruct.version>
@@ -33,7 +33,6 @@
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <flapdoodle.version>4.16.1</flapdoodle.version>
         <email-producer-java.version>3.0.3</email-producer-java.version>
-        <kafka-clients.version>3.9.0</kafka-clients.version>
         <logback-classic.version>1.5.16</logback-classic.version>
         <junit-jupiter-engine-version>5.11.4</junit-jupiter-engine-version>
         <mockito-junit-jupiter-version>5.15.2</mockito-junit-jupiter-version>
@@ -165,11 +164,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter-engine-version}</version>
@@ -188,13 +182,8 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
+            <artifactId>mongodb</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka-clients.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
