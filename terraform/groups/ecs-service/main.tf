@@ -53,7 +53,7 @@ module "ecs-service" {
   # Docker container details
   docker_registry   = var.docker_registry
   docker_repo       = local.docker_repo
-  container_version = var.chs-gov-uk-notify-integration-api_version
+  container_version = var.chs_gov_uk_notify_integration_api_version
   container_port    = local.container_port
 
   # Service configuration
