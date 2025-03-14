@@ -4,4 +4,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public interface GovUkConnectionInterface {
+
+    String sendEmail(GovUkEmail govUkEmail);
+
+    String sendLetter();
+
 }

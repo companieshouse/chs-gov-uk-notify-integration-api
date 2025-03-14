@@ -4,18 +4,20 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkLetterDetailsRequest;
 
+import java.util.UUID;
+
 @Component
 public interface MongoDataStoreInterface {
 
-    void storeEmail(GovUkEmailDetailsRequest emailDetails);
+    UUID storeEmail(GovUkEmailDetailsRequest emailDetails);
 
-    void storeLetter(GovUkLetterDetailsRequest letterDetails);
+    UUID storeLetter(GovUkLetterDetailsRequest letterDetails);
 
-    EmailDetails getEmail(String id);
+    EmailDetails getEmail(UUID id);
 
-    LetterDetails getLetter(String id);
+    LetterDetails getLetter(UUID id);
 
-    EmailDetails updateEmailStatus(String id, String status);
+    EmailDetails updateEmailStatus(UUID id, String status);
 
-    LetterDetails updateLetterStatus(String id, String status);
+    LetterDetails updateLetterStatus(UUID id, String status);
 }

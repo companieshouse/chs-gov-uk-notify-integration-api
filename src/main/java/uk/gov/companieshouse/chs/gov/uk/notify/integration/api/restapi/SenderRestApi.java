@@ -26,7 +26,7 @@ public class SenderRestApi implements NotificationSenderInterface {
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
 
-        //FIXME :  call emailGovUkNotifyPayload
+        emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
 
         throw new NotImplementedException();
     }
