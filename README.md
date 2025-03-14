@@ -58,6 +58,14 @@ to run a check for dependency security vulnerabilities run the following command
 mvn dependency-check:check
 ```
 
+# Listing dependencies
+
+to get a list of all the libraries that are used in the project use the following command:
+
+```shell
+mvn dependency:tree
+```
+
 # Endpoints
 
 The remainder of this section lists the endpoints that are available in this microservice, and provides links to
