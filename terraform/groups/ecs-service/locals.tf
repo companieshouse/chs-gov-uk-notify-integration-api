@@ -6,7 +6,7 @@ locals {
   service_name               = "chs-gov-uk-notify-integration-api"
   container_port             = "8080" # default Java port to match start script
   docker_repo                = "chs-gov-uk-notify-integration-api"
-  lb_listener_rule_priority  = 20
+  lb_listener_rule_priority  = 18
   lb_listener_paths          = ["/chs-gov-uk-notify-integration-api/letter", "/chs-gov-uk-notify-integration-api/email", "/chs-gov-uk-notify-integration-api/healthcheck"]
   healthcheck_path           = "/chs-gov-uk-notify-integration-api/healthcheck" #healthcheck path for chs-gov-uk-notify-integration-api service
   healthcheck_matcher        = "200"
