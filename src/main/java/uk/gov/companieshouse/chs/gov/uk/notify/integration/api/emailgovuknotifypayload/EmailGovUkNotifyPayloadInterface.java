@@ -15,7 +15,9 @@ public interface EmailGovUkNotifyPayloadInterface {
     GovUkConnectionInterface govUkConnection = null;
 
     /**
-     * @param govUkEmailDetailsRequest returns the id of the email sent
+     * Manages the process of sending an email
+     *
+     * @param govUkEmailDetailsRequest the details of the email to be sent
      */
     void sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest);
 }
