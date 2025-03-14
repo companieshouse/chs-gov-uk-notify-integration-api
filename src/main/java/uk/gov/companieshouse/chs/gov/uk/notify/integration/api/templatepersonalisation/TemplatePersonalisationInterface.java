@@ -7,7 +7,17 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 @Component
 public interface TemplatePersonalisationInterface {
 
+    /**
+     * @param template
+     * @param personalisationDetails
+     * @return
+     */
     String personaliseEmailTemplate(ChEmailTemplate template, String personalisationDetails);
 
+    /**
+     * @param template
+     * @param personalisationDetails
+     * @return
+     */
     String personaliseLetterTemplate(ChLetterTemplate template, String personalisationDetails);
 }

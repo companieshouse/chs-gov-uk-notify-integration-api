@@ -5,8 +5,17 @@ import org.springframework.stereotype.Component;
 @Component
 public interface GovUkConnectionInterface {
 
+    /**
+     *
+     * @param govUkEmail
+     * @return
+     */
     String sendEmail(GovUkEmail govUkEmail);
 
-    String sendLetter();
+    /**
+     *
+     * @return
+     */
+    String sendLetter(GovUkLetter govUkLetter);
 
 }
