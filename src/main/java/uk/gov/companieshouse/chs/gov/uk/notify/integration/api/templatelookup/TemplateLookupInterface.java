@@ -9,6 +9,11 @@ import org.springframework.stereotype.Component;
 public interface TemplateLookupInterface {
 
     /**
+     * 1. Validate templateId - is it null check? | does the template exist/ in correct folder
+     *    | will need additional validation
+     * 2. Retrieve email template from /resources within repo
+     * 3. Ensure ChEmailTemplate is populated - (details to come later)
+     *
      * @param templateId
      * @return
      */

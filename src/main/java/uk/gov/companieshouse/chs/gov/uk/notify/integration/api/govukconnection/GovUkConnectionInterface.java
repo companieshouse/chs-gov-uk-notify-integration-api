@@ -13,7 +13,6 @@ public interface GovUkConnectionInterface {
     String sendEmail(GovUkEmail govUkEmail);
 
     /**
-     *
      * @return
      */
     String sendLetter(GovUkLetter govUkLetter);
