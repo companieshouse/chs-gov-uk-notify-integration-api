@@ -6,7 +6,7 @@ locals {
   service_name               = "chs-gov-uk-notify-integration-api"
   container_port             = "8080" # default Java port to match start script
   docker_repo                = "chs-gov-uk-notify-integration-api"
-  lb_listener_rule_priority  = 20
+  lb_listener_rule_priority  = 18
   lb_listener_paths          = ["/chs-gov-uk-notify-integration-api/letter", "/chs-gov-uk-notify-integration-api/email", "/chs-gov-uk-notify-integration-api/healthcheck"]
   healthcheck_path           = "/chs-gov-uk-notify-integration-api/healthcheck" #healthcheck path for chs-gov-uk-notify-integration-api service
   healthcheck_matcher        = "200"
@@ -18,7 +18,7 @@ locals {
   use_set_environment_files  = var.use_set_environment_files
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
   app_environment_filename   = "chs-gov-uk-notify-integration-api.env"
-  vpc_name                   = data.aws_ssm_parameter.secret[format("/%s/%s", local.name_prefix, "vpc-name")].value
+  vpc_name                   = local.stack_secrets["vpc_name"]
 
   # Enable Eric
   use_eric_reverse_proxy    = true
