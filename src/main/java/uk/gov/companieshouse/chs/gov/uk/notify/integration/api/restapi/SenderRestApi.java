@@ -13,12 +13,12 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotify
 
 @Controller
 @Validated
-public class RestApi implements NotificationSenderInterface {
+public class SenderRestApi implements NotificationSenderInterface {
 
     EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
     LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
 
-    public RestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
+    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
         this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
     }
