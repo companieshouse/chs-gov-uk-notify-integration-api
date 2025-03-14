@@ -2,9 +2,11 @@
 
 ## 1.0) Introduction
 
-This module accepts a call into a REST API endpoint and sends that information to a kafka topic.
+This module accepts a call into a REST API endpoint, generates the payload that will be sent and then calls to [Gov.uk
+Notify](https://www.notifications.service.gov.uk/)
 
-The design for this module and the service it is a part of is here : https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service
+The design for this module and the service it is a part of is
+here : https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service
 
 ## 2.0) Prerequisites
 
@@ -48,9 +50,6 @@ can use these headers to enrich the request with additional headers.
 The High Level Design for the Microservice is available
 at: [HLD](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service)
 
-
-
-
 # OWASP Dependency check
 
 to run a check for dependency security vulnerabilities run the following command:
@@ -59,18 +58,26 @@ to run a check for dependency security vulnerabilities run the following command
 mvn dependency-check:check
 ```
 
+# Listing dependencies
+
+to get a list of all the libraries that are used in the project use the following command:
+
+```shell
+mvn dependency:tree
+```
+
 # Endpoints
 
 The remainder of this section lists the endpoints that are available in this microservice, and provides links to
 detailed documentation about these endpoints e.g. required headers, path variables, query params, request bodies, and
 their behaviour.
 
-| Method | Path     | Description                                 | Documentation                                                                                                                                                                |
-|--------|----------|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST   | /letter  | This endpoint can be used to send a letter. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| POST   | /email   | This endpoint can be used to send an email. | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| GET |  http://127.0.0.1:9000/actuator/health | this endpoint is used to check that the service is running | |
-
+| Method | Path                                    | Description                                                | Documentation                                                                                                                                                                |
+|--------|-----------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST   | /letter                                 | This endpoint can be used to send a letter.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| POST   | /email                                  | This endpoint can be used to send an email.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| GET    | http://127.0.0.1:9000/actuator/health   | this endpoint is used to check that the service is running |                                                                                                                                                                              |
+| GET    | http://127.0.0.1:9000/actuator/mappings |                                                            |                                                                                                                                                                              |
 
 
 
