@@ -120,7 +120,7 @@ variable "log_level" {
   description = "The log level for services to use: trace, debug, info or error"
 }
 
-variable "chs-gov-uk-notify-integration-api_version" {
+variable "chs_gov_uk_notify_integration_api_version" {
   type        = string
   description = "The version of the chs-gov-uk-notify-integration-api container to run."
 }
