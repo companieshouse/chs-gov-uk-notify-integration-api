@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @Configuration
 @EnableMongoRepositories("uk.gov.companieshouse.chs.gov.uk.notify.integration.api")
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
-public class MongoConfig {
+class MongoConfig {
 
     @Bean
     public ValidatingMongoEventListener validatingMongoEventListener(final LocalValidatorFactoryBean factory) {
