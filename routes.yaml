@@ -1,8 +1,7 @@
 app_name: chs-gov-uk-notify-integration-api
 group: api
-
 weight: 100
 routes:
-  1: ^/letter
-  2: ^/email
-  4: ^/chs-gov-uk-notify-integration-api/actuator/health
+  1: ^/letters
+  2: ^/emails
+  4: ^/chs-gov-uk-notify-integration-api/healthcheck
