@@ -26,9 +26,18 @@ public class SenderRestApi implements NotificationSenderInterface {
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
 
+        validateEmailInputs(govUkEmailDetailsRequest);
+
         emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
 
         throw new NotImplementedException();
+    }
+
+    private void validateEmailInputs(GovUkEmailDetailsRequest govUkEmailDetailsRequest) {
+        if (govUkEmailDetailsRequest.getSenderDetails().getEmailAddress().length() == 0
+            || govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress().length() == 0) {
+            throw new IllegalArgumentException("Sender Email Address is empty");
+        }
     }
 
     @Override

@@ -42,7 +42,7 @@ public class ReaderRestApi implements NotificationRetrievalInterface {
      */
     @Override
     public ResponseEntity<GovUkEmailDetailsRequest> getEmailDetailsById(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailId) {
-        throw new NotImplementedException();
+        return mongoDataStore.findEmailBId(emailId);
     }
 
     /**
