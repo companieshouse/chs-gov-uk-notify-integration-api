@@ -1,4 +1,5 @@
 version: '3.3'
+name: EmailService
 services:
   mongo:
     image: mongo
