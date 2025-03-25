@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Configuration
-@EnableMongoRepositories("uk.gov.companieshouse.chs.gov.uk.notify.integration.api")
+@EnableMongoRepositories("uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection")
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 class MongoConfig {
 
