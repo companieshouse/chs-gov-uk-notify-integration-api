@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,10 +30,15 @@ class MongoConfig {
     private String mongoDbHost;
     private String mongoDbPort;
     private String mongoDbUserName;
-    private String mongoDbPassword;
+    private char[] mongoDbPassword;
     private String mongoDbDatabase;
 
-    public MongoConfig(@Value("spring.data.mongodb.host") String mongoDbHost, @Value("spring.data.mongodb.port") String mongoDbPort, @Value("spring.data.mongodb.username") String mongoDbUserName, @Value("spring.data.mongodb.password") String mongoDbPassword, @Value("spring.data.mongodb.database") String mongoDbDatabase) {
+    public MongoConfig(
+        @Value("${spring.data.mongodb.host}") String mongoDbHost,
+        @Value("${spring.data.mongodb.port}") String mongoDbPort,
+        @Value("${spring.data.mongodb.username}") String mongoDbUserName,
+        @Value("${spring.data.mongodb.password}") char[] mongoDbPassword,
+        @Value("${spring.data.mongodb.database}") String mongoDbDatabase) {
         this.mongoDbHost = mongoDbHost;
         this.mongoDbPort = mongoDbPort;
         this.mongoDbUserName = mongoDbUserName;
@@ -52,7 +58,7 @@ class MongoConfig {
 
     @Bean()
     public MongoClient mongoClient() {
-        MongoCredential credential = MongoCredential.createCredential(mongoDbUserName, mongoDbDatabase, mongoDbPassword.toCharArray());
+        MongoCredential credential = MongoCredential.createCredential(mongoDbUserName, mongoDbDatabase, mongoDbPassword);
 
         return MongoClients.create(MongoClientSettings.builder()
                                                       .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
@@ -60,8 +66,10 @@ class MongoConfig {
     }
 
     @Bean
-    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
-        return new MongoTemplate(mongoDatabaseFactory);
+    MongoTemplate mongoTemplate(MongoDatabaseFactory factory) {
+        MongoTemplate mongoTemplate = new MongoTemplate(factory);
+        mongoTemplate.setWriteConcern(WriteConcern.ACKNOWLEDGED);
+        return mongoTemplate;
     }
 
     @Bean
