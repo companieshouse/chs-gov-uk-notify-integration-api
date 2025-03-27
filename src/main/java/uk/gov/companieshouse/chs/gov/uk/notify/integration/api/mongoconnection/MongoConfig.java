@@ -50,24 +50,23 @@ class MongoConfig {
         return () -> Optional.of(LocalDateTime.now());
     }
 
-    @Bean
-    MongoTemplate mongoTemplate() {
-        return new MongoTemplate(mongoDatabaseFactory());
-    }
-
     @Bean()
     public MongoClient mongoClient() {
         MongoCredential credential = MongoCredential.createCredential(mongoDbUserName, mongoDbDatabase, mongoDbPassword.toCharArray());
 
-        return MongoClients.create(
-          MongoClientSettings.builder()
-              .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
-              .credential(credential).build());
+        return MongoClients.create(MongoClientSettings.builder()
+                                                      .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
+                                                      .credential(credential).build());
     }
 
     @Bean
-    MongoDatabaseFactory mongoDatabaseFactory() {
-        return new SimpleMongoClientDatabaseFactory("mongodb://" + mongoDbHost + ":" + mongoDbPort + "/account");
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
+        return new MongoTemplate(mongoDatabaseFactory);
+    }
+
+    @Bean
+    public MongoDatabaseFactory mongoDatabaseFactory() {
+        return new SimpleMongoClientDatabaseFactory(mongoClient(), mongoDbDatabase);
     }
 
 }
