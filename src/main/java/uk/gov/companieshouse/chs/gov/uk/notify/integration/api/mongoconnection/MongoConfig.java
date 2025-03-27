@@ -59,9 +59,10 @@ class MongoConfig {
     public MongoClient mongoClient() {
         MongoCredential credential = MongoCredential.createCredential(mongoDbUserName, mongoDbDatabase, mongoDbPassword.toCharArray());
 
-        return MongoClients.create(MongoClientSettings.builder()
-                                                      .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
-                                                      .credential(credential).build());
+        return MongoClients.create(
+          MongoClientSettings.builder()
+              .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
+              .credential(credential).build());
     }
 
     @Bean
