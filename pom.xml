@@ -15,7 +15,7 @@
     <properties>
         <java.version>21</java.version>
         <spring-boot.version>3.4.1</spring-boot.version>
-        <spring-webmvc.version>6.1.14</spring-webmvc.version>
+        <spring-webmvc.version>7.0.0-M3</spring-webmvc.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
@@ -25,6 +25,7 @@
         <private-api-sdk-java.version>4.0.281</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.8</api-security-java-version>
+        <web-security-java.version>3.1.4</web-security-java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
         <junit.version>4.13.2</junit.version>
@@ -77,18 +78,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-webmvc</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring-webmvc.version}</version>
-        </dependency>
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -122,16 +113,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>web-security-java</artifactId>
+            <version>${web-security-java.version}</version>
         </dependency>
 
         <dependency>
@@ -146,15 +137,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webflux</artifactId>
-            <version>7.0.0-M3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-reactive-httpclient</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -198,27 +180,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>7.0.0-M3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${org.mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${org.mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>6.4.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>

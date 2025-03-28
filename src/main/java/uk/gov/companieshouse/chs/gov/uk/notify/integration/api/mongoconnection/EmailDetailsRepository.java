@@ -7,6 +7,4 @@ import java.util.UUID;
 
 @Repository
 interface EmailDetailsRepository extends MongoRepository<EmailDetails, UUID> {
-
-
 }

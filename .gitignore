@@ -25,3 +25,4 @@ replay_pid*
 /suppress.xml
 target
 .idea
+.DS_Store
