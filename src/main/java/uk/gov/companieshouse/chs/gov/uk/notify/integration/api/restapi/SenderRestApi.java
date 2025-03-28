@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import jakarta.validation.Valid;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -29,13 +30,14 @@ public class SenderRestApi implements NotificationSenderInterface {
         validateEmailInputs(govUkEmailDetailsRequest);
 
         emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
 
-        throw new NotImplementedException();
+//        throw new NotImplementedException();
     }
 
     private void validateEmailInputs(GovUkEmailDetailsRequest govUkEmailDetailsRequest) {
-        if (govUkEmailDetailsRequest.getSenderDetails().getEmailAddress().length() == 0
-            || govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress().length() == 0) {
+        if (govUkEmailDetailsRequest.getSenderDetails().getEmailAddress().isEmpty()
+            || govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress().isEmpty()) {
             throw new IllegalArgumentException("Sender Email Address is empty");
         }
     }
