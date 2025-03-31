@@ -11,35 +11,41 @@ post {
 }
 
 headers {
-  ~X-Request-Id: 
+  X-Request-Id: 7b15a980-4224-11ee-be56-0242ac120002
 }
 
 body:json {
   {
     "sender_details": {
-      "app_id": "",
-      "reference": "",
-      "name": "",
-      "user_id": "",
-      "email_address": ""
+      "app_id": "companies.house.enforcement",
+      "reference": "CH-ENF-2025-03-31-001",
+      "name": "Companies House Enforcement Team",
+      "user_id": "ch_enforcement_123",
+      "email_address": "enforcement@companieshouse.gov.uk"
     },
     "recipient_details": {
-      "name": "",
+      "name": "John Smith",
       "physical_address": {
-        "address_line_1": "",
-        "address_line_2": "",
-        "address_line_3": "",
-        "address_line_4": "",
-        "address_line_5": "",
-        "address_line_6": "",
-        "address_line_7": ""
+        "address_line_1": "123 Business Avenue",
+        "address_line_2": "Suite 405",
+        "address_line_3": "Industrial District",
+        "address_line_4": "London",
+        "address_line_5": "Greater London",
+        "address_line_6": "SW1A 1AA",
+        "address_line_7": "United Kingdom"
       }
     },
     "letter_details": {
-      "template_id": "",
-      "template_version": "",
-      "personalisation_details": ""
+      "template_id": "companies_house|compliance_notice",
+      "template_version": 2,
+      "personalisation_details": {% JSON.stringify({
+        "letter_reference": "REF-CH-2025-0789",
+        "company_name": "SMITH ENTERPRISES LTD",
+        "company_id": "12345678",
+        "due_date": "2025-04-30",
+        "outstanding_filing": "Annual accounts"
+      }) %}
     },
-    "created_at": ""
+    "created_at": "2025-03-31T14:32:28Z"
   }
 }
