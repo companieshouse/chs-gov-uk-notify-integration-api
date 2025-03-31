@@ -1,0 +1,15 @@
+meta {
+  name: Retrieve all email requests
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/gov-uk-notify-integration/emails
+  body: none
+  auth: none
+}
+
+headers {
+  ~X-Request-Id: 
+}

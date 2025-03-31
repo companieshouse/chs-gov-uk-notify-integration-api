@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Companies House - Gov.uk Notify integrations API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

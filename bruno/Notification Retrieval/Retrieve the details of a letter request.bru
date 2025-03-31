@@ -1,0 +1,19 @@
+meta {
+  name: Retrieve the details of a letter request
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/gov-uk-notify-integration/letters/findByReference
+  body: none
+  auth: none
+}
+
+params:path {
+  letterReference: 
+}
+
+headers {
+  ~X-Request-Id: 
+}

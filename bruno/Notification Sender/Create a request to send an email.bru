@@ -1,0 +1,37 @@
+meta {
+  name: Create a request to send an email
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/gov-uk-notify-integration/email
+  body: json
+  auth: none
+}
+
+headers {
+  ~X-Request-Id: 
+}
+
+body:json {
+  {
+    "sender_details": {
+      "app_id": "",
+      "reference": "",
+      "name": "",
+      "user_id": "",
+      "email_address": ""
+    },
+    "recipient_details": {
+      "name": "",
+      "email_address": ""
+    },
+    "email_details": {
+      "template_id": "",
+      "template_version": "",
+      "personalisation_details": ""
+    },
+    "created_at": ""
+  }
+}
