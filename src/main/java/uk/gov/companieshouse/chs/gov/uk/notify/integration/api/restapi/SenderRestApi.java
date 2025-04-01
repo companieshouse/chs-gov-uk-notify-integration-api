@@ -15,20 +15,16 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotify
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
     LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
 
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
-        this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
+    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
     }
 
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
 
-        validateEmailInputs(govUkEmailDetailsRequest);
-
-        emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
+        // notifyEmailFacade.sendEmail ...
 
         throw new NotImplementedException();
     }
