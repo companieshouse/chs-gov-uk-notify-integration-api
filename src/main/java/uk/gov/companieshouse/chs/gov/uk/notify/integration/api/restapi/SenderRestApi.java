@@ -1,10 +1,12 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
@@ -24,7 +26,8 @@ public class SenderRestApi implements NotificationSenderInterface {
     }
 
     @Override
-    public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
+    public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest,
+                                          @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
         validateEmailInputs(govUkEmailDetailsRequest);
 
@@ -41,7 +44,8 @@ public class SenderRestApi implements NotificationSenderInterface {
     }
 
     @Override
-    public ResponseEntity<Void> sendLetter(@Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest, String xHeaderId) {
+    public ResponseEntity<Void> sendLetter(@RequestBody @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
         //FIXME :  call letterGovUkNotifyPayload
 
