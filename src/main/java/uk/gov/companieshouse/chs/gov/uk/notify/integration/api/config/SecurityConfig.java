@@ -24,7 +24,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(request -> request
                 .requestMatchers(GET, "/chs-gov-uk-notify-integration-api/**")
                 .permitAll()
-                .requestMatchers(POST, "/chs-gov-uk-notify-integration-api/**")
+                .requestMatchers(POST, "/gov-uk-notify-integration/**")
                 .permitAll()
                 .anyRequest()
                 .denyAll())
