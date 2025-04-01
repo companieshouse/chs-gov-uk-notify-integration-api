@@ -13,6 +13,8 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
 @Controller
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
@@ -49,6 +51,6 @@ public class SenderRestApi implements NotificationSenderInterface {
 
         //FIXME :  call letterGovUkNotifyPayload
 
-        throw new NotImplementedException();
+        return ResponseEntity.status(CREATED).build();
     }
 }
