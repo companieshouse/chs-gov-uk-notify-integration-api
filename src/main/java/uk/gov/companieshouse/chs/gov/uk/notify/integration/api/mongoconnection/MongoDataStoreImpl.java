@@ -1,95 +1,68 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class MongoDataStoreImpl implements MongoDataStoreInterface {
 
-    EmailDetailsRepository emailDetailsRepository;
-    LetterDetailsRepository letterDetailsRepository;
+    private final EmailDetailsRepository emailDetailsRepository;
+    private final LetterDetailsRepository letterDetailsRepository;
 
-    public MongoDataStoreImpl(EmailDetailsRepository emailDetailsRepository, LetterDetailsRepository letterDetailsRepository) {
+    public MongoDataStoreImpl(EmailDetailsRepository emailDetailsRepository,
+                              final LetterDetailsRepository letterDetailsRepository) {
         this.emailDetailsRepository = emailDetailsRepository;
         this.letterDetailsRepository = letterDetailsRepository;
     }
 
-    /**
-     * @param emailDetails
-     * @return
-     */
     @Override
-    public UUID storeEmail(GovUkEmailDetailsRequest emailDetails) {
+    public DatabaseEmailDetails storeEmail(GovUkEmailDetailsRequest emailDetailsRequest) {
+//        return emailDetailsRepository.save(new DatabaseEmailDetails(emailDetailsRequest));
+        return null;
+    }
+
+    @Override
+    public String storeLetter(GovUkLetterDetailsRequest letterDetails) {
         throw new NotImplementedException();
     }
 
-    /**
-     * @param letterDetails
-     * @return
-     */
     @Override
-    public UUID storeLetter(GovUkLetterDetailsRequest letterDetails) {
+    public DatabaseEmailDetails getEmail(String id) {
+        //return emailDetailsRepository.findById(id);
+        return null;
+    }
+
+    @Override
+    public LetterDetails getLetter(String id) {
         throw new NotImplementedException();
     }
 
-    /**
-     * @param id
-     * @return
-     */
     @Override
-    public EmailDetails getEmail(UUID id) {
+    public DatabaseEmailDetails updateEmailStatus(String id, String status) {
+//        Document query = new Document("requestId", requestId.toString());
+//        Document update = new Document("$set", new Document("status", newStatus)
+//                .append("timestamp", System.currentTimeMillis()));
+//        collection.updateOne(query, update);
+        return null;
+    }
+
+    @Override
+    public LetterDetails updateLetterStatus(String id, String status) {
         throw new NotImplementedException();
     }
 
-    /**
-     * @param id
-     * @return
-     */
     @Override
-    public LetterDetails getLetter(UUID id) {
-        throw new NotImplementedException();
+    public DatabaseEmailDetails findEmailBId(String emailId) {
+        return emailDetailsRepository.findById(emailId).get();
     }
 
-    /**
-     * @param id
-     * @param status
-     * @return
-     */
     @Override
-    public EmailDetails updateEmailStatus(UUID id, String status) {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * @param id
-     * @param status
-     * @return
-     */
-    @Override
-    public LetterDetails updateLetterStatus(UUID id, String status) {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * @param emailId
-     * @return
-     */
-    @Override
-    public EmailDetails findEmailBId(String emailId) {
-        throw new NotImplementedException();
-    }
-
-    /**
-     * @return
-     */
-    @Override
-    public List<EmailDetails> findAllEmails() {
-        return emailDetailsRepository.findAll();
+    public List<DatabaseEmailDetails> findAllEmails() {
+//        return emailDetailsRepository.findAllEmails();
+        return List.of();
     }
 }

@@ -1,27 +1,29 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection;
 
 import jakarta.validation.constraints.Pattern;
-import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_notification_sender.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface MongoDataStoreInterface {
 
-    UUID storeEmail(GovUkEmailDetailsRequest emailDetails);
+    // emails
+    DatabaseEmailDetails storeEmail(GovUkEmailDetailsRequest emailDetailsRequest);
 
-    UUID storeLetter(GovUkLetterDetailsRequest letterDetails);
+    DatabaseEmailDetails getEmail(String id);
 
-    EmailDetails getEmail(UUID id);
+    DatabaseEmailDetails updateEmailStatus(String id, String status);
 
-    LetterDetails getLetter(UUID id);
+    DatabaseEmailDetails findEmailBId(@Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailId);
 
-    EmailDetails updateEmailStatus(UUID id, String status);
+    List<DatabaseEmailDetails> findAllEmails();
 
-    LetterDetails updateLetterStatus(UUID id, String status);
+    // letters
+    LetterDetails getLetter(String id);
 
-    EmailDetails findEmailBId(@Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailId);
+    String storeLetter(GovUkLetterDetailsRequest letterDetails);
 
-    List<EmailDetails> findAllEmails();
+    LetterDetails updateLetterStatus(String id, String status);
+
 }

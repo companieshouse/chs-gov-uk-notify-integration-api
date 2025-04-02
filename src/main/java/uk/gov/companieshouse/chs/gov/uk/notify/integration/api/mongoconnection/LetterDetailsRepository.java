@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-interface LetterDetailsRepository extends MongoRepository<LetterDetails, UUID> {
-
+public interface LetterDetailsRepository extends MongoRepository<LetterDetails, UUID> {
 
 }

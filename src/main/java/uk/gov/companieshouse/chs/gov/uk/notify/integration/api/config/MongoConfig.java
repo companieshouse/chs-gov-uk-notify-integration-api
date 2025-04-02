@@ -1,5 +1,6 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
+import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
@@ -27,24 +28,8 @@ import java.util.Optional;
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 class MongoConfig {
 
-    private String mongoDbHost;
-    private String mongoDbPort;
-    private String mongoDbUserName;
-    private char[] mongoDbPassword;
-    private String mongoDbDatabase;
-
-    public MongoConfig(
-        @Value("${spring.data.mongodb.host}") String mongoDbHost,
-        @Value("${spring.data.mongodb.port}") String mongoDbPort,
-        @Value("${spring.data.mongodb.username}") String mongoDbUserName,
-        @Value("${spring.data.mongodb.password}") char[] mongoDbPassword,
-        @Value("${spring.data.mongodb.database}") String mongoDbDatabase) {
-        this.mongoDbHost = mongoDbHost;
-        this.mongoDbPort = mongoDbPort;
-        this.mongoDbUserName = mongoDbUserName;
-        this.mongoDbPassword = mongoDbPassword;
-        this.mongoDbDatabase = mongoDbDatabase;
-    }
+    @Value("${spring.data.mongodb.uri}")
+    private String databaseUri;
 
     @Bean
     public ValidatingMongoEventListener validatingMongoEventListener(final LocalValidatorFactoryBean factory) {
@@ -55,14 +40,14 @@ class MongoConfig {
     public DateTimeProvider dateTimeProvider() {
         return () -> Optional.of(LocalDateTime.now());
     }
-
+    
     @Bean()
     public MongoClient mongoClient() {
-        MongoCredential credential = MongoCredential.createCredential(mongoDbUserName, mongoDbDatabase, mongoDbPassword);
-
-        return MongoClients.create(MongoClientSettings.builder()
-                                                      .applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(new ServerAddress(mongoDbHost + ":" + mongoDbPort))))
-                                                      .credential(credential).build());
+        final ConnectionString connectionString =
+                new ConnectionString(getDatabaseUri());
+        final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+                .applyConnectionString(connectionString).build();
+        return MongoClients.create(mongoClientSettings);
     }
 
     @Bean
@@ -72,9 +57,8 @@ class MongoConfig {
         return mongoTemplate;
     }
 
-    @Bean
-    public MongoDatabaseFactory mongoDatabaseFactory() {
-        return new SimpleMongoClientDatabaseFactory(mongoClient(), mongoDbDatabase);
+    public String getDatabaseUri() {
+        return databaseUri;
     }
 
 }
