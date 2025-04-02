@@ -61,14 +61,12 @@ public class SenderRestApi implements NotificationSenderInterface {
 
         //FIXME :  call letterGovUkNotifyPayload
 
-
         return ResponseEntity.status(CREATED).build();
     }
 
-    private Map<String, Object> getLogMap(final String requestId) {
+    private Map<String, Object> getLogMap(final String contextId) {
         return new DataMap.Builder()
-                .contextId(requestId) // TODO DEEP-230 Is this the correct context ID?
-                .requestId(requestId)
+                .contextId(contextId)
                 .build()
                 .getLogMap();
     }
