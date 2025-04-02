@@ -8,27 +8,22 @@ import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 
 @Controller
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
     LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
 
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
-        this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
+    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
     }
 
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
 
-        validateEmailInputs(govUkEmailDetailsRequest);
-
-        emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
+        // notifyEmailFacade.sendEmail ...
 
         throw new NotImplementedException();
     }
