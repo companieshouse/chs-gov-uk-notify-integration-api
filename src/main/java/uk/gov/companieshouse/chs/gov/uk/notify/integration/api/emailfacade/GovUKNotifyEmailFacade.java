@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.govuknotify;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade;
 
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -6,7 +6,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,9 +18,8 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Service
-@Validated
-public class NotifyEmailFacade {
-    private final Logger logger = LoggerFactory.getLogger(NotifyEmailFacade.class.getName());
+class GovUKNotifyEmailFacade implements EmailFacadeInterface {
+    private final Logger logger = LoggerFactory.getLogger(GovUKNotifyEmailFacade.class.getName());
     private final NotificationClient client;
 
     /**
@@ -29,7 +27,7 @@ public class NotifyEmailFacade {
      *
      * @param apiKey The GOV.UK Notify API key
      */
-    public NotifyEmailFacade(
+    public GovUKNotifyEmailFacade(
             @Value("${gov.uk.notify.api.key}") String apiKey) {
         this.client = new NotificationClient(apiKey);
         this.logger.info("NotifyEmailFacade initialized");
@@ -43,6 +41,7 @@ public class NotifyEmailFacade {
      * @param personalisation Map of template personalization values
      * @return true if the email was sent successfully, false otherwise
      */
+    @Override
     public boolean sendEmail(
             @NotBlank @Email String recipient,
             @NotBlank String templateId,
@@ -68,6 +67,7 @@ public class NotifyEmailFacade {
      * @param personalisation Map of template personalization values
      * @return A future that will complete with true if successful, false otherwise
      */
+    @Override
     public CompletableFuture<Boolean> sendEmailAsync(
             @NotBlank @Email String recipient,
             @NotBlank String templateId,

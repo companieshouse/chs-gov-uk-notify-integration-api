@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.govuknotify;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
 import uk.gov.service.notify.NotificationClient;
@@ -39,9 +40,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Tag("unit-test")
-public class NotifyEmailFacadeTest {
+public class GovUKNotifyEmailFacadeTest {
 
-    private NotifyEmailFacade notifyEmailFacade;
+    @Qualifier("govUKNotifyEmailFacade")
+    private EmailFacadeInterface govUKNotifyEmailFacade;
 
     @Mock
     private NotificationClient mockClient;
@@ -57,12 +59,12 @@ public class NotifyEmailFacadeTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        ProxyFactory factory = new ProxyFactory(new NotifyEmailFacade("test-api-key"));
+        ProxyFactory factory = new ProxyFactory(new GovUKNotifyEmailFacade("test-api-key"));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
-        notifyEmailFacade = (NotifyEmailFacade) factory.getProxy();
+        govUKNotifyEmailFacade = (EmailFacadeInterface) factory.getProxy();
 
-        ReflectionTestUtils.setField(notifyEmailFacade, "client", mockClient);
+        ReflectionTestUtils.setField(govUKNotifyEmailFacade, "client", mockClient);
     }
 
     @Nested
@@ -76,7 +78,7 @@ public class NotifyEmailFacadeTest {
             when(mockResponse.getNotificationId()).thenReturn(mockUuid);
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockResponse);
 
-            boolean result = notifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            boolean result = govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
 
             assertTrue(result);
             verify(mockClient).sendEmail(eq(VALID_TEMPLATE_ID), eq(VALID_EMAIL), eq(VALID_PERSONALISATION), anyString());
@@ -87,7 +89,7 @@ public class NotifyEmailFacadeTest {
         void When_ClientReturnsNullResponse_Expect_SendEmailReturnsFalse() throws NotificationClientException {
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(null);
 
-            boolean result = notifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            boolean result = govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
 
             assertFalse(result);
         }
@@ -98,7 +100,7 @@ public class NotifyEmailFacadeTest {
             when(mockResponse.getNotificationId()).thenReturn(null);
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockResponse);
 
-            boolean result = notifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            boolean result = govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
 
             assertFalse(result);
         }
@@ -109,7 +111,7 @@ public class NotifyEmailFacadeTest {
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
                     .thenThrow(new NotificationClientException("Test exception"));
 
-            boolean result = notifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            boolean result = govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
 
             assertFalse(result);
         }
@@ -121,7 +123,7 @@ public class NotifyEmailFacadeTest {
             when(mockResponse.getNotificationId()).thenReturn(mockUuid);
             when(mockClient.sendEmail(anyString(), anyString(), isNull(), anyString())).thenReturn(mockResponse);
 
-            boolean result = notifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, null);
+            boolean result = govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, null);
 
             assertTrue(result);
             verify(mockClient).sendEmail(eq(VALID_TEMPLATE_ID), eq(VALID_EMAIL), isNull(), anyString());
@@ -139,7 +141,7 @@ public class NotifyEmailFacadeTest {
             when(mockResponse.getNotificationId()).thenReturn(mockUuid);
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockResponse);
 
-            CompletableFuture<Boolean> future = notifyEmailFacade.sendEmailAsync(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            CompletableFuture<Boolean> future = govUKNotifyEmailFacade.sendEmailAsync(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
             boolean result = future.get();
 
             assertTrue(result);
@@ -152,7 +154,7 @@ public class NotifyEmailFacadeTest {
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
                     .thenThrow(new NotificationClientException("Test exception"));
 
-            CompletableFuture<Boolean> future = notifyEmailFacade.sendEmailAsync(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            CompletableFuture<Boolean> future = govUKNotifyEmailFacade.sendEmailAsync(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
             boolean result = future.get();
 
             assertFalse(result);
@@ -169,7 +171,7 @@ public class NotifyEmailFacadeTest {
         @ValueSource(strings = {"invalid-email", "missing-at.com", "@missinguser.com"})
         void When_InvalidEmailProvided_Expect_ConstraintViolationException(String invalidEmail) {
             assertThrows(ConstraintViolationException.class, () ->
-                    notifyEmailFacade.sendEmail(invalidEmail, VALID_TEMPLATE_ID, VALID_PERSONALISATION)
+                    govUKNotifyEmailFacade.sendEmail(invalidEmail, VALID_TEMPLATE_ID, VALID_PERSONALISATION)
             );
         }
 
@@ -178,7 +180,7 @@ public class NotifyEmailFacadeTest {
         @NullAndEmptySource
         void When_InvalidTemplateIdProvided_Expect_ConstraintViolationException(String invalidTemplateId) {
             assertThrows(ConstraintViolationException.class, () ->
-                    notifyEmailFacade.sendEmail(VALID_EMAIL, invalidTemplateId, VALID_PERSONALISATION)
+                    govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, invalidTemplateId, VALID_PERSONALISATION)
             );
         }
 
@@ -188,7 +190,7 @@ public class NotifyEmailFacadeTest {
         @ValueSource(strings = {"invalid-email", "missing-at.com"})
         void When_InvalidEmailProvidedForAsync_Expect_ConstraintViolationException(String invalidEmail) {
             assertThrows(ConstraintViolationException.class, () ->
-                    notifyEmailFacade.sendEmailAsync(invalidEmail, VALID_TEMPLATE_ID, VALID_PERSONALISATION)
+                    govUKNotifyEmailFacade.sendEmailAsync(invalidEmail, VALID_TEMPLATE_ID, VALID_PERSONALISATION)
             );
         }
 
@@ -197,7 +199,7 @@ public class NotifyEmailFacadeTest {
         @NullAndEmptySource
         void When_InvalidTemplateIdProvidedForAsync_Expect_ConstraintViolationException(String invalidTemplateId) {
             assertThrows(ConstraintViolationException.class, () ->
-                    notifyEmailFacade.sendEmailAsync(VALID_EMAIL, invalidTemplateId, VALID_PERSONALISATION)
+                    govUKNotifyEmailFacade.sendEmailAsync(VALID_EMAIL, invalidTemplateId, VALID_PERSONALISATION)
             );
         }
 
@@ -207,7 +209,7 @@ public class NotifyEmailFacadeTest {
         void When_MultipleInvalidInputsProvided_Expect_ConstraintViolationException(
                 String email, String templateId, String testDescription) {
             assertThrows(ConstraintViolationException.class, () ->
-                    notifyEmailFacade.sendEmail(email, templateId, VALID_PERSONALISATION)
+                    govUKNotifyEmailFacade.sendEmail(email, templateId, VALID_PERSONALISATION)
             );
         }
 
