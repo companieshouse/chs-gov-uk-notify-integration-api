@@ -1,0 +1,1020 @@
+{
+	"info": {
+		"_postman_id": "ab1872b5-2925-43ea-a427-8b6a6799f4c8",
+		"name": "Companies House - Gov.uk Notify integrations API",
+		"description": "An API to allow sending of letters and emails via Gov.uk Notify",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "42622862"
+	},
+	"item": [
+		{
+			"name": "gov-uk-notify-integration",
+			"item": [
+				{
+					"name": "letter",
+					"item": [
+						{
+							"name": "{id}",
+							"item": [
+								{
+									"name": "Retrieve the details of a letter request",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letter/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letter",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "<string>",
+													"description": "(Required) ID of letter notififcation to return"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "successful operation",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/letter/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"letter",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}"
+										},
+										{
+											"name": "Invalid ID supplied",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/letter/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"letter",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "not found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/letter/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"letter",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Create a request to send a physical letter to a recipient",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Request-Id",
+										"value": "1yXn0vWFTqIgCzUlj"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/gov-uk-notify-integration/letter",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"gov-uk-notify-integration",
+										"letter"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Request to send a letter has been successfully created.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letter",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letter"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Bad Request",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letter",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letter"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Unauthorised",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letter",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letter"
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal Server Error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"letter_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"name\": \"<string>\",\n    \"physical_address\": {\n      \"address_line_1\": \"<string>\",\n      \"address_line_2\": \"<string>\",\n      \"address_line_3\": \"<string>\",\n      \"address_line_4\": \"<string>\",\n      \"address_line_5\": \"<string>\",\n      \"address_line_6\": \"<string>\",\n      \"address_line_7\": \"<string>\"\n    }\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"0jNc@HEi'K.ladzppgNG\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letter",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letter"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "email",
+					"item": [
+						{
+							"name": "{id}",
+							"item": [
+								{
+									"name": "Retrieve the details of a email request",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/email/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"email",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "<string>",
+													"description": "(Required) ID of email notififcation to return"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "successful operation",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-Request-Id",
+														"value": "1yXn0vWFTqIgCzUlj"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/email/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"email",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}"
+										},
+										{
+											"name": "Invalid ID supplied",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-Request-Id",
+														"value": "1yXn0vWFTqIgCzUlj"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/email/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"email",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "not found",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-Request-Id",
+														"value": "1yXn0vWFTqIgCzUlj"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/email/:id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"email",
+														":id"
+													],
+													"variable": [
+														{
+															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "Not Found",
+											"code": 404,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Create a request to send an email",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Request-Id",
+										"value": "1yXn0vWFTqIgCzUlj"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}",
+									"options": {
+										"raw": {
+											"headerFamily": "json",
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/gov-uk-notify-integration/email",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"gov-uk-notify-integration",
+										"email"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "Request to send an email has been successfully created.",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"email"
+											]
+										}
+									},
+									"status": "Created",
+									"code": 201,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Bad Request",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"email"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Unauthorised",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"email"
+											]
+										}
+									},
+									"status": "Unauthorized",
+									"code": 401,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Internal Server Error",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"created_at\": \"<dateTime>\",\n  \"email_details\": {\n    \"personalisation_details\": \"<string>\",\n    \"template_id\": \"<string>\",\n    \"template_version\": \"<number>\"\n  },\n  \"recipient_details\": {\n    \"email_address\": \"Zf@QxTd6yQRT.KHgQJFfnL\",\n    \"name\": \"<string>\"\n  },\n  \"sender_details\": {\n    \"app_id\": \"<string>\",\n    \"reference\": \"<string>\",\n    \"name\": \"<string>\",\n    \"user_id\": \"<string>\",\n    \"email_address\": \"OLij0FFH@1ib8zgJhr.ScnaoTAed\"\n  }\n}",
+											"options": {
+												"raw": {
+													"headerFamily": "json",
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/email",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"email"
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "emails",
+					"item": [
+						{
+							"name": "findByReference",
+							"item": [
+								{
+									"name": "Retrieve the details of a email request",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/emails/findByReference",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"emails",
+												"findByReference"
+											],
+											"variable": [
+												{
+													"key": "notificationReference",
+													"value": "<string>",
+													"description": "(Required) the reference of the email notififcation to return"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "successful operation",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-Request-Id",
+														"value": "1yXn0vWFTqIgCzUlj"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/emails/findByReference",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"emails",
+														"findByReference"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "[\n  {\n    \"created_at\": \"<dateTime>\",\n    \"email_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"email_address\": \"nK_siIOHM.@zV.GFmGFSZNvgy\",\n      \"name\": \"<string>\"\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"u@5GC31pai.mSbYAEghm\"\n    }\n  },\n  {\n    \"created_at\": \"<dateTime>\",\n    \"email_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"email_address\": \"mx@rA93af4.s.YcqFLdf\",\n      \"name\": \"<string>\"\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"0@I7n3a9H.acvjRgoOzNIs\"\n    }\n  }\n]"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Retrieve all email requests",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-Request-Id",
+										"value": "1yXn0vWFTqIgCzUlj"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/gov-uk-notify-integration/emails",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"gov-uk-notify-integration",
+										"emails"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "successful operation",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/emails",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"emails"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "[\n  {\n    \"created_at\": \"<dateTime>\",\n    \"email_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"email_address\": \"nK_siIOHM.@zV.GFmGFSZNvgy\",\n      \"name\": \"<string>\"\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"u@5GC31pai.mSbYAEghm\"\n    }\n  },\n  {\n    \"created_at\": \"<dateTime>\",\n    \"email_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"email_address\": \"mx@rA93af4.s.YcqFLdf\",\n      \"name\": \"<string>\"\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"0@I7n3a9H.acvjRgoOzNIs\"\n    }\n  }\n]"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "letters",
+					"item": [
+						{
+							"name": "findByReference",
+							"item": [
+								{
+									"name": "Retrieve the details of a letter request",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-Request-Id",
+												"value": "1yXn0vWFTqIgCzUlj"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letters/findByReference",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letters",
+												"findByReference"
+											],
+											"variable": [
+												{
+													"key": "letterReference",
+													"value": "<string>",
+													"description": "(Required) the reference of the email notififcation to return"
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "successful operation",
+											"originalRequest": {
+												"method": "GET",
+												"header": [
+													{
+														"key": "X-Request-Id",
+														"value": "1yXn0vWFTqIgCzUlj"
+													},
+													{
+														"key": "Accept",
+														"value": "application/json"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/gov-uk-notify-integration/letters/findByReference",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"gov-uk-notify-integration",
+														"letters",
+														"findByReference"
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												}
+											],
+											"cookie": [],
+											"body": "[\n  {\n    \"created_at\": \"<dateTime>\",\n    \"letter_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"name\": \"<string>\",\n      \"physical_address\": {\n        \"address_line_1\": \"<string>\",\n        \"address_line_2\": \"<string>\",\n        \"address_line_3\": \"<string>\",\n        \"address_line_4\": \"<string>\",\n        \"address_line_5\": \"<string>\",\n        \"address_line_6\": \"<string>\",\n        \"address_line_7\": \"<string>\"\n      }\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"2Ch@gNeS.nGhTMUoVGwDS\"\n    }\n  },\n  {\n    \"created_at\": \"<dateTime>\",\n    \"letter_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"name\": \"<string>\",\n      \"physical_address\": {\n        \"address_line_1\": \"<string>\",\n        \"address_line_2\": \"<string>\",\n        \"address_line_3\": \"<string>\",\n        \"address_line_4\": \"<string>\",\n        \"address_line_5\": \"<string>\",\n        \"address_line_6\": \"<string>\",\n        \"address_line_7\": \"<string>\"\n      }\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"WScK4%YWi_w@BW.FObqXmoZEZ\"\n    }\n  }\n]"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Retrieve all letter requests",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/gov-uk-notify-integration/letters",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"gov-uk-notify-integration",
+										"letters"
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "successful operation",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/gov-uk-notify-integration/letters",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"gov-uk-notify-integration",
+												"letters"
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "[\n  {\n    \"created_at\": \"<dateTime>\",\n    \"letter_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"name\": \"<string>\",\n      \"physical_address\": {\n        \"address_line_1\": \"<string>\",\n        \"address_line_2\": \"<string>\",\n        \"address_line_3\": \"<string>\",\n        \"address_line_4\": \"<string>\",\n        \"address_line_5\": \"<string>\",\n        \"address_line_6\": \"<string>\",\n        \"address_line_7\": \"<string>\"\n      }\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"2Ch@gNeS.nGhTMUoVGwDS\"\n    }\n  },\n  {\n    \"created_at\": \"<dateTime>\",\n    \"letter_details\": {\n      \"personalisation_details\": \"<string>\",\n      \"template_id\": \"<string>\",\n      \"template_version\": \"<number>\"\n    },\n    \"recipient_details\": {\n      \"name\": \"<string>\",\n      \"physical_address\": {\n        \"address_line_1\": \"<string>\",\n        \"address_line_2\": \"<string>\",\n        \"address_line_3\": \"<string>\",\n        \"address_line_4\": \"<string>\",\n        \"address_line_5\": \"<string>\",\n        \"address_line_6\": \"<string>\",\n        \"address_line_7\": \"<string>\"\n      }\n    },\n    \"sender_details\": {\n      \"app_id\": \"<string>\",\n      \"reference\": \"<string>\",\n      \"name\": \"<string>\",\n      \"user_id\": \"<string>\",\n      \"email_address\": \"WScK4%YWi_w@BW.FObqXmoZEZ\"\n    }\n  }\n]"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://internalapi.company-information.service.gov.uk/"
+		}
+	]
+}
