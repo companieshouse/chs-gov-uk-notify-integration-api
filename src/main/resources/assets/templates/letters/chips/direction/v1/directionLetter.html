@@ -9,20 +9,20 @@
           However, the presence of any one of these 4 properties seems to result in the document being
           categorised as an invalid PDF/A document, whether the configured conformance level is PDF/A-1a
           (Accessible), or PDF/A-1b (Basic). -->
-<!--    <title th:text="${title}"></title>-->
-<!--    <meta name="creator" content="Companies House"/>-->
-<!--    <meta name="subject" content="Verify your identity - Person with significant control"/>-->
-<!--    <meta name="keywords" content="IDV PSC"/>-->
+    <!--    <title th:text="${title}"></title>-->
+    <!--    <meta name="creator" content="Companies House"/>-->
+    <!--    <meta name="subject" content="Verify your identity - Person with significant control"/>-->
+    <!--    <meta name="keywords" content="IDV PSC"/>-->
 
     <meta th:replace="~{notifyLetterLayout :: head()}">
-    <link href="directionLetter.css" media="all" rel="stylesheet" type="text/css" />
+    <link href="directionLetter.css" media="all" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-    <section th:replace="~{notifyLetterLayout :: notifyLetterLayout(
-    ~{directionLetterContent},
+<section th:replace="~{notifyLetterLayout :: notifyLetterLayout(
     ~{directionLetterTitle},
+    ~{directionLetterContent},
     'Reference',
     ${reference})}">
-    </section>
+</section>
 </body>
 </html>

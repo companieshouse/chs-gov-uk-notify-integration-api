@@ -1,0 +1,21 @@
+version: '3.3'
+name: EmailService
+services:
+  mongo:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    restart: always
+    logging:
+      options:
+        max-size: 1g
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=chdeep
+    volumes:
+      - data:/data/db
+      - config:/data/configdb
+volumes:
+  data:
+  config:

@@ -2,12 +2,14 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import jakarta.validation.constraints.Pattern;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationRetrievalInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection.EmailDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection.MongoDataStoreInterface;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public class ReaderRestApi implements NotificationRetrievalInterface {
      */
     @Override
     public ResponseEntity<List<GovUkEmailDetailsRequest>> getAllEmails(@Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
-        throw new NotImplementedException();
+        return new ResponseEntity<>(translate(mongoDataStore.findAllEmails()), HttpStatus.OK);
     }
 
     /**
@@ -42,7 +44,8 @@ public class ReaderRestApi implements NotificationRetrievalInterface {
      */
     @Override
     public ResponseEntity<GovUkEmailDetailsRequest> getEmailDetailsById(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailId) {
-        return mongoDataStore.findEmailBId(emailId);
+        return new ResponseEntity<>(translate(mongoDataStore.findEmailBId(emailId)), HttpStatus.OK);
+
     }
 
     /**
@@ -71,6 +74,14 @@ public class ReaderRestApi implements NotificationRetrievalInterface {
      */
     @Override
     public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String letterReference) {
+        throw new NotImplementedException();
+    }
+
+    private List<GovUkEmailDetailsRequest> translate(List<EmailDetails> allEmails) {
+        throw new NotImplementedException();
+    }
+
+    private GovUkEmailDetailsRequest translate(EmailDetails email) {
         throw new NotImplementedException();
     }
 }
