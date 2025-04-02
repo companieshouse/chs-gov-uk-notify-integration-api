@@ -13,6 +13,9 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.util.DataMap;
+
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -54,11 +57,19 @@ public class SenderRestApi implements NotificationSenderInterface {
     public ResponseEntity<Void> sendLetter(@RequestBody @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
-        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")");
+        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")", getLogMap(xHeaderId));
 
         //FIXME :  call letterGovUkNotifyPayload
 
 
         return ResponseEntity.status(CREATED).build();
+    }
+
+    private Map<String, Object> getLogMap(final String requestId) {
+        return new DataMap.Builder()
+                .contextId(requestId) // TODO DEEP-230 Is this the correct context ID?
+                .requestId(requestId)
+                .build()
+                .getLogMap();
     }
 }
