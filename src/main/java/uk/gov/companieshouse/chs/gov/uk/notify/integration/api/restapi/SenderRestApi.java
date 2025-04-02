@@ -12,6 +12,7 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEm
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
+import uk.gov.companieshouse.logging.Logger;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -19,12 +20,16 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
-    LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
+    private final EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
+    private final LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
+    private final Logger logger;
 
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
+    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload,
+                         LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload,
+                         Logger logger) {
         this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
+        this.logger = logger;
     }
 
     @Override
@@ -49,7 +54,10 @@ public class SenderRestApi implements NotificationSenderInterface {
     public ResponseEntity<Void> sendLetter(@RequestBody @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
+        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")");
+
         //FIXME :  call letterGovUkNotifyPayload
+
 
         return ResponseEntity.status(CREATED).build();
     }
