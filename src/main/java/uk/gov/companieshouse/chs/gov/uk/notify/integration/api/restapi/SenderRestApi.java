@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
@@ -23,14 +22,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    private final EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
     private final LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
     private final Logger logger;
 
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload,
-                         LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload,
+    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload,
                          Logger logger) {
-        this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
         this.logger = logger;
     }
@@ -39,9 +35,7 @@ public class SenderRestApi implements NotificationSenderInterface {
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest,
                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
-        validateEmailInputs(govUkEmailDetailsRequest);
-
-        emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
+        // notifyEmailFacade.sendEmail ...
 
         throw new NotImplementedException();
     }
