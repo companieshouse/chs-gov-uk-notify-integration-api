@@ -10,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 import org.apache.logging.log4j.Logger;
 
@@ -22,8 +21,7 @@ public class SenderRestApi implements NotificationSenderInterface {
     EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
     LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
 
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
-        this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
+    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
     }
 
@@ -36,6 +34,9 @@ public class SenderRestApi implements NotificationSenderInterface {
         emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
         logger.info("Received request to send an email");
         return new ResponseEntity<>(HttpStatus.CREATED);
+        // notifyEmailFacade.sendEmail ...
+
+        throw new NotImplementedException();
     }
 
     private void validateEmailInputs(GovUkEmailDetailsRequest govUkEmailDetailsRequest) {
