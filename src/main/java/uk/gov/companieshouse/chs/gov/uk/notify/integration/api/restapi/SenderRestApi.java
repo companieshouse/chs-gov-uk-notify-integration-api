@@ -48,7 +48,7 @@ public class SenderRestApi implements NotificationSenderInterface {
     }
 
     @Override
-    public ResponseEntity<Void> sendLetter(@RequestBody @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+    public ResponseEntity<Void> sendLetter(@Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
 
         logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")", getLogMap(xHeaderId));
