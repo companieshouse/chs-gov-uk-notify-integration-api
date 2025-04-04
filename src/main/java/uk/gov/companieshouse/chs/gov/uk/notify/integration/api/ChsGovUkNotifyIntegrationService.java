@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ChsGovUkNotifyIntegrationService {
 
+    public static final String APPLICATION_NAMESPACE = "chs-gov-uk-notify-integration-api";
+
     public static void main(String[] args) {
         SpringApplication.run(ChsGovUkNotifyIntegrationService.class, args);
     }

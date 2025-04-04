@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SenderRestApiIntegrationTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
+    private static final String INVALID_CONTEXT_ID = "X9uND6rXQxfbZ:cMVFA7JI4h2KOh";
 
     @Autowired
     private MockMvc mockMvc;
@@ -55,6 +56,20 @@ class SenderRestApiIntegrationTest {
 
         assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID+ "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
+    }
+
+    @Test
+    @DisplayName("Send letter with an invalid context ID")
+    void sendLetterWithInvalidContextId() throws Exception {
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isBadRequest());
+
     }
 
 }
