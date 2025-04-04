@@ -11,9 +11,10 @@ import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.EmailFacadeInterface;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.logging.util.DataMap;
 
 import java.util.Map;
@@ -24,30 +25,36 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    private final LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
-    private final Logger logger;
-    EmailFacadeInterface emailFacade;
+    private final Logger logger = LoggerFactory.getLogger(SenderRestApi.class.getName());
+    private final GovUKNotifyEmailFacade emailFacade;
+    private final NotificationDatabaseService notificationDatabaseService;
 
-    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload,
-                         Logger logger, EmailFacadeInterface emailFacade) {
-        this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
-        this.logger = logger;
+    public SenderRestApi(GovUKNotifyEmailFacade emailFacade,
+                         NotificationDatabaseService notificationDatabaseService) {
         this.emailFacade = emailFacade;
+        this.notificationDatabaseService = notificationDatabaseService;
     }
 
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest ,
                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
+        
+        // should personalisation detailas be coming in as a map, not a json string? will need to change
+        // the other modules to account for this.
         Map<String, Object> personilisationDetails = null;
         try {
             personilisationDetails = new ObjectMapper().readValue(govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(), Map.class);
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        
+        notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
+        
+        // instead of a boolean, get the response back so we can save it
         boolean successful = emailFacade.sendEmail(govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
                 personilisationDetails);
-
+        
         return new ResponseEntity<>(successful ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -57,7 +64,8 @@ public class SenderRestApi implements NotificationSenderInterface {
 
         logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")", getLogMap(xHeaderId));
 
-        //FIXME :  call letterGovUkNotifyPayload
+        // todo, other letter stuff?
+        notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
 
         return ResponseEntity.status(CREATED).build();
     }

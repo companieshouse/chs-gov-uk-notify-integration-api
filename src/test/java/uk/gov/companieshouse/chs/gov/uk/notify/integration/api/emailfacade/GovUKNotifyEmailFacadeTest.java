@@ -42,8 +42,7 @@ import static org.mockito.Mockito.when;
 @Tag("unit-test")
 public class GovUKNotifyEmailFacadeTest {
 
-    @Qualifier("govUKNotifyEmailFacade")
-    private EmailFacadeInterface govUKNotifyEmailFacade;
+    private GovUKNotifyEmailFacade govUKNotifyEmailFacade;
 
     @Mock
     private NotificationClient mockClient;
@@ -62,7 +61,7 @@ public class GovUKNotifyEmailFacadeTest {
         ProxyFactory factory = new ProxyFactory(new GovUKNotifyEmailFacade("test-api-key"));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
-        govUKNotifyEmailFacade = (EmailFacadeInterface) factory.getProxy();
+        govUKNotifyEmailFacade = (GovUKNotifyEmailFacade) factory.getProxy();
 
         ReflectionTestUtils.setField(govUKNotifyEmailFacade, "client", mockClient);
     }

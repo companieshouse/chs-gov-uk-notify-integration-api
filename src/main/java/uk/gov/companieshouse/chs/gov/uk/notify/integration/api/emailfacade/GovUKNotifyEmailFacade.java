@@ -18,7 +18,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Service
-class GovUKNotifyEmailFacade implements EmailFacadeInterface {
+public class GovUKNotifyEmailFacade {
     private final Logger logger = LoggerFactory.getLogger(GovUKNotifyEmailFacade.class.getName());
     private final NotificationClient client;
 
@@ -41,7 +41,6 @@ class GovUKNotifyEmailFacade implements EmailFacadeInterface {
      * @param personalisation Map of template personalization values
      * @return true if the email was sent successfully, false otherwise
      */
-    @Override
     public boolean sendEmail(
             @NotBlank @Email String recipient,
             @NotBlank String templateId,
@@ -67,7 +66,6 @@ class GovUKNotifyEmailFacade implements EmailFacadeInterface {
      * @param personalisation Map of template personalization values
      * @return A future that will complete with true if successful, false otherwise
      */
-    @Override
     public CompletableFuture<Boolean> sendEmailAsync(
             @NotBlank @Email String recipient,
             @NotBlank String templateId,

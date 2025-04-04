@@ -15,7 +15,8 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEm
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.EmailFacadeInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -30,7 +31,10 @@ import static org.springframework.http.HttpStatus.*;
 class SenderRestApiTests {
 
     @Mock
-    private EmailFacadeInterface govUKNotifyEmailFacade;
+    private GovUKNotifyEmailFacade govUKNotifyEmailFacade;
+    
+    @Mock
+    private NotificationDatabaseService notificationDatabaseService;
 
     @InjectMocks
     private SenderRestApi restApi;
