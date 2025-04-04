@@ -81,4 +81,19 @@ class SenderRestApiIntegrationTest {
         assertThat(log.getAll().contains(CONTEXT_ID_PATTERN), is(true));
     }
 
+    @Test
+    @DisplayName("Send letter with an invalid request")
+    void sendLetterWithInvalidRequest() throws Exception {
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .content(resourceToString("/fixtures/send-letter-request-no-sender-reference.json",
+                                UTF_8)))
+                .andExpect(status().isBadRequest());
+
+    }
+
 }
