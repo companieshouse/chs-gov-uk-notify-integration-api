@@ -10,41 +10,34 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEm
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationResponseRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 
 @Controller
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload;
-    LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
-
-    public SenderRestApi(EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayload, LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload) {
-        this.emailGovUkNotifyPayload = emailGovUkNotifyPayload;
-        this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
+    private final NotificationDatabaseService notificationDatabaseService;
+    
+    public SenderRestApi(NotificationDatabaseService notificationDatabaseService) {
+        this.notificationDatabaseService = notificationDatabaseService;
     }
 
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest, String xHeaderId) {
+        notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
 
-        validateEmailInputs(govUkEmailDetailsRequest);
-
-        emailGovUkNotifyPayload.sendEmail(govUkEmailDetailsRequest);
-
+        // make request to govuk notify
         throw new NotImplementedException();
-    }
-
-    private void validateEmailInputs(GovUkEmailDetailsRequest govUkEmailDetailsRequest) {
-        if (govUkEmailDetailsRequest.getSenderDetails().getEmailAddress().length() == 0
-            || govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress().length() == 0) {
-            throw new IllegalArgumentException("Sender Email Address is empty");
-        }
     }
 
     @Override
     public ResponseEntity<Void> sendLetter(@Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest, String xHeaderId) {
+        notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
 
-        //FIXME :  call letterGovUkNotifyPayload
-
+        // make request to govuk notify
         throw new NotImplementedException();
     }
 }
