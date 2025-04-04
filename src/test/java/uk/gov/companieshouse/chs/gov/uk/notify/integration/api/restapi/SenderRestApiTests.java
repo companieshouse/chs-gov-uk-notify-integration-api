@@ -1,49 +1,50 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailgovuknotifypayload.EmailGovUkNotifyPayloadInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.EmailFacadeInterface;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpStatus.*;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
-public class SenderRestApiTests {
+class SenderRestApiTests {
 
     @Mock
-    EmailGovUkNotifyPayloadInterface emailGovUkNotifyPayloadInterface;
+    private EmailFacadeInterface govUKNotifyEmailFacade;
 
     @InjectMocks
     private SenderRestApi restApi;
 
+    private static final String VALID_EMAIL = "test@example.com";
+    private static final String VALID_TEMPLATE_ID = "valid-template-id";
+    private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
+    private static final String XHEADER = "1";
 
     @Test
-    public void validEmailRequest() {
-        String xHeaderId = "1";
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-
+    void validEmailRequest(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
-
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         govUkEmailDetailsRequest.setSenderDetails(senderDetails
                 .emailAddress("john.doe@email.address.net")
@@ -52,154 +53,94 @@ public class SenderRestApiTests {
                 .reference("ref")
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                .templateId("template_id")
+                .templateId(VALID_TEMPLATE_ID)
                 .templateVersion(BigDecimal.valueOf(1))
-                .personalisationDetails("letter_reference: 0123456789,company_name: BIG SHOP LTD,company_id: 9876543210,psc_type: 25% "));
+                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
-                .emailAddress("john.doe@email.address.net")
+                .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        emailGovUkNotifyPayloadInterface.sendEmail(govUkEmailDetailsRequest);
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(true);
 
-        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
+        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
     }
 
     @Test
-    public void senderDetailEmailAddressEmpty() {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> {
-            String xHeaderId = "1";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-
-            SenderDetails senderDetails = new SenderDetails();
-            EmailDetails emailDetails = new EmailDetails();
-            RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
-            GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
-
-            govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                    .emailAddress(""));
-            govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
-                    .emailAddress("john.doe@email.address.net")
-                    .name("john doe"));
-            govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                    .templateId("template_id")
-                    .templateVersion(BigDecimal.valueOf(1))
-                    .personalisationDetails("letter_reference: 0123456789,company_name: BIG SHOP LTD,company_id: 9876543210,psc_type: 25% "));
-
-            emailGovUkNotifyPayloadInterface.sendEmail(govUkEmailDetailsRequest);
-
-            ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
-
-            assertThat(response).isEqualTo("Sender Email Address is empty");
-            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        });
-        Assertions.assertEquals("Sender Email Address is empty", thrown.getMessage());
-    }
-
-    @Test
-    public void recipientDetailsEmailAddressEmpty() {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> {
-            String xHeaderId = "1";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-
-            SenderDetails senderDetails = new SenderDetails();
-            RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
-            EmailDetails emailDetails = new EmailDetails();
-            GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
-
-            govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
-                    .emailAddress(""));
-            govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                            .templateId("template_id")
-                            .templateVersion(BigDecimal.valueOf(1))
-                            .personalisationDetails("letter_reference: 0123456789,company_name: BIG SHOP LTD,company_id: 9876543210,psc_type: 25% "));
-            govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                    .emailAddress("john.doe@email.address.net"));
-
-            ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
-
-            assertThat(response).isEqualTo("Sender Email Address is empty");
-            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        });
-        Assertions.assertEquals("Sender Email Address is empty", thrown.getMessage());
-    }
-
-    @Test
-    public void invalidEmailRequestNullEmailDetails() {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> {
-        String xHeaderId = "1";
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-
-        SenderDetails senderDetails = new SenderDetails();
+    void inValidEmailRequest(){
+        EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
-
-        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
-                .emailAddress("john.doe@email.address.net"));
         govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                .emailAddress("john.doe@email.address.net"));
-        govUkEmailDetailsRequest.setEmailDetails(null);
-        emailGovUkNotifyPayloadInterface.sendEmail(govUkEmailDetailsRequest);
+                .emailAddress("john.doe@email.address.net")
+                .userId("9876543")
+                .name("John Doe")
+                .reference("ref")
+                .appId("chips.send_email"));
+        govUkEmailDetailsRequest.setEmailDetails(emailDetails
+                .templateId(VALID_TEMPLATE_ID)
+                .templateVersion(BigDecimal.valueOf(1))
+                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
 
-        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(false);
 
-        assertThat(response).isEqualTo("Sender request has null fields");
-        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        });
-        Assertions.assertEquals("Sender request has null fields", thrown.getMessage());
-    }
-    @Test
-    public void invalidEmailRequestNullRecipientDetails() {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> {
-            String xHeaderId = "1";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
-            SenderDetails senderDetails = new SenderDetails();
-            EmailDetails emailDetails = new EmailDetails();
-            GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
+        Assertions.assertNotNull(response);
 
-            govUkEmailDetailsRequest.setRecipientDetails(null);
-            govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                    .emailAddress("john.doe@email.address.net"));
-            govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                    .templateId("template_id")
-                    .templateVersion(BigDecimal.valueOf(1))
-                    .personalisationDetails("letter_reference: 0123456789,company_name: BIG SHOP LTD,company_id: 9876543210,psc_type: 25% "));
-            emailGovUkNotifyPayloadInterface.sendEmail(govUkEmailDetailsRequest);
-
-            ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
-
-            assertThat(response).isEqualTo("Sender request has null fields");
-            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        });
-        Assertions.assertEquals("Sender request has null fields", thrown.getMessage());
     }
 
-    @Test
-    public void invalidEmailRequestAllFieldsNull() {
-        RuntimeException thrown = Assertions.assertThrows(RuntimeException.class, () -> {
-            String xHeaderId = "1";
-            MockHttpServletRequest request = new MockHttpServletRequest();
-            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
+    @CsvSource({
+            "null, valid"
+    })
+    void testGovUkEmailDetailsRequestValidation() {
+        GovUkEmailDetailsRequest request =  new GovUkEmailDetailsRequest();
 
-            GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        assertThrowsExactly(NullPointerException.class, () ->
+                restApi.sendEmail(request,XHEADER )
+        );
+    }
 
-            govUkEmailDetailsRequest.setRecipientDetails(null);
-            govUkEmailDetailsRequest.setSenderDetails(null);
-            govUkEmailDetailsRequest.setEmailDetails(null);
-            emailGovUkNotifyPayloadInterface.sendEmail(govUkEmailDetailsRequest);
+    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
+    @CsvSource({
+            "null, valid"
+    })
+    void testGovUkEmailDetailsRequestValidationMissingDetails() {
+        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        govUkEmailDetailsRequest.setSenderDetails(senderDetails
+                .emailAddress("john.doe@email.address.net")
+                .userId("9876543")
+                .name("John Doe")
+                .reference("ref")
+                .appId("chips.send_email"));
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
 
-            ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, xHeaderId);
-            assertThat(response).isEqualTo("Sender request has null fields");
-            assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        });
-        Assertions.assertEquals("Sender request has null fields", thrown.getMessage());
+        assertThrowsExactly(NullPointerException.class, () ->
+                restApi.sendEmail(govUkEmailDetailsRequest,XHEADER )
+        );
+    }
+
+    @ParameterizedTest(name = "When request is {0}, exception should be thrown")
+    @CsvSource({
+            "null, null"
+    })
+    void testGovUkEmailDetailsRequestValidationMissingHeader() {
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        assertThrowsExactly(NullPointerException.class, () ->
+                restApi.sendEmail(govUkEmailDetailsRequest,null )
+        );
     }
 
 
