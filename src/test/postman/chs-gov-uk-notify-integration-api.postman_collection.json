@@ -1,0 +1,66 @@
+{
+	"info": {
+		"_postman_id": "e09d4386-708c-4713-8cac-84d2ba7427a2",
+		"name": "chs-gov-uk-notify-integration-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32780211"
+	},
+	"item": [
+		{
+			"name": "health check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/chs-gov-uk-notify-integration-api/healthcheck",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"chs-gov-uk-notify-integration-api",
+						"healthcheck"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "send letter",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Request-ID",
+						"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\" \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"-999999999-01-01T00:00:00+18:00\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"gov-uk-notify-integration",
+						"letter"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

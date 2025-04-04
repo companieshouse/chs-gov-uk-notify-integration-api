@@ -9,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 @Configuration
 @EnableWebSecurity
@@ -22,6 +23,8 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(request -> request
                 .requestMatchers(GET, "/chs-gov-uk-notify-integration-api/**")
+                .permitAll()
+                .requestMatchers(POST, "/gov-uk-notify-integration/**")
                 .permitAll()
                 .anyRequest()
                 .denyAll())
