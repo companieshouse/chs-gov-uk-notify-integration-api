@@ -4,12 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
@@ -22,27 +20,24 @@ import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
-import java.util.Map;
-
 @Controller
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
     private final LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
     private final Logger logger;
-    LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload;
     EmailFacadeInterface emailFacade;
 
     public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload,
-                         Logger logger) {
-    public SenderRestApi(LetterGovUkNotifyPayloadInterface letterGovUkNotifyPayload, EmailFacadeInterface emailFacade) {
+                         Logger logger, EmailFacadeInterface emailFacade) {
         this.letterGovUkNotifyPayload = letterGovUkNotifyPayload;
         this.logger = logger;
         this.emailFacade = emailFacade;
     }
 
     @Override
-    public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest , String xHeaderId) {
+    public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest ,
+                                          @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
         Map<String, Object> personilisationDetails = null;
         try {
             personilisationDetails = new ObjectMapper().readValue(govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(), Map.class);
