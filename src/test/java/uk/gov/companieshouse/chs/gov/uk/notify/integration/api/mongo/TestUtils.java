@@ -2,7 +2,9 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
+import org.json.JSONObject;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.Address;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
@@ -11,6 +13,8 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.LetterD
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsLetter;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.service.notify.SendEmailResponse;
 
 public class TestUtils {
 
@@ -48,6 +52,40 @@ public class TestUtils {
                 .recipientDetails(recipientDetails)
                 .emailDetails(emailDetails)
                 .createdAt(OffsetDateTime.now());
+    }
+
+    public static NotificationEmailRequest createSampleNotificationRequest() {
+        SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
+        RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", "test@example.com");
+        EmailDetails emailDetails = new EmailDetails("template-123", new BigDecimal("1.0"), "Hello {{name}}");
+
+        GovUkEmailDetailsRequest emailRequest = new GovUkEmailDetailsRequest()
+                .senderDetails(senderDetails)
+                .recipientDetails(recipientDetails)
+                .emailDetails(emailDetails)
+                .createdAt(OffsetDateTime.now());
+
+        return new NotificationEmailRequest(null, emailRequest);
+    }
+
+    public static SendEmailResponse createSampleEmailResponse(UUID templateId, UUID notificationId) {
+        JSONObject templateJson = new JSONObject()
+                .put("id", templateId.toString())
+                .put("version", 1)
+                .put("uri", "https://api.notifications.service.gov.uk/v2/template/abcdefg");
+
+        JSONObject contentJson = new JSONObject()
+                .put("body", "Hello World")
+                .put("from_email", "service@example.com")
+                .put("subject", "Test Email");
+
+        JSONObject responseJson = new JSONObject()
+                .put("id", notificationId.toString())
+                .put("reference", "client-reference")
+                .put("content", contentJson)
+                .put("template", templateJson);
+
+        return new SendEmailResponse(responseJson.toString());
     }
     
 }

@@ -3,32 +3,29 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository
 import static org.junit.jupiter.api.Assertions.*;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailRequest;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
+import org.testcontainers.containers.MongoDBContainer;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.MongoTestExtension;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 
 import java.util.List;
 import java.util.Optional;
 
-@DataMongoTest
-@Testcontainers
-@Tag("integration-test")
-@ExtendWith(MongoTestExtension.class)
-@Import(MongoConfig.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class NotificationEmailRequestRepositoryTest {
 
+    static {
+        SharedMongoContainer.getInstance();
+    }
+    
     @Autowired
     private NotificationEmailRequestRepository requestRepository;
 

@@ -1,41 +1,33 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleNotificationRequest;
 
-import org.json.JSONObject;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.MongoTestExtension;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
-import uk.gov.service.notify.SendEmailResponse;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@DataMongoTest
-@Testcontainers
-@Tag("integration-test")
-@ExtendWith(MongoTestExtension.class)
-@Import(MongoConfig.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class NotificationStatusRepositoryTest {
 
+    static {
+        SharedMongoContainer.getInstance();
+    }
+    
     @Autowired
     private NotificationEmailRequestRepository requestRepository;
 
@@ -192,38 +184,5 @@ public class NotificationStatusRepositoryTest {
             this.responseId = responseId;
         }
     }
-
-    private NotificationEmailRequest createSampleNotificationRequest() {
-        SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
-        RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", "test@example.com");
-        EmailDetails emailDetails = new EmailDetails("template-123", new BigDecimal("1.0"), "Hello {{name}}");
-
-        GovUkEmailDetailsRequest emailRequest = new GovUkEmailDetailsRequest()
-                .senderDetails(senderDetails)
-                .recipientDetails(recipientDetails)
-                .emailDetails(emailDetails)
-                .createdAt(OffsetDateTime.now());
-
-        return new NotificationEmailRequest(null, emailRequest);
-    }
-
-    private SendEmailResponse createSampleEmailResponse(UUID templateId, UUID notificationId) {
-        JSONObject templateJson = new JSONObject()
-                .put("id", templateId.toString())
-                .put("version", 1)
-                .put("uri", "https://api.notifications.service.gov.uk/v2/template/abcdefg");
-
-        JSONObject contentJson = new JSONObject()
-                .put("body", "Hello World")
-                .put("from_email", "service@example.com")
-                .put("subject", "Test Email");
-
-        JSONObject responseJson = new JSONObject()
-                .put("id", notificationId.toString())
-                .put("reference", "client-reference")
-                .put("content", contentJson)
-                .put("template", templateJson);
-
-        return new SendEmailResponse(responseJson.toString());
-    }
+    
 }
