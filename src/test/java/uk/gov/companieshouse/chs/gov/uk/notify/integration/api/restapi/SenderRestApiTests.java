@@ -41,7 +41,7 @@ class SenderRestApiTests {
     private static final String XHEADER = "1";
 
     @Test
-    void validEmailRequest(){
+    void When_EmailRequestIsValid_Expect_EmailMessageIsSentSuccessfully(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -69,7 +69,7 @@ class SenderRestApiTests {
     }
 
     @Test
-    void inValidEmailRequest(){
+    void When_EmailRequestIsInValid_Expect_InternalSeverErrorResponse(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
