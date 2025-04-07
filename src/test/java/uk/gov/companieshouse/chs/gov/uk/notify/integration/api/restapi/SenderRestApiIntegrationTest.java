@@ -35,6 +35,10 @@ class SenderRestApiIntegrationTest {
     private static final String CONTEXT_ID_PATTERN = "[0-9A-Za-z-_]{8,32}";
     private static final String INVALID_CONTEXT_ID_ERROR_MESSAGE =
             INVALID_CONTEXT_ID_ERROR_MESSAGE_PREFIX + "\"" + CONTEXT_ID_PATTERN + "\"";
+    private static final String EXPECTED_NULL_FIELDS_ERRORS =
+            "Error(s) in chs-gov-uk-notify-integration-api: "
+            + "[govUkLetterDetailsRequest senderDetails.appId must not be null, "
+            + "govUkLetterDetailsRequest senderDetails.reference must not be null]";
 
     @Autowired
     private MockMvc mockMvc;
@@ -83,7 +87,7 @@ class SenderRestApiIntegrationTest {
 
     @Test
     @DisplayName("Send letter with an invalid request")
-    void sendLetterWithInvalidRequest() throws Exception {
+    void sendLetterWithInvalidRequest(CapturedOutput log) throws Exception {
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
@@ -92,7 +96,10 @@ class SenderRestApiIntegrationTest {
                         .header("X-Request-ID", INVALID_CONTEXT_ID)
                         .content(resourceToString("/fixtures/send-letter-request-no-sender-reference.json",
                                 UTF_8)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
+
+        assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
 
     }
 

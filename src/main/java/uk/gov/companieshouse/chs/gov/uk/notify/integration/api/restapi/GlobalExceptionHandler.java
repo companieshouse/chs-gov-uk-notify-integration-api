@@ -1,16 +1,24 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static java.util.stream.Collectors.toList;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+
 import jakarta.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.Map;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.companieshouse.logging.Logger;
-
-import java.util.Map;
-
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import uk.gov.companieshouse.logging.util.DataMap;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -39,12 +47,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolationException(
-            final ConstraintViolationException cve) {
-        final String message = "Error in " + APPLICATION_NAMESPACE + ": "
-                + getSanitisedMessage(cve.getMessage());
-        logger.error("Will handle error `" + message + "` by responding with 401 Bad Request.");
+            ConstraintViolationException cve) {
+        var message = "Error in " + APPLICATION_NAMESPACE + ": "
+                + buildMessage(cve.getMessage());
+        logger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
+                getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(message);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            @NonNull MethodArgumentNotValidException manve,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request) {
+        if (manve.hasFieldErrors()) {
+            var errors = manve.getFieldErrors().stream()
+                    .map(this::buildMessage)
+                    .sorted()
+                    .collect(toList());
+            var message = "Error(s) in " + APPLICATION_NAMESPACE + ": " + errors;
+            logger.error(message, getLogMap(errors));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(message);
+        }
+
+        return super.handleMethodArgumentNotValid(manve, headers, status, request);
     }
 
     /**
@@ -54,7 +83,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * @param exceptionMessage the message provided by the intercepted exception
      * @return the sanitised version of the message
      */
-    private String getSanitisedMessage(String exceptionMessage) {
+    private String buildMessage(String exceptionMessage) {
         var newMessage = exceptionMessage;
         for (Map.Entry<String, String> entry :
                 ERROR_MESSAGE_PARAMETER_NAME_SUBSTITUTIONS.entrySet()) {
@@ -62,4 +91,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
         return newMessage;
     }
+
+    /**
+     * Builds an intelligible error message from the {@link FieldError} provided.
+     * @param fieldError the error to be reported
+     * @return the error message
+     */
+    private String buildMessage(FieldError fieldError) {
+        return fieldError.getObjectName() + " "
+                + fieldError.getField() + " "
+                + fieldError.getDefaultMessage();
+    }
+
+    private Map<String, Object> getLogMap(String error) {
+        return new DataMap.Builder()
+                .errorMessage(error)
+                .build()
+                .getLogMap();
+    }
+
+    private Map<String, Object> getLogMap(List<String> errors) {
+        return new DataMap.Builder()
+                .errors(errors)
+                .build()
+                .getLogMap();
+    }
+
 }
