@@ -2,15 +2,15 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import jakarta.validation.constraints.Pattern;
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationRetrievalInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection.EmailDetails;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongoconnection.MongoDataStoreInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 import java.util.List;
 
@@ -18,70 +18,42 @@ import java.util.List;
 @Validated
 public class ReaderRestApi implements NotificationRetrievalInterface {
 
-    MongoDataStoreInterface mongoDataStore;
+    private final Logger logger = LoggerFactory.getLogger(ReaderRestApi.class.getName());
 
-    /**
-     * @param xHeaderId
-     * @return
-     */
+    private final NotificationDatabaseService notificationDatabaseService;
+
+    public ReaderRestApi(NotificationDatabaseService notificationDatabaseService) {
+        this.notificationDatabaseService = notificationDatabaseService;
+    }
+    
     @Override
     public ResponseEntity<List<GovUkEmailDetailsRequest>> getAllEmails(@Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
-        return new ResponseEntity<>(translate(mongoDataStore.findAllEmails()), HttpStatus.OK);
+        throw new NotImplementedException();
     }
-
-    /**
-     * @return
-     */
+    
     @Override
     public ResponseEntity<List<GovUkLetterDetailsRequest>> getAllLetters() {
         throw new NotImplementedException();
     }
-
-    /**
-     * @param xHeaderId
-     * @param emailId
-     * @return
-     */
+    
     @Override
     public ResponseEntity<GovUkEmailDetailsRequest> getEmailDetailsById(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailId) {
-        return new ResponseEntity<>(translate(mongoDataStore.findEmailBId(emailId)), HttpStatus.OK);
-
+        throw new NotImplementedException();
     }
-
-    /**
-     * @param xHeaderId
-     * @param emailReference
-     * @return
-     */
+    
     @Override
     public ResponseEntity<List<GovUkEmailDetailsRequest>> getEmailDetailsByReference(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String emailReference) {
         throw new NotImplementedException();
     }
-
-    /**
-     * @param xHeaderId
-     * @return
-     */
+    
     @Override
     public ResponseEntity<GovUkLetterDetailsRequest> getLetterDetails(String xHeaderId) {
         throw new NotImplementedException();
     }
 
-    /**
-     * @param xHeaderId
-     * @param letterReference
-     * @return
-     */
     @Override
     public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference(String xHeaderId, @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String letterReference) {
         throw new NotImplementedException();
     }
-
-    private List<GovUkEmailDetailsRequest> translate(List<EmailDetails> allEmails) {
-        throw new NotImplementedException();
-    }
-
-    private GovUkEmailDetailsRequest translate(EmailDetails email) {
-        throw new NotImplementedException();
-    }
+    
 }
