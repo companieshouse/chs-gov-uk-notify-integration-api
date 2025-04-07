@@ -94,7 +94,7 @@ class SenderRestApiIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .header("X-Request-ID", INVALID_CONTEXT_ID)
-                        .content(resourceToString("/fixtures/send-letter-request-no-sender-reference.json",
+                        .content(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
                                 UTF_8)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
