@@ -1,5 +1,9 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
@@ -15,10 +19,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DateToOffsetDateTimeConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DocumentToSendEmailResponseConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.OffsetDateTimeToDateConverter;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Configuration
 @EnableMongoRepositories("uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository")

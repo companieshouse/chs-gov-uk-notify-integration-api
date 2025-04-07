@@ -1,5 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
@@ -11,20 +14,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
+import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -51,7 +52,7 @@ class SenderRestApiTests {
         SenderDetails senderDetails = new SenderDetails();
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                .emailAddress("john.doe@email.address.net")
+                .emailAddress("john.doe@example.com")
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")
@@ -79,7 +80,7 @@ class SenderRestApiTests {
         SenderDetails senderDetails = new SenderDetails();
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                .emailAddress("john.doe@email.address.net")
+                .emailAddress("john.doe@example.com")
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")
@@ -122,7 +123,7 @@ class SenderRestApiTests {
         SenderDetails senderDetails = new SenderDetails();
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                .emailAddress("john.doe@email.address.net")
+                .emailAddress("john.doe@example.com")
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")

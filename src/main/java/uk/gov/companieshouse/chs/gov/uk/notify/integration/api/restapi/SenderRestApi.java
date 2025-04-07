@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -17,8 +19,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.logging.util.DataMap;
 
-import java.util.Map;
-
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Controller
@@ -26,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class SenderRestApi implements NotificationSenderInterface {
 
     private final Logger logger = LoggerFactory.getLogger(SenderRestApi.class.getName());
+    
     private final GovUKNotifyEmailFacade emailFacade;
     private final NotificationDatabaseService notificationDatabaseService;
 

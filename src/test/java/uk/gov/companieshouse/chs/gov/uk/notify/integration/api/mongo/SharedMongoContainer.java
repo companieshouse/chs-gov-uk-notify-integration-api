@@ -16,5 +16,7 @@ public class SharedMongoContainer {
         return INSTANCE;
     }
 
-    private void SharedMongoDBContainer() {}
+    private void SharedMongoDBContainer() {
+        // private constructor, to prevent instantiation
+    }
 }

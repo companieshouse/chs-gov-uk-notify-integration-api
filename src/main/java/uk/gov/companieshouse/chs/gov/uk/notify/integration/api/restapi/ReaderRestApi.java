@@ -10,6 +10,7 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEm
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
 
 import java.util.List;
 
@@ -17,12 +18,11 @@ import java.util.List;
 @Validated
 public class ReaderRestApi implements NotificationRetrievalInterface {
 
-    private final Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(ReaderRestApi.class.getName());
+
     private final NotificationDatabaseService notificationDatabaseService;
 
-    public ReaderRestApi(Logger logger,
-                         NotificationDatabaseService notificationDatabaseService) {
-        this.logger = logger;
+    public ReaderRestApi(NotificationDatabaseService notificationDatabaseService) {
         this.notificationDatabaseService = notificationDatabaseService;
     }
     

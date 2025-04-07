@@ -1,21 +1,18 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade;
 
-import uk.gov.service.notify.NotificationClient;
-import uk.gov.service.notify.NotificationClientException;
-import uk.gov.service.notify.SendEmailResponse;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
+import uk.gov.service.notify.SendEmailResponse;
 
 @Service
 public class GovUKNotifyEmailFacade {
@@ -72,7 +69,7 @@ public class GovUKNotifyEmailFacade {
             Map<String, ?> personalisation) {
         return CompletableFuture.supplyAsync(() -> sendEmail(recipient, templateId, personalisation));
     }
-    
+
     private SendEmailResponse sendEmailInternal(
             String recipient,
             String templateId,
@@ -80,11 +77,11 @@ public class GovUKNotifyEmailFacade {
         String reference = generateReference(recipient);
         return client.sendEmail(templateId, recipient, personalisation, reference);
     }
-    
+
     private boolean isSuccess(SendEmailResponse response) {
         return response != null && response.getNotificationId() != null;
     }
-    
+
     private String generateReference(String recipient) {
         return recipient + "-" + System.currentTimeMillis();
     }
