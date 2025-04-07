@@ -1,9 +1,12 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,10 +18,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.Email
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotifypayload.LetterGovUkNotifyPayloadInterface;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
-
-import java.util.Map;
-
-import static org.springframework.http.HttpStatus.CREATED;
 
 @Controller
 @Validated
@@ -52,10 +51,12 @@ public class SenderRestApi implements NotificationSenderInterface {
     }
 
     @Override
-    public ResponseEntity<Void> sendLetter(@Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
-                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
+    public ResponseEntity<Void> sendLetter(
+            @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
-        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")", getLogMap(xHeaderId));
+        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + contextId + ")",
+                getLogMap(contextId));
 
         //FIXME :  call letterGovUkNotifyPayload
 

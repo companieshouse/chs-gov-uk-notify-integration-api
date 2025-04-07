@@ -11,7 +11,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 public class LoggingConfig {
 
     @Bean
-    Logger getLogger(){
+    Logger getLogger() {
         return LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     }
 
