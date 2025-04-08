@@ -7,8 +7,8 @@ locals {
   container_port             = "8080" # default Java port to match start script
   docker_repo                = "chs-gov-uk-notify-integration-api"
   lb_listener_rule_priority  = 18
-  lb_listener_paths          = ["/gov-uk-notify-integration/letter", "/gov-uk-notify-integration/email", "/healthcheck"]
-  healthcheck_path           = "/healthcheck" #healthcheck path for gov-uk-notify-integration service
+  lb_listener_paths          = ["/gov-uk-notify-integration/letter", "/gov-uk-notify-integration/email", "/gov-uk-notify-integration/healthcheck"]
+  healthcheck_path           = "/gov-uk-notify-integration/healthcheck" #healthcheck path for gov-uk-notify-integration service
   healthcheck_matcher        = "200"
   application_subnet_ids     = data.aws_subnets.application.ids
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
