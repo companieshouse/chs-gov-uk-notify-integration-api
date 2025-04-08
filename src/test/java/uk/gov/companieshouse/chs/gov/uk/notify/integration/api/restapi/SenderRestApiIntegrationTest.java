@@ -11,6 +11,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -39,6 +40,10 @@ class SenderRestApiIntegrationTest {
             "Error(s) in chs-gov-uk-notify-integration-api: "
             + "[govUkLetterDetailsRequest senderDetails.appId must not be null, "
             + "govUkLetterDetailsRequest senderDetails.reference must not be null]";
+
+    static {
+        SharedMongoContainer.getInstance();
+    }
 
     @Autowired
     private MockMvc mockMvc;
