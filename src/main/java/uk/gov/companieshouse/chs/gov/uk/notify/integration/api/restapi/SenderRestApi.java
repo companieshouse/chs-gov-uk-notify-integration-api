@@ -1,11 +1,12 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import java.util.Map;
+import static org.springframework.http.HttpStatus.CREATED;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,30 +17,28 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.logging.util.DataMap;
-
-import static org.springframework.http.HttpStatus.CREATED;
 
 @Controller
 @Validated
 public class SenderRestApi implements NotificationSenderInterface {
 
-    private final Logger logger = LoggerFactory.getLogger(SenderRestApi.class.getName());
-    
     private final GovUKNotifyEmailFacade emailFacade;
     private final NotificationDatabaseService notificationDatabaseService;
+    private final Logger logger;
 
     public SenderRestApi(GovUKNotifyEmailFacade emailFacade,
-                         NotificationDatabaseService notificationDatabaseService) {
+                         NotificationDatabaseService notificationDatabaseService,
+                         Logger logger) {
         this.emailFacade = emailFacade;
         this.notificationDatabaseService = notificationDatabaseService;
+        this.logger = logger;
     }
 
     @Override
     public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest ,
                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
-        
+
         // should personalisation detailas be coming in as a map, not a json string? will need to change
         // the other modules to account for this.
         Map<String, Object> personilisationDetails = null;
@@ -48,22 +47,24 @@ public class SenderRestApi implements NotificationSenderInterface {
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        
+
         notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
-        
+
         // instead of a boolean, get the response back so we can save it
         boolean successful = emailFacade.sendEmail(govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
                 personilisationDetails);
-        
+
         return new ResponseEntity<>(successful ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<Void> sendLetter(@Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
-                                           @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
+    public ResponseEntity<Void> sendLetter(
+            @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
-        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + xHeaderId + ")", getLogMap(xHeaderId));
+        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + contextId + ")",
+                getLogMap(contextId));
 
         // todo, other letter stuff?
         notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
