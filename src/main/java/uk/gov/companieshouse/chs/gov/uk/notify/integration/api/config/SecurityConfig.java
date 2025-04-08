@@ -22,7 +22,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(request -> request
-                .requestMatchers(GET, "/chs-gov-uk-notify-integration-api/**")
+                .requestMatchers(GET, "/gov-uk-notify-integration/**")
                 .permitAll()
                 .requestMatchers(POST, "/gov-uk-notify-integration/**")
                 .permitAll()
