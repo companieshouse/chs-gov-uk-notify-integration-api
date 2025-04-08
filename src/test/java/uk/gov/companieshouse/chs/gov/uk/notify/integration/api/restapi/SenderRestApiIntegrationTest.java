@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Tag("integration-test")
 @SpringBootTest("gov.uk.notify.api.key=${GOV_UK_NOTIFY_API_KEY}")
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
