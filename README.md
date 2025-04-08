@@ -72,11 +72,11 @@ The remainder of this section lists the endpoints that are available in this mic
 detailed documentation about these endpoints e.g. required headers, path variables, query params, request bodies, and
 their behaviour.
 
-| Method | Path                                                                | Description                                                | Documentation                                                                                                                                                                |
-|--------|---------------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST   | /letter                                                             | This endpoint can be used to send a letter.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| POST   | /email                                                              | This endpoint can be used to send an email.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| GET    | http://127.0.0.1:8080/chs-gov-uk-notify-integration-api/healthcheck | this endpoint is used to check that the service is running |                                                                                                                                                                              |
+| Method | Path                                                          | Description                                                | Documentation                                                                                                                                                                |
+|--------|---------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST   | /letter                                                       | This endpoint can be used to send a letter.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| POST   | /email                                                        | This endpoint can be used to send an email.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
+| GET    | http://127.0.0.1:8080/gov-uk-notify-integration/healthcheck   | this endpoint is used to check that the service is running |                                                                                                                                                                              |
 
 
 
