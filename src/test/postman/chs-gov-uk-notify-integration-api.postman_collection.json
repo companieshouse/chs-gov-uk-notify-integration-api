@@ -12,12 +12,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/chs-gov-uk-notify-integration-api/healthcheck",
+					"raw": "{{base_url}}/gov-uk-notify-integration/healthcheck",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
-						"chs-gov-uk-notify-integration-api",
+						"gov-uk-notify-integration",
 						"healthcheck"
 					]
 				}
