@@ -1,82 +1,95 @@
-# CHS Gov.uk Notify Integration
+# chs-gov-uk-notify-integration-api
 
-## 1.0) Introduction
-
-This module accepts a call into a REST API endpoint, generates the payload that will be sent and then calls to [Gov.uk
-Notify](https://www.notifications.service.gov.uk/)
-
-The design for this module and the service it is a part of is
-here : https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service
-
-## 2.0) Prerequisites
-
-This Microservice has the following dependencies:
-
-- [Java 21](https://www.oracle.com/java/technologies/downloads/#java21)
-- [Maven](https://maven.apache.org/download.cgi)
-
-### 3.1) Running the Microservice
-
-To run this Microservice in Tilt, the `platform` and `chs-notification-sender-api` modules and
-`chs-notification-kafka-consumer` modules must be enabled.
-These modules and services can be enabled by running the following commands in the `docker-chs-development` directory:
-
-- `./bin/chs-dev modules enable platform`
-- `./bin/chs-dev modules enable chs-notification-sender-api`
-- `./bin/chs-dev modules enable chs-notification-kafka-consumer`
-
-To run this Microservice in development mode, the following command can also be executed in the `docker-chs-development`
-directory:
-
-- `./bin/chs-dev development enable chs-notification-sender-api`
-
-After all of the services are enabled, use the `tilt up` command.
-
-To enable debugging, create a new `Remove JVM Debug` configuration, and set the port to `9095`.
-
-### 3.3) Running the Endpoints
-
-The Microservice is hosted at `http://api.chs.local:4001`, so all of the endpoints can be called by appending the
-appropriate path to the end of this url.
-
-All of the endpoints in this Microservice can either be run using `OAuth 2.0` or `API Key` authorisation headers. Eric
-can use these headers to enrich the request with additional headers.
-
-- If the endpoint is being called with `OAuth 2.0`, then in Postman, `Auth Type` must be set to `OAuth 2.0` and `token`
-  must be set to a `token` from `account.oauth2_authorisations`.
-- Otherwise, if the endpoint is being called with `API Key`, then in Postman, `Auth Type` must be set to `No Auth`, and
-  an `Authorization` header needs to be added with a valid key e.g. `x9yZIA81Zo9J46Kzp3JPbfld6kOqxR47EAYqXbRX`
-
-The High Level Design for the Microservice is available
-at: [HLD](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service)
-
-# OWASP Dependency check
-
-to run a check for dependency security vulnerabilities run the following command:
-
-```shell
-mvn dependency-check:check
+```mermaid
+flowchart LR
+    ExternalApp["External CHS App"] -->|REST| Module1
+    Module1["sender-api"] -->|Kafka| Module2
+    Module2["kafka-consumer"] -->|REST| Module3
+    Module3["📌 govuk-notify-api"] -->|REST| GovUKNotify
+    GovUKNotify["GovUK Notify"]
+    
+    subgraph PoseidonSystem["🔱 chs-notification"]
+        Module1
+        Module2
+        Module3
+    end
+    
+    %% Styling for all elements - light/dark mode compatible
+    classDef normal fill:#f8f8f8,stroke:#666666,stroke-width:1px,color:#333333,rx:4,ry:4
+    classDef current fill:#0099cc,stroke:#007799,stroke-width:2px,color:white,rx:4,ry:4
+    classDef external fill:#e6e6e6,stroke:#999999,stroke-width:1px,color:#333333,rx:4,ry:4
+    classDef system fill:transparent,stroke:#0077b6,stroke-width:1.5px,stroke-dasharray:3 3,color:#00a8e8,rx:10,ry:10
+    
+    class Module1 normal;
+    class Module2 normal;
+    class Module3 current;
+    class ExternalApp external;
+    class GovUKNotify external;
+    class PoseidonSystem system;
+    %% Adding clickable links to GitHub repos
+    click Module1 "https://github.com/companieshouse/chs-notification-sender-api" _blank
+    click Module2 "https://github.com/companieshouse/chs-notification-kafka-consumer" _blank
 ```
 
-# Listing dependencies
+## Overview
 
-to get a list of all the libraries that are used in the project use the following command:
+This service:
+- Receives notification requests from chs-notification-kafka-consumer (Module 2)
+- Sends email and letter notifications to GovUK Notify via their API
+- Is Module 3 of 3 in the [chs-notification system](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5146247171/EMail+Service)
 
-```shell
-mvn dependency:tree
+## Related Services
+
+- [chs-notification-sender-api](https://github.com/companieshouse/chs-notification-sender-api) (Module 1, accepts email/letter requests via REST and publishes to Kafka topics consumed by Module 2)
+- [chs-notification-kafka-consumer](https://github.com/companieshouse/chs-notification-kafka-consumer) (Module 2, consumes from Kafka topics published by Module 1 and sends requests to Module 3 via REST)
+
+## Endpoints
+
+The service exposes the following endpoints:
+
+- **Main API endpoints**: See [API Documentation](https://github.com/companieshouse/private.api.ch.gov.uk-specifications/tree/master/generated_sources/docs/chs-gov-uk-notify-integration-api)
+- **Service health**: `GET /gov-uk-notify-integration/healthcheck`
+
+## Prerequisites
+
+- Java 21
+- Maven
+
+## Running Locally
+
+### Prerequisites
+Sign up to [GovUK Notify](https://www.notifications.service.gov.uk/) or get a API key from a teammate.
+
+Set environment variables for GovUK Notify integration:
+```bash
+export GOV_UK_NOTIFY_API_KEY=your_api_key_here
 ```
 
-# Endpoints
+### Running the Application
 
-The remainder of this section lists the endpoints that are available in this microservice, and provides links to
-detailed documentation about these endpoints e.g. required headers, path variables, query params, request bodies, and
-their behaviour.
+#### Option 1: Using IntelliJ IDEA
+1. Open the project in IntelliJ
+2. Set Project SDK to Java 21
+3. Locate the main application class: [ChsGovUkNotifyIntegrationService.java](src/main/java/uk/gov/companieshouse/chs/gov/uk/notify/integration/api/ChsGovUkNotifyIntegrationService.java)
+4. Right-click and select "Run" or "Debug"
 
-| Method | Path                                                          | Description                                                | Documentation                                                                                                                                                                |
-|--------|---------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST   | /letter                                                       | This endpoint can be used to send a letter.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| POST   | /email                                                        | This endpoint can be used to send an email.                | [LLD - Gov.uk Notify Integration API](https://companieshouse.atlassian.net/wiki/spaces/IDV/pages/5162598548/Gov.uk+Notify+Integration+API+chs-gov-uk-notify-integration-api) |
-| GET    | http://127.0.0.1:8080/gov-uk-notify-integration/healthcheck   | this endpoint is used to check that the service is running |                                                                                                                                                                              |
+#### Option 2: Using Maven CLI
+```bash
+mvn spring-boot:run
+```
 
+## Repository Structure
 
-
+```
+chs-gov-uk-notify-integration-api/
+│── src/                    
+│   ├── main/               # Main application code
+│   └── test/               # Test code
+│── pom.xml                 # Dependencies
+│── api-collections/
+│   └── postman/            # Postman API collections
+│── ecs-image-build/        # ECS Dockerfile
+│── terraform/              # Infrastructure code
+│── ...                     # Other files/folders
+└── README.md               # This file
+```
