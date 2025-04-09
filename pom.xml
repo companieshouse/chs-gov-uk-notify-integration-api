@@ -234,7 +234,7 @@
                         <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21</image>
                     </from>
                     <to>
-                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/acsp-manage-users-api</image>
+                        <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/chs-gov-uk-notify-integration-api</image>
                     </to>
                     <container>
                         <expandClasspathDependencies>true</expandClasspathDependencies>
