@@ -1,81 +1,128 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import static org.springframework.http.HttpStatus.CREATED;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.api.NotificationSenderInterface;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.util.DataMap;
+import uk.gov.companieshouse.logging.LoggerFactory;
+
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Controller
-@Validated
 public class SenderRestApi implements NotificationSenderInterface {
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
-    private final GovUKNotifyEmailFacade emailFacade;
+    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
-    private final Logger logger;
 
-    public SenderRestApi(GovUKNotifyEmailFacade emailFacade,
-                         NotificationDatabaseService notificationDatabaseService,
-                         Logger logger) {
-        this.emailFacade = emailFacade;
+    public SenderRestApi(
+            final GovUkNotifyService govUkNotifyService,
+            final NotificationDatabaseService notificationDatabaseService
+    ) {
+        this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
-        this.logger = logger;
     }
 
     @Override
-    public ResponseEntity<Void> sendEmail(@Valid GovUkEmailDetailsRequest govUkEmailDetailsRequest ,
-                                          @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String xHeaderId) {
+    public ResponseEntity<Void> sendEmail(
+            @Valid final GovUkEmailDetailsRequest govUkEmailDetailsRequest,
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String xHeaderId
+    ) {
+        Map<String, Object> logMap = createLogMap("", "letter_send");
+        logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
 
-        // should personalisation detailas be coming in as a map, not a json string? will need to change
-        // the other modules to account for this.
-        Map<String, Object> personilisationDetails = null;
+        LOGGER.info("Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
+
+        Map<String, ?> personalisationDetails;
         try {
-            personilisationDetails = new ObjectMapper().readValue(govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(), Map.class);
+            LOGGER.debug("Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
+            personalisationDetails = OBJECT_MAPPER.readValue(
+                    govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
+                    new TypeReference<Map<String, Object>>() {
+                    }
+            );
         } catch (JsonProcessingException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.error("Failed to parse personalisation details: " + e.getMessage(), createLogMap(xHeaderId, "parse_error"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
+        LOGGER.debug("Storing email request in database", createLogMap(xHeaderId, "store_email"));
         notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
 
-        // instead of a boolean, get the response back so we can save it
-        boolean successful = emailFacade.sendEmail(govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
-                govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
-                personilisationDetails);
+        LOGGER.info("Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+                createLogMap(xHeaderId, "send_email"));
 
-        return new ResponseEntity<>(successful ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        GovUkNotifyService.EmailResp emailResp = govUkNotifyService.sendEmail(
+                govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+                govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
+                personalisationDetails
+        );
+
+        LOGGER.debug("Storing email response in database", createLogMap(xHeaderId, "store_response"));
+        notificationDatabaseService.storeResponse(emailResp);
+
+        if (emailResp.success()) {
+            LOGGER.info("Email sent successfully", createLogMap(xHeaderId, "email_success"));
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            LOGGER.error("Failed to send email", createLogMap(xHeaderId, "email_failure"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<Void> sendLetter(
-            @Valid GovUkLetterDetailsRequest govUkLetterDetailsRequest,
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+            @Valid final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String contextId
+    ) {
+        Map<String, Object> logMap = createLogMap(contextId, "letter_send");
+        logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
 
-        logger.info("sendLetter(" + govUkLetterDetailsRequest + ", " + contextId + ")",
-                getLogMap(contextId));
+        LOGGER.info("Starting sendLetter process", logMap);
 
-        // todo, other letter stuff?
+        LOGGER.debug("Storing letter request in database", createLogMap(contextId, "store_letter"));
         notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
 
-        return ResponseEntity.status(CREATED).build();
+        LOGGER.info("Processing letter for " + govUkLetterDetailsRequest.getRecipientDetails().getName(),
+                createLogMap(contextId, "process_letter"));
+
+        GovUkNotifyService.LetterResp letterResp = new GovUkNotifyService.LetterResp(true, null);
+        // hardcoded for now, may eventually use result of below (depending on implementation)
+        // GovUkNotifyService.EmailResp emailResponse = govUkNotifyService.sendLetter(
+        //     govUkLetterDetailsRequest.getRecipientDetails().getName(),
+        //     new File(),
+        // );
+
+        LOGGER.debug("Storing letter response in database", createLogMap(contextId, "store_letter_response"));
+        notificationDatabaseService.storeResponse(letterResp);
+
+        if (letterResp.success()) {
+            LOGGER.info("Letter processed successfully", createLogMap(contextId, "letter_success"));
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            LOGGER.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    private Map<String, Object> getLogMap(final String contextId) {
-        return new DataMap.Builder()
-                .contextId(contextId)
-                .build()
-                .getLogMap();
+    private Map<String, Object> createLogMap(final String contextId, final String action) {
+        Map<String, Object> logMap = new HashMap<>();
+        logMap.put("contextId", contextId);
+        logMap.put("action", action);
+        return logMap;
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DateToOffsetDateTimeConverter;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DocumentToLetterResponseConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DocumentToSendEmailResponseConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.OffsetDateTimeToDateConverter;
 
@@ -52,7 +53,8 @@ public class MongoConfig {
         return new MongoCustomConversions(List.of(
                 new DateToOffsetDateTimeConverter(),
                 new OffsetDateTimeToDateConverter(),
-                new DocumentToSendEmailResponseConverter()
+                new DocumentToSendEmailResponseConverter(),
+                new DocumentToLetterResponseConverter()
         ));
     }
     

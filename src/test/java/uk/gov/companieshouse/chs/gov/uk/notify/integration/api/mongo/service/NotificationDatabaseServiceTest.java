@@ -14,16 +14,22 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEm
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailResponse;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterRequest;
-
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterResponse;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -143,5 +149,95 @@ public class NotificationDatabaseServiceTest {
         assertEquals("SENT", savedStatus.status());
         assertNotNull(savedStatus.statusDetails());
         assertEquals("Email sent successfully", savedStatus.statusDetails().get("message"));
+    }
+
+    @Test
+    public void When_GetEmailByReference_ThenEmailsRetrieved() {
+        String reference = "REF-123-EMAIL";
+        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequestWithReference("user1@example.com", reference);
+        notificationDatabaseService.storeEmail(emailRequest);
+
+        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
+
+        assertNotNull(retrievedEmails);
+        assertFalse(retrievedEmails.isEmpty());
+        assertEquals(reference, retrievedEmails.get(0).request().getSenderDetails().getReference());
+    }
+
+    @Test
+    public void When_GetEmailByNonexistentReference_ThenEmptyListReturned() {
+        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference("NONEXISTENT-REF");
+
+        assertNotNull(retrievedEmails);
+        assertTrue(retrievedEmails.isEmpty());
+    }
+
+    @Test
+    public void When_GetLetterByReference_ThenLettersRetrieved() {
+        String reference = "REF-456-LETTER";
+        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequestWithReference("123 Main Street", reference);
+        notificationDatabaseService.storeLetter(letterRequest);
+
+        List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference(reference);
+
+        assertNotNull(retrievedLetters);
+        assertFalse(retrievedLetters.isEmpty());
+        assertEquals(reference, retrievedLetters.get(0).request().getSenderDetails().getReference());
+    }
+
+    @Test
+    public void When_GetLetterByNonexistentReference_ThenEmptyListReturned() {
+        List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference("NONEXISTENT-REF");
+
+        assertNotNull(retrievedLetters);
+        assertTrue(retrievedLetters.isEmpty());
+    }
+
+    @Test
+    public void When_StoreEmailResponse_ThenResponseStored() {
+        GovUkNotifyService.EmailResp emailResp = new GovUkNotifyService.EmailResp(true, createSampleEmailResponse());
+        NotificationEmailResponse savedResponse = notificationDatabaseService.storeResponse(emailResp);
+        assertNotNull(savedResponse);
+    }
+
+    @Test
+    public void When_StoreLetterResponse_ThenResponseStored() {
+        GovUkNotifyService.LetterResp letterResp = new GovUkNotifyService.LetterResp(true, createSampleLetterResponse());
+        NotificationLetterResponse savedResponse = notificationDatabaseService.storeResponse(letterResp);
+        assertNotNull(savedResponse);
+    }
+
+    @Test
+    public void When_MultipleEmailsWithSameReference_ThenAllRetrieved() {
+        String reference = "MULTI-EMAIL-REF";
+        GovUkEmailDetailsRequest email1 = createSampleEmailRequestWithReference("user1@example.com", reference);
+        GovUkEmailDetailsRequest email2 = createSampleEmailRequestWithReference("user2@example.com", reference);
+
+        notificationDatabaseService.storeEmail(email1);
+        notificationDatabaseService.storeEmail(email2);
+
+        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
+
+        assertNotNull(retrievedEmails);
+        assertEquals(2, retrievedEmails.size());
+        assertEquals(reference, retrievedEmails.get(0).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedEmails.get(1).request().getSenderDetails().getReference());
+    }
+
+    @Test
+    public void When_MultipleLettersWithSameReference_ThenAllRetrieved() {
+        String reference = "MULTI-LETTER-REF";
+        GovUkLetterDetailsRequest letter1 = createSampleLetterRequestWithReference("123 Main St", reference);
+        GovUkLetterDetailsRequest letter2 = createSampleLetterRequestWithReference("456 High St", reference);
+
+        notificationDatabaseService.storeLetter(letter1);
+        notificationDatabaseService.storeLetter(letter2);
+
+        List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference(reference);
+
+        assertNotNull(retrievedLetters);
+        assertEquals(2, retrievedLetters.size());
+        assertEquals(reference, retrievedLetters.get(0).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedLetters.get(1).request().getSenderDetails().getReference());
     }
 }

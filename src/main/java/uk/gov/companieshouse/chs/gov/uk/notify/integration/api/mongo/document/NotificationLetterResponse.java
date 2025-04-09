@@ -3,13 +3,13 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.service.notify.SendEmailResponse;
+import uk.gov.service.notify.LetterResponse;
 
 
 @Document(collection = "responses")
-public record NotificationResponse(
+public record NotificationLetterResponse(
         @Id String id,
-        @Field("requestId") String requestId,
-        @Field("response") SendEmailResponse response
-) {}
+        @Field("response") LetterResponse response
+) {
+}
 

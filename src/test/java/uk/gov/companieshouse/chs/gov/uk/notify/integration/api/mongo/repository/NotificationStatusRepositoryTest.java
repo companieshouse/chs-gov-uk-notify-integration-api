@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationResponse;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,12 +28,12 @@ public class NotificationStatusRepositoryTest {
     static {
         SharedMongoContainer.getInstance();
     }
-    
+
     @Autowired
     private NotificationEmailRequestRepository requestRepository;
 
     @Autowired
-    private NotificationResponseRepository responseRepository;
+    private NotificationEmailResponseRepository responseRepository;
 
     @Autowired
     private NotificationStatusRepository statusRepository;
@@ -170,9 +169,9 @@ public class NotificationStatusRepositoryTest {
     private TestData setupTestDataWithRequestAndResponse() {
         NotificationEmailRequest savedRequest = requestRepository.save(createSampleNotificationRequest());
 
-        NotificationResponse savedResponse = responseRepository.save(
-                new NotificationResponse(null, savedRequest.id(),
-                        createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID())));
+        NotificationEmailResponse savedResponse = responseRepository.save(
+                new NotificationEmailResponse(null, createSampleEmailResponse())
+        );
 
         return new TestData(savedRequest.id(), savedResponse.id());
     }
@@ -186,5 +185,5 @@ public class NotificationStatusRepositoryTest {
             this.responseId = responseId;
         }
     }
-    
+
 }

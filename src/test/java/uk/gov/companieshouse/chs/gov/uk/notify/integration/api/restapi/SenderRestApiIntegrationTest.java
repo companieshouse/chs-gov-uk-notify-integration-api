@@ -71,7 +71,7 @@ class SenderRestApiIntegrationTest {
                 .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
                 .andExpect(status().isCreated());
 
-        assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID+ "\""), is(true));
+        assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
     }
 

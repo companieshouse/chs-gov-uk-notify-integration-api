@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter;
 
-import java.net.URI;
 import java.util.UUID;
 
 import org.bson.Document;
@@ -38,14 +37,7 @@ public class DocumentToSendEmailResponseConverter implements Converter<Document,
         json.put("template", templateJson);
 
         if (source.containsKey("oneClickUnsubscribeURL")) {
-            Object urlObj = source.get("oneClickUnsubscribeURL");
-            String urlStr;
-            if (urlObj instanceof URI) {
-                urlStr = ((URI) urlObj).toString();
-            } else {
-                urlStr = urlObj.toString();
-            }
-            json.put("one_click_unsubscribe_url", urlStr);
+            json.put("one_click_unsubscribe_url", source.get("oneClickUnsubscribeURL").toString());
         }
 
         return new SendEmailResponse(json.toString());
