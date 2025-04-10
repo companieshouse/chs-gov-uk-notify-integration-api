@@ -64,12 +64,19 @@ class ApiAuthorisationInterceptorTest {
         assertFalse(authorisationInterceptor.preHandle(request, response, UNUSED_HANDLER));
     }
 
-
     @Test
     @DisplayName("Does not authorise if unrecognised identity type provided")
     void willNotAuthoriseIfRequestIsPostAndUnrecognisedIdentity() {
         doReturn(TOKEN_REQUEST_ID).when(request).getHeader(X_REQUEST_ID);
         when(request.getHeader(ERIC_IDENTITY_TYPE)).thenReturn(INVALID_IDENTITY_TYPE_VALUE);
+        assertFalse(authorisationInterceptor.preHandle(request, response, UNUSED_HANDLER));
+    }
+
+    @Test
+    @DisplayName("Does not authorise if no identity type provided")
+    void willNotAuthoriseIfRequestIsPostAndNoIdentity() {
+        doReturn(TOKEN_REQUEST_ID).when(request).getHeader(X_REQUEST_ID);
+        when(request.getHeader(ERIC_IDENTITY_TYPE)).thenReturn(null);
         assertFalse(authorisationInterceptor.preHandle(request, response, UNUSED_HANDLER));
     }
 

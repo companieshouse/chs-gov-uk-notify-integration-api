@@ -155,6 +155,7 @@ class SenderRestApiIntegrationTest {
 
         assertThat(log.getAll().contains("API is not permitted to perform a POST."), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + CONTEXT_ID+ "\""), is(true));
+        assertThat(log.getAll().contains("\"status\":\"Unauthorized\""), is(true));
     }
 
 }

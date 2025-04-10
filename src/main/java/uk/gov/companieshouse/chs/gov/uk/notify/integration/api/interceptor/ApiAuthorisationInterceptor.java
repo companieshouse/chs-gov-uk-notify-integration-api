@@ -5,13 +5,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import uk.gov.companieshouse.api.util.security.AuthorisationUtil;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.util.EricHeaderHelper;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static uk.gov.companieshouse.api.util.security.AuthorisationUtil.hasInternalUserRole;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 
 @Component
@@ -29,7 +29,7 @@ public class ApiAuthorisationInterceptor implements HandlerInterceptor {
     public boolean preHandle(@NonNull HttpServletRequest request,
                              @NonNull HttpServletResponse response,
                              @NonNull Object handler) {
-        final var identityType = EricHeaderHelper.getIdentityType(request);
+        final var identityType = getIdentityType(request);
         var isApiKeyRequest = API_KEY_IDENTITY_TYPE.equals(identityType);
         if (isApiKeyRequest) {
             return validateApi(request, response);
@@ -46,8 +46,7 @@ public class ApiAuthorisationInterceptor implements HandlerInterceptor {
         final var builder = new DataMap.Builder()
                 .requestId(request.getHeader(X_REQUEST_ID));
 
-        if (AuthorisationUtil.hasInternalUserRole(request) &&
-                (POST.matches(request.getMethod()))) {
+        if (hasInternalUserRole(request) && (POST.matches(request.getMethod()))) {
             logger.info("Internal API is permitted to create the resource.",
                     builder.build().getLogMap());
             return true;
@@ -58,6 +57,10 @@ public class ApiAuthorisationInterceptor implements HandlerInterceptor {
             response.setStatus(UNAUTHORIZED.value());
             return false;
         }
+    }
+
+    private static String getIdentityType(HttpServletRequest request) {
+        return request.getHeader(ERIC_IDENTITY_TYPE);
     }
 
 }
