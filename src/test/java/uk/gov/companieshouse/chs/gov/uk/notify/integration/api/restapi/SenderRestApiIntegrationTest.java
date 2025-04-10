@@ -1,5 +1,17 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORISED_KEY_ROLES;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -16,14 +28,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongo
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.IOUtils.resourceToString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("integration-test")
 @SpringBootTest("gov.uk.notify.api.key=${GOV_UK_NOTIFY_API_KEY}")
@@ -68,9 +72,12 @@ class SenderRestApiIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                         .header("X-Request-ID", CONTEXT_ID)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                 .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
                 .andExpect(status().isCreated());
 
+        assertThat(log.getAll().contains("Internal API is permitted to create the resource."), is(true));
         assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID+ "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
     }
@@ -84,6 +91,8 @@ class SenderRestApiIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(INVALID_CONTEXT_ID_ERROR_MESSAGE));
@@ -101,6 +110,8 @@ class SenderRestApiIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
                                 UTF_8)))
                 .andExpect(status().isBadRequest())
@@ -108,6 +119,22 @@ class SenderRestApiIntegrationTest {
 
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
 
+    }
+
+    @Test
+    @DisplayName("Send letter without required ERIC identity and authorisation headers")
+    void sendLetterWithoutEricIdentity(CapturedOutput log) throws Exception {
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Request-ID", CONTEXT_ID)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("Unrecognised identity type: null."), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + CONTEXT_ID+ "\""), is(true));
     }
 
 }
