@@ -11,5 +11,6 @@ public record NotificationLetterResponse(
         @Id String id,
         @Field("response") LetterResponse response
 ) {
+    // Empty: using only auto-generated methods
 }
 

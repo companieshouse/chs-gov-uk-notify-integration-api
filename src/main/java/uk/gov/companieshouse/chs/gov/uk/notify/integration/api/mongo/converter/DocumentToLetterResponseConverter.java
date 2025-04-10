@@ -10,6 +10,10 @@ import uk.gov.service.notify.LetterResponse;
 
 @ReadingConverter
 public class DocumentToLetterResponseConverter implements Converter<Document, LetterResponse> {
+
+    public static final String REFERENCE = "reference";
+    private static final String POSTAGE = "postage";
+
     @Override
     public LetterResponse convert(Document source) {
         JSONObject json = new JSONObject();
@@ -17,12 +21,12 @@ public class DocumentToLetterResponseConverter implements Converter<Document, Le
         UUID notificationId = source.get("notificationId", UUID.class);
         json.put("id", notificationId.toString());
 
-        if (source.containsKey("reference")) {
-            json.put("reference", source.getString("reference"));
+        if (source.containsKey(REFERENCE)) {
+            json.put(REFERENCE, source.getString(REFERENCE));
         }
 
-        if (source.containsKey("postage")) {
-            json.put("postage", source.getString("postage"));
+        if (source.containsKey(POSTAGE)) {
+            json.put(POSTAGE, source.getString(POSTAGE));
         }
 
         return new LetterResponse(json.toString());

@@ -9,4 +9,6 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLe
 public record NotificationLetterRequest(
         @Id String id,
         @Field("request") GovUkLetterDetailsRequest request
-) {}
+) {
+    // Empty: using only auto-generated methods
+}

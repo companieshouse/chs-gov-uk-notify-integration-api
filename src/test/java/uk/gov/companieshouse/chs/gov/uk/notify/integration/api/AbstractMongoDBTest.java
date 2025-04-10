@@ -8,7 +8,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 public abstract class AbstractMongoDBTest {
 
     private static final DockerImageName MONGO_IMAGE = DockerImageName.parse("mongo:6.0.19");

@@ -39,9 +39,9 @@ public class MongoConfig {
 
     @Bean
     public MongoClient mongoClient() {
-        final ConnectionString connectionString =
+        final var connectionString =
                 new ConnectionString(databaseUri);
-        final MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
+        final var mongoClientSettings = MongoClientSettings.builder()
                 .applyConnectionString(connectionString)
                 .uuidRepresentation(UuidRepresentation.STANDARD)
                 .build();

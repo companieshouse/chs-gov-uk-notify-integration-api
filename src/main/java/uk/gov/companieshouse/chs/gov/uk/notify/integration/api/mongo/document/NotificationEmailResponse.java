@@ -10,5 +10,7 @@ import uk.gov.service.notify.SendEmailResponse;
 public record NotificationEmailResponse(
         @Id String id,
         @Field("response") SendEmailResponse response
-) {}
+) {
+    // Empty: using only auto-generated methods
+}
 

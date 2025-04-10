@@ -31,6 +31,7 @@ public class GovUkNotifyService {
     }
 
     public record EmailResp(boolean success, SendEmailResponse response) {
+        // Empty: using only auto-generated methods
     }
 
     public EmailResp sendEmail(
@@ -52,6 +53,7 @@ public class GovUkNotifyService {
     }
 
     public record LetterResp(boolean success, LetterResponse response) {
+        // Empty: using only auto-generated methods
     }
 
     public LetterResp sendLetter(

@@ -158,7 +158,7 @@ public class GovUKNotifyServiceTest {
 
             assertTrue(result.success());
             assertEquals(mockLetterResponse, result.response());
-            verify(mockClient).sendPrecompiledLetter(eq(VALID_RECIPIENT), eq(mockPdf));
+            verify(mockClient).sendPrecompiledLetter(VALID_RECIPIENT, mockPdf);
         }
 
         @Test

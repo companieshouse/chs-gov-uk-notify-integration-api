@@ -66,7 +66,7 @@ public class SenderRestApi implements NotificationSenderInterface {
         LOGGER.info("Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
-        GovUkNotifyService.EmailResp emailResp = govUkNotifyService.sendEmail(
+        var emailResp = govUkNotifyService.sendEmail(
                 govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
                 personalisationDetails
@@ -100,7 +100,7 @@ public class SenderRestApi implements NotificationSenderInterface {
         LOGGER.info("Processing letter for " + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        GovUkNotifyService.LetterResp letterResp = new GovUkNotifyService.LetterResp(true, null);
+        var letterResp = new GovUkNotifyService.LetterResp(true, null);
         // hardcoded for now, may eventually use result of below (depending on implementation)
         // GovUkNotifyService.EmailResp emailResponse = govUkNotifyService.sendLetter(
         //     govUkLetterDetailsRequest.getRecipientDetails().getName(),

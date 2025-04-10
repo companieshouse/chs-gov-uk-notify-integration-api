@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import jakarta.validation.constraints.Pattern;
+import org.apache.commons.lang.NotImplementedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -123,7 +124,7 @@ public class ReaderRestApi implements NotificationRetrievalInterface {
         // Note: is something missing on the schema here? we don't have an id or anything, what letter details are we getting?
         LOGGER.debug("Letter details endpoint called without ID parameter - Schema may be incomplete", logMap);
 
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        throw new NotImplementedException();
     }
 
     // the method from the interface doesn't have reference in the path, so we can't access it properly
