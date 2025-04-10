@@ -46,6 +46,8 @@ class SenderRestApiIntegrationTest {
             "Error(s) in chs-gov-uk-notify-integration-api: "
             + "[govUkLetterDetailsRequest senderDetails.appId must not be null, "
             + "govUkLetterDetailsRequest senderDetails.reference must not be null]";
+    private static final String NON_INTERNAL_USER_ROLES = "role1 role2";
+    private static final String X_REQUEST_ID = "X-Request-ID";
 
     static {
         SharedMongoContainer.getInstance();
@@ -71,7 +73,7 @@ class SenderRestApiIntegrationTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", CONTEXT_ID)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                 .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
@@ -90,7 +92,7 @@ class SenderRestApiIntegrationTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .header(X_REQUEST_ID, INVALID_CONTEXT_ID)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
@@ -109,7 +111,7 @@ class SenderRestApiIntegrationTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", INVALID_CONTEXT_ID)
+                        .header(X_REQUEST_ID, INVALID_CONTEXT_ID)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
@@ -129,11 +131,29 @@ class SenderRestApiIntegrationTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", CONTEXT_ID)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
                         .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
                 .andExpect(status().isUnauthorized());
 
         assertThat(log.getAll().contains("Unrecognised identity type: null."), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + CONTEXT_ID+ "\""), is(true));
+    }
+
+    @Test
+    @DisplayName("Send letter with insufficient privileges")
+    void sendLetterWithInsufficientPrivileges(CapturedOutput log) throws Exception {
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, NON_INTERNAL_USER_ROLES)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("API is not permitted to perform a POST."), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + CONTEXT_ID+ "\""), is(true));
     }
 
