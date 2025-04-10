@@ -3,34 +3,27 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class NotificationLetterRequestRepositoryTest {
-
-    static {
-        SharedMongoContainer.getInstance();
-    }
+class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     
     @Autowired
     private NotificationLetterRequestRepository requestRepository;
 
     @Test
-    public void When_NewRequestSaved_Expect_IdAssigned() {
+    void When_NewRequestSaved_Expect_IdAssigned() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main St");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, letterRequest));
 
@@ -39,7 +32,7 @@ public class NotificationLetterRequestRepositoryTest {
     }
 
     @Test
-    public void When_RequestSaved_Expect_DataCanBeRetrievedById() {
+    void When_RequestSaved_Expect_DataCanBeRetrievedById() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 Oak Ave");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, letterRequest));
 
@@ -51,7 +44,7 @@ public class NotificationLetterRequestRepositoryTest {
     }
 
     @Test
-    public void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
+    void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
         requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("123 First St")));
         requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("456 Second Ave")));
         requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("789 Third Blvd")));
@@ -62,7 +55,7 @@ public class NotificationLetterRequestRepositoryTest {
     }
 
     @Test
-    public void When_RequestDeleted_Expect_RequestNotFoundById() {
+    void When_RequestDeleted_Expect_RequestNotFoundById() {
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("Test Address")));
 
         requestRepository.deleteById(savedRequest.id());
@@ -72,7 +65,7 @@ public class NotificationLetterRequestRepositoryTest {
     }
 
     @Test
-    public void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
+    void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
         GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, initialRequest));
 
