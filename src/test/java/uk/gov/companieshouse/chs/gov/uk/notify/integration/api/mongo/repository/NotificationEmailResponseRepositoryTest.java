@@ -4,12 +4,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.json.JSONObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.service.notify.SendEmailResponse;
 
@@ -18,19 +16,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class NotificationEmailResponseRepositoryTest {
-
-    static {
-        SharedMongoContainer.getInstance();
-    }
-
+class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
+    
     @Autowired
     private NotificationEmailResponseRepository responseRepository;
 
     @Test
-    public void When_NewResponseSaved_Expect_IdAssigned() {
+    void When_NewResponseSaved_Expect_IdAssigned() {
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID());
 
         NotificationEmailResponse savedResponse = responseRepository.save(
@@ -41,7 +34,7 @@ public class NotificationEmailResponseRepositoryTest {
     }
 
     @Test
-    public void When_ResponseSaved_Expect_DataCanBeRetrievedById() {
+    void When_ResponseSaved_Expect_DataCanBeRetrievedById() {
         UUID notificationId = UUID.randomUUID();
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), notificationId);
 
@@ -57,7 +50,7 @@ public class NotificationEmailResponseRepositoryTest {
 
 
     @Test
-    public void When_ResponseDeleted_Expect_ResponseNotFoundById() {
+    void When_ResponseDeleted_Expect_ResponseNotFoundById() {
         NotificationEmailResponse savedResponse = responseRepository.save(
                 new NotificationEmailResponse(null, createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID())));
 
@@ -68,7 +61,7 @@ public class NotificationEmailResponseRepositoryTest {
     }
 
     @Test
-    public void When_ResponseUpdated_Expect_ChangesReflectedInDatabase() {
+    void When_ResponseUpdated_Expect_ChangesReflectedInDatabase() {
         UUID initialNotificationId = UUID.randomUUID();
         UUID updatedNotificationId = UUID.randomUUID();
 

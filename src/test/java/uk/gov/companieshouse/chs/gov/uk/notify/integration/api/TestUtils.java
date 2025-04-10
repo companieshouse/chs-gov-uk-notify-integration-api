@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

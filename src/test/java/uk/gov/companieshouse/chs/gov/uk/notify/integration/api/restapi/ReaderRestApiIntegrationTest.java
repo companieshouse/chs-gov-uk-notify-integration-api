@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,12 +13,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,18 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Tag("integration-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-class ReaderRestApiIntegrationTest {
+class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
     private static final String TEST_EMAIL = "test@example.com";
     private static final String TEST_ADDRESS_LINE = "123 Test Street";
-
-    static {
-        SharedMongoContainer.getInstance();
-    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,10 +41,10 @@ class ReaderRestApiIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private NotificationLetterResponseRepository notificationLetterResponseRepository;
+
     @Autowired
     private NotificationEmailRequestRepository notificationEmailRequestRepository;
+
     @Autowired
     private NotificationLetterRequestRepository notificationLetterRequestRepository;
 

@@ -5,14 +5,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
@@ -24,26 +22,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailRequestWithReference;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailResponse;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterRequestWithReference;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleLetterResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterResponse;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class NotificationDatabaseServiceTest {
-
-    static {
-        SharedMongoContainer.getInstance();
-    }
-
+class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
+    
     @Autowired
     private NotificationDatabaseService notificationDatabaseService;
 
     @Test
-    public void When_StoreEmail_ThenEmailStored() {
+    void When_StoreEmail_ThenEmailStored() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("john.doe@example.com");
         NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
 
@@ -52,7 +45,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetEmail_ThenEmailRetrieved() {
+    void When_GetEmail_ThenEmailRetrieved() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("jane.smith@example.com");
         NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
         String id = savedRequest.id();
@@ -65,14 +58,14 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetEmailWithInvalidId_ThenEmptyOptionalReturned() {
+    void When_GetEmailWithInvalidId_ThenEmptyOptionalReturned() {
         Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService.getEmail("nonexistent-id");
 
         assertFalse(retrievedRequest.isPresent());
     }
 
     @Test
-    public void When_FindAllEmails_ThenAllEmailsRetrieved() {
+    void When_FindAllEmails_ThenAllEmailsRetrieved() {
         notificationDatabaseService.storeEmail(createSampleEmailRequest("user1@example.com"));
         notificationDatabaseService.storeEmail(createSampleEmailRequest("user2@example.com"));
 
@@ -83,7 +76,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_StoreLetter_ThenLetterStored() {
+    void When_StoreLetter_ThenLetterStored() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main Street");
         NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
 
@@ -92,7 +85,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetLetter_ThenLetterRetrieved() {
+    void When_GetLetter_ThenLetterRetrieved() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 High Street");
         NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
         String id = savedRequest.id();
@@ -105,14 +98,14 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetLetterWithInvalidId_ThenEmptyOptionalReturned() {
+    void When_GetLetterWithInvalidId_ThenEmptyOptionalReturned() {
         Optional<NotificationLetterRequest> retrievedRequest = notificationDatabaseService.getLetter("nonexistent-id");
 
         assertFalse(retrievedRequest.isPresent());
     }
 
     @Test
-    public void When_FindAllLetters_ThenAllLettersRetrieved() {
+    void When_FindAllLetters_ThenAllLettersRetrieved() {
         notificationDatabaseService.storeLetter(createSampleLetterRequest("789 Broadway"));
         notificationDatabaseService.storeLetter(createSampleLetterRequest("101 Park Avenue"));
 
@@ -123,7 +116,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_UpdateStatus_ThenStatusUpdated() {
+    void When_UpdateStatus_ThenStatusUpdated() {
         String requestId = UUID.randomUUID().toString();
         String responseId = UUID.randomUUID().toString();
         Map<String, Object> statusDetails = Map.of(
@@ -152,7 +145,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetEmailByReference_ThenEmailsRetrieved() {
+    void When_GetEmailByReference_ThenEmailsRetrieved() {
         String reference = "REF-123-EMAIL";
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequestWithReference("user1@example.com", reference);
         notificationDatabaseService.storeEmail(emailRequest);
@@ -165,7 +158,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetEmailByNonexistentReference_ThenEmptyListReturned() {
+    void When_GetEmailByNonexistentReference_ThenEmptyListReturned() {
         List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference("NONEXISTENT-REF");
 
         assertNotNull(retrievedEmails);
@@ -173,7 +166,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetLetterByReference_ThenLettersRetrieved() {
+    void When_GetLetterByReference_ThenLettersRetrieved() {
         String reference = "REF-456-LETTER";
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequestWithReference("123 Main Street", reference);
         notificationDatabaseService.storeLetter(letterRequest);
@@ -186,7 +179,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_GetLetterByNonexistentReference_ThenEmptyListReturned() {
+    void When_GetLetterByNonexistentReference_ThenEmptyListReturned() {
         List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference("NONEXISTENT-REF");
 
         assertNotNull(retrievedLetters);
@@ -194,21 +187,21 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_StoreEmailResponse_ThenResponseStored() {
+    void When_StoreEmailResponse_ThenResponseStored() {
         GovUkNotifyService.EmailResp emailResp = new GovUkNotifyService.EmailResp(true, createSampleEmailResponse());
         NotificationEmailResponse savedResponse = notificationDatabaseService.storeResponse(emailResp);
         assertNotNull(savedResponse);
     }
 
     @Test
-    public void When_StoreLetterResponse_ThenResponseStored() {
+    void When_StoreLetterResponse_ThenResponseStored() {
         GovUkNotifyService.LetterResp letterResp = new GovUkNotifyService.LetterResp(true, createSampleLetterResponse());
         NotificationLetterResponse savedResponse = notificationDatabaseService.storeResponse(letterResp);
         assertNotNull(savedResponse);
     }
 
     @Test
-    public void When_MultipleEmailsWithSameReference_ThenAllRetrieved() {
+    void When_MultipleEmailsWithSameReference_ThenAllRetrieved() {
         String reference = "MULTI-EMAIL-REF";
         GovUkEmailDetailsRequest email1 = createSampleEmailRequestWithReference("user1@example.com", reference);
         GovUkEmailDetailsRequest email2 = createSampleEmailRequestWithReference("user2@example.com", reference);
@@ -225,7 +218,7 @@ public class NotificationDatabaseServiceTest {
     }
 
     @Test
-    public void When_MultipleLettersWithSameReference_ThenAllRetrieved() {
+    void When_MultipleLettersWithSameReference_ThenAllRetrieved() {
         String reference = "MULTI-LETTER-REF";
         GovUkLetterDetailsRequest letter1 = createSampleLetterRequestWithReference("123 Main St", reference);
         GovUkLetterDetailsRequest letter2 = createSampleLetterRequestWithReference("456 High St", reference);

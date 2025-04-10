@@ -4,12 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
@@ -18,16 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleEmailResponse;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.TestUtils.createSampleNotificationRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleNotificationRequest;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
-public class NotificationStatusRepositoryTest {
-
-    static {
-        SharedMongoContainer.getInstance();
-    }
+class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
     @Autowired
     private NotificationEmailRequestRepository requestRepository;
@@ -39,7 +32,7 @@ public class NotificationStatusRepositoryTest {
     private NotificationStatusRepository statusRepository;
 
     @Test
-    public void When_NewStatusSaved_Expect_IdAssigned() {
+    void When_NewStatusSaved_Expect_IdAssigned() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus status = new NotificationStatus(
@@ -57,7 +50,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_StatusSaved_Expect_DataCanBeRetrievedById() {
+    void When_StatusSaved_Expect_DataCanBeRetrievedById() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus status = new NotificationStatus(
@@ -78,7 +71,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_StatusSaved_Expect_CanBeFoundByRequestId() {
+    void When_StatusSaved_Expect_CanBeFoundByRequestId() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus status = new NotificationStatus(
@@ -98,7 +91,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_StatusSaved_Expect_CanBeFoundByResponseId() {
+    void When_StatusSaved_Expect_CanBeFoundByResponseId() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus status = new NotificationStatus(
@@ -118,7 +111,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_MultipleStatusesForSameResponse_Expect_AllStatusesReturned() {
+    void When_MultipleStatusesForSameResponse_Expect_AllStatusesReturned() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         statusRepository.save(new NotificationStatus(
@@ -134,7 +127,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_StatusDeleted_Expect_StatusNotFoundById() {
+    void When_StatusDeleted_Expect_StatusNotFoundById() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus savedStatus = statusRepository.save(new NotificationStatus(
@@ -148,7 +141,7 @@ public class NotificationStatusRepositoryTest {
     }
 
     @Test
-    public void When_StatusUpdated_Expect_ChangesReflectedInDatabase() {
+    void When_StatusUpdated_Expect_ChangesReflectedInDatabase() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus savedStatus = statusRepository.save(new NotificationStatus(
