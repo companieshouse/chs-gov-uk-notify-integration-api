@@ -18,8 +18,8 @@ import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDe
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.emailfacade.GovUKNotifyEmailFacade;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
@@ -32,8 +32,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 class SenderRestApiTests {
 
     @Mock
-    private GovUKNotifyEmailFacade govUKNotifyEmailFacade;
-    
+    private GovUkNotifyService govUKNotifyEmailFacade;
+
     @Mock
     private NotificationDatabaseService notificationDatabaseService;
 
@@ -65,7 +65,7 @@ class SenderRestApiTests {
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(true);
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
         ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
@@ -93,7 +93,7 @@ class SenderRestApiTests {
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(false);
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
 
         ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
 

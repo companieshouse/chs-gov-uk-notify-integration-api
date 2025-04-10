@@ -3,5 +3,5 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.lettergovuknotif
 import org.springframework.stereotype.Component;
 
 @Component
-public class LetterGovUkNotifyPayloadImpl implements LetterGovUkNotifyPayloadInterface {
+public class LetterGovUkNotifyPayloadImpl {
 }

@@ -14,4 +14,6 @@ public record NotificationStatus(
         @Field("responseId") String responseId,
         @Field("status") String status,
         @Field("statusDetails") Map<String, Object> statusDetails // todo
-)  {}
+) {
+    // Empty: using only auto-generated methods
+}
