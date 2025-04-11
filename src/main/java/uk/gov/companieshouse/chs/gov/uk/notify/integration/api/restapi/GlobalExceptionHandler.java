@@ -1,11 +1,9 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import static java.util.stream.Collectors.toList;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
-import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Map;
+
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,6 +18,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
+import static java.util.stream.Collectors.toList;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -32,10 +33,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ERROR_MESSAGE_PARAMETER_NAME_SUBSTITUTIONS =
             Map.of("sendLetter.arg1", "context ID (X-Request-ID)");
 
-    private final Logger logger;
+    private final Logger LOGGER;
 
     public GlobalExceptionHandler(Logger logger) {
-        this.logger = logger;
+        this.LOGGER = logger;
     }
 
     /**
@@ -50,7 +51,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ConstraintViolationException cve) {
         var message = "Error in " + APPLICATION_NAMESPACE + ": "
                 + buildMessage(cve.getMessage());
-        logger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
+        LOGGER.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(message);
@@ -68,7 +69,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     .sorted()
                     .collect(toList());
             var message = "Error(s) in " + APPLICATION_NAMESPACE + ": " + errors;
-            logger.error(message, getLogMap(errors));
+            LOGGER.error(message, getLogMap(errors));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(message);
         }

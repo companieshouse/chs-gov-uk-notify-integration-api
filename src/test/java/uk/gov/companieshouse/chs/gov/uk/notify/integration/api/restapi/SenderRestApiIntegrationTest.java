@@ -24,7 +24,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.SharedMongoContainer;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -33,7 +33,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @SpringBootTest("gov.uk.notify.api.key=${GOV_UK_NOTIFY_API_KEY}")
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
-class SenderRestApiIntegrationTest {
+class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
     private static final String INVALID_CONTEXT_ID = "X9uND6rXQxfbZ:cMVFA7JI4h2KOh";
@@ -49,10 +49,6 @@ class SenderRestApiIntegrationTest {
     private static final String NON_INTERNAL_USER_ROLES = "role1 role2";
     private static final String X_REQUEST_ID = "X-Request-ID";
 
-    static {
-        SharedMongoContainer.getInstance();
-    }
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -60,7 +56,7 @@ class SenderRestApiIntegrationTest {
     private static EnvironmentVariables variables;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         // Given
         variables.set("GOV_UK_NOTIFY_API_KEY", "Token value");
     }
@@ -80,7 +76,7 @@ class SenderRestApiIntegrationTest {
                 .andExpect(status().isCreated());
 
         assertThat(log.getAll().contains("Internal API is permitted to create the resource."), is(true));
-        assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID+ "\""), is(true));
+        assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
     }
 

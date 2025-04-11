@@ -7,9 +7,10 @@ import uk.gov.service.notify.SendEmailResponse;
 
 
 @Document(collection = "responses")
-public record NotificationResponse(
+public record NotificationEmailResponse(
         @Id String id,
-        @Field("requestId") String requestId,
         @Field("response") SendEmailResponse response
-) {}
+) {
+    // Empty: using only auto-generated methods
+}
 
