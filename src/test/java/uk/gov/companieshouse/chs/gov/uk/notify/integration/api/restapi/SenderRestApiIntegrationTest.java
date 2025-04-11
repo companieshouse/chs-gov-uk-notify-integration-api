@@ -76,7 +76,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(status().isCreated());
 
         assertThat(log.getAll().contains("Internal API is permitted to create the resource."), is(true));
-        assertThat(log.getAll().contains("\"context_id\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
     }
 
