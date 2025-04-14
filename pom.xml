@@ -22,7 +22,7 @@
         <structured-logging.version>3.0.26</structured-logging.version>
         <log4j-version>2.24.2</log4j-version>
         <rest-service-common-library-version>2.0.2</rest-service-common-library-version>
-        <private-api-sdk-java.version>4.0.281</private-api-sdk-java.version>
+        <private-api-sdk-java.version>todo-update</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.8</api-security-java-version>
         <web-security-java.version>3.1.4</web-security-java.version>
@@ -179,7 +179,10 @@
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
-            <version>${private-api-sdk-java.version}</version>
+            <version>unversioned</version>
+            <scope>system</scope>
+            <systemPath>/Users/thomasferns/dev/private-api-sdk-java/target/private-api-sdk-java-unversioned.jar
+            </systemPath>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

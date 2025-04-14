@@ -11,8 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
@@ -126,46 +126,4 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(status().isNotFound());
     }
 
-//    @Test
-//    void When_RequestingEmailsByReference_Expect_SuccessfulResponseWithMatchingEmails() throws Exception {
-//        GovUkEmailDetailsRequest emailRequest = TestUtils.createSampleEmailRequestWithReference(TEST_EMAIL, TEST_REFERENCE);
-//        notificationDatabaseService.storeEmail(emailRequest);
-//
-//        MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/emails/findByReference/" + TEST_REFERENCE)
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .header("X-Request-ID", CONTEXT_ID))
-//                .andExpect(status().isOk())
-//                .andReturn();
-//
-//        List<GovUkEmailDetailsRequest> emailResponses = objectMapper.readValue(
-//                result.getResponse().getContentAsString(),
-//                new TypeReference<List<GovUkEmailDetailsRequest>>() {});
-//
-//        assertNotNull(emailResponses);
-//        assertEquals(1, emailResponses.size());
-//        assertEquals(TEST_REFERENCE, emailResponses.get(0).getSenderDetails().getReference());
-//    }
-
-//    @Test
-//    void When_RequestingLettersByReference_Expect_SuccessfulResponseWithMatchingLetters() throws Exception {
-//        // Given
-//        GovUkLetterDetailsRequest letterRequest = TestUtils.createSampleLetterRequestWithReference(TEST_ADDRESS_LINE, TEST_REFERENCE);
-//        notificationDatabaseService.storeLetter(letterRequest);
-//
-//        // When
-//        MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/letters/reference/" + TEST_REFERENCE)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .header("X-Request-ID", CONTEXT_ID))
-//                .andExpect(status().isOk())
-//                .andReturn();
-//
-//        // Then
-//        List<GovUkEmailDetailsRequest> letterResponses = objectMapper.readValue(
-//                result.getResponse().getContentAsString(),
-//                new TypeReference<List<GovUkEmailDetailsRequest>>() {});
-//        
-//        assertNotNull(letterResponses);
-//        assertEquals(1, letterResponses.size());
-//        assertEquals(TEST_REFERENCE, letterResponses.get(0).getSenderDetails().getReference());
-//    }
 }
