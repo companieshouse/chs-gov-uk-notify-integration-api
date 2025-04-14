@@ -1,5 +1,11 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.interceptor;
 
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static uk.gov.companieshouse.api.util.security.AuthorisationUtil.hasInternalUserRole;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
@@ -7,12 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
-
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static uk.gov.companieshouse.api.util.security.AuthorisationUtil.hasInternalUserRole;
-import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
-import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 
 @Component
 public class ApiAuthorisationInterceptor implements HandlerInterceptor {

@@ -1,9 +1,10 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import java.util.List;
-import java.util.Map;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 import jakarta.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,8 +19,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -32,7 +31,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ERROR_MESSAGE_PARAMETER_NAME_SUBSTITUTIONS =
             Map.of("sendLetter.arg1", "context ID (X-Request-ID)");
 
-    /** Given this name to avoid any confusion with `ResponseEntityExceptionHandler.logger` **/
+    /** Given this name to avoid any confusion with `ResponseEntityExceptionHandler.logger`. **/
     private final Logger myLogger;
 
     public GlobalExceptionHandler(Logger logger) {
