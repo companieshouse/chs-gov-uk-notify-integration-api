@@ -62,7 +62,7 @@ Sign up to [GovUK Notify](https://www.notifications.service.gov.uk/) or get a AP
 
 Set environment variables for GovUK Notify integration:
 ```bash
-export GOV_UK_NOTIFY_API_KEY=your_api_key_here
+export CHS_GOV_UK_NOTIFY_INTEGRATION_API_KEY=your_api_key_here
 ```
 
 ### Running the Application
