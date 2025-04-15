@@ -12,16 +12,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.interceptor.ApiAuthorisationInterceptor;
+import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
 
-    private final ApiAuthorisationInterceptor authorisationInterceptor;
+    private final InternalUserInterceptor internalUserInterceptor;
 
-    public SecurityConfig(ApiAuthorisationInterceptor authorisationInterceptor) {
-        this.authorisationInterceptor = authorisationInterceptor;
+    public SecurityConfig(InternalUserInterceptor internalUserInterceptor) {
+        this.internalUserInterceptor = internalUserInterceptor;
     }
 
     @Bean
@@ -42,7 +42,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
-        registry.addInterceptor(authorisationInterceptor).addPathPatterns(
+        registry.addInterceptor(internalUserInterceptor).addPathPatterns(
                 "/gov-uk-notify-integration/letter");
     }
 
