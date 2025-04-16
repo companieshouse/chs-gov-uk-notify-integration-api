@@ -14,10 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.EmailDetails;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.api.chs_gov_uk_notify_integration_api.model.SenderDetails;
+import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
+import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
@@ -38,7 +38,7 @@ class SenderRestApiTests {
     private NotificationDatabaseService notificationDatabaseService;
 
     @InjectMocks
-    private SenderRestApi restApi;
+    private SenderRestApi notifyIntegrationSenderController;
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
@@ -67,7 +67,7 @@ class SenderRestApiTests {
 
         when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
-        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
@@ -95,7 +95,7 @@ class SenderRestApiTests {
 
         when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
 
-        ResponseEntity<Void> response = restApi.sendEmail(govUkEmailDetailsRequest, XHEADER);
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
         Assertions.assertNotNull(response);
@@ -110,7 +110,7 @@ class SenderRestApiTests {
         GovUkEmailDetailsRequest request =  new GovUkEmailDetailsRequest();
 
         assertThrowsExactly(NullPointerException.class, () ->
-                restApi.sendEmail(request,XHEADER )
+                notifyIntegrationSenderController.sendEmail(request, XHEADER)
         );
     }
 
@@ -133,7 +133,7 @@ class SenderRestApiTests {
                 .name("john doe"));
 
         assertThrowsExactly(NullPointerException.class, () ->
-                restApi.sendEmail(govUkEmailDetailsRequest,XHEADER )
+                notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER)
         );
     }
 
@@ -144,7 +144,7 @@ class SenderRestApiTests {
     void testGovUkEmailDetailsRequestValidationMissingHeader() {
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         assertThrowsExactly(NullPointerException.class, () ->
-                restApi.sendEmail(govUkEmailDetailsRequest,null )
+                notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, null)
         );
     }
 
