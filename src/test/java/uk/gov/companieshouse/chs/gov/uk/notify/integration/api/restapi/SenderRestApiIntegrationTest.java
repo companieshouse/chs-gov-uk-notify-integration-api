@@ -30,7 +30,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @Tag("integration-test")
-@SpringBootTest("gov.uk.notify.api.key=${CHS_GOV_UK_NOTIFY_INTEGRATION_API_KEY}")
+@SpringBootTest("gov.uk.notify.api.key=${GOV_UK_NOTIFY_API_KEY}")
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
 class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
@@ -60,7 +60,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @BeforeAll
     static void setup() {
         // Given
-        variables.set("CHS_GOV_UK_NOTIFY_INTEGRATION_API_KEY", "Token value");
+        variables.set("GOV_UK_NOTIFY_API_KEY", "Token value");
     }
 
     @Test
