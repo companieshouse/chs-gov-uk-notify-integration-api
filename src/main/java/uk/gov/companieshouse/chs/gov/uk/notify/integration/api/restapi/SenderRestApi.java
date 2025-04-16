@@ -1,13 +1,14 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import java.util.HashMap;
-import java.util.Map;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,13 +20,11 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNoti
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
 @Controller
 public class SenderRestApi implements NotifyIntegrationSenderControllerInterface {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
-    private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
 
@@ -97,7 +96,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         LOGGER.debug("Storing letter request in database", createLogMap(contextId, "store_letter"));
         notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
 
-        LOGGER.info("Processing letter for " + govUkLetterDetailsRequest.getRecipientDetails().getName(),
+        LOGGER.info("Processing letter for "
+                        + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
         var letterResp = new GovUkNotifyService.LetterResp(true, null);
@@ -107,7 +107,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         //     new File(),
         // );
 
-        LOGGER.debug("Storing letter response in database", createLogMap(contextId, "store_letter_response"));
+        LOGGER.debug("Storing letter response in database",
+                createLogMap(contextId, "store_letter_response"));
         notificationDatabaseService.storeResponse(letterResp);
 
         if (letterResp.success()) {
