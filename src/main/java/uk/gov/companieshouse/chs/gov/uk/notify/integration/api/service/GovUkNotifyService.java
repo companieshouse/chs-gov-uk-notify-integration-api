@@ -5,7 +5,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -55,17 +55,18 @@ public class GovUkNotifyService {
 
     public LetterResp sendLetter(
             @NotBlank String reference,
-            @NotNull File precompiledPdf
+            @NotNull InputStream precompiledPdf
     ) {
         try {
-            LetterResponse response = client.sendPrecompiledLetter(reference, precompiledPdf);
+            LetterResponse response =
+                    client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
             Map<String, Object> logData = Map.of(
                     "reference", reference
             );
-            LOGGER.error("Failed to send email", nce, new HashMap<>(logData));
+            LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
             return new LetterResp(false, null);
         }
     }

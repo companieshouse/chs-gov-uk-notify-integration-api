@@ -7,8 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -102,28 +101,30 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        File file;
-        try {
-            file = getFileFromResource("Demonstrate connectivity.pdf");
-        } catch (URISyntaxException use) {
-            // TODO DEEP-286 If we settle on this approach, then handle errors appropriately.
-            throw new RuntimeException(use);
-        }
+        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
+        try (var precompiledPdf = getClass().getClassLoader().getResourceAsStream(
+                             "Demonstrate connectivity.pdf")) {
 
-        var letterResp =
-                govUkNotifyService.sendLetter(govUkLetterDetailsRequest.getSenderDetails().getReference(),
-                file);
+            var letterResp =
+                    govUkNotifyService.sendLetter(
+                            govUkLetterDetailsRequest.getSenderDetails().getReference(),
+                            precompiledPdf);
 
-        LOGGER.debug("Storing letter response in database",
-                createLogMap(contextId, "store_letter_response"));
-        notificationDatabaseService.storeResponse(letterResp);
+            LOGGER.debug("Storing letter response in database",
+                    createLogMap(contextId, "store_letter_response"));
+            notificationDatabaseService.storeResponse(letterResp);
 
-        if (letterResp.success()) {
-            LOGGER.info("Letter processed successfully", createLogMap(contextId, "letter_success"));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } else {
-            LOGGER.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            if (letterResp.success()) {
+                LOGGER.info("Letter processed successfully", createLogMap(contextId, "letter_success"));
+                return new ResponseEntity<>(HttpStatus.CREATED);
+            } else {
+                LOGGER.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (IOException ioe) {
+            // TODO DEEP-286 Handle errors appropriately.
+            throw new RuntimeException(ioe);
         }
     }
 
@@ -134,15 +135,4 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         return logMap;
     }
 
-    private File getFileFromResource(String fileName) throws URISyntaxException {
-
-        var classLoader = getClass().getClassLoader();
-        var resource = classLoader.getResource(fileName);
-        if (resource == null) {
-            throw new IllegalArgumentException("file not found! " + fileName);
-        } else {
-            return new File(resource.toURI());
-        }
-
-    }
 }

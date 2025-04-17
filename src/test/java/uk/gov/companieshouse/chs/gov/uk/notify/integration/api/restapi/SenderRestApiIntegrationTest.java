@@ -15,9 +15,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.UUID;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -72,7 +71,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        when(notificationClient.sendPrecompiledLetter(anyString(), any(File.class)))
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class)))
                 .thenReturn(letterResponse);
         when(letterResponse.getNotificationId()).thenReturn(UUID.randomUUID());
 

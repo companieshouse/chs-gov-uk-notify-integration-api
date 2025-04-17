@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -55,7 +55,7 @@ public class GovUKNotifyServiceTest {
     private LetterResponse mockLetterResponse;
 
     @Mock
-    private File mockPdf;
+    private InputStream mockPdf;
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
@@ -149,19 +149,21 @@ public class GovUKNotifyServiceTest {
         void When_ValidRecipientAndPdfProvided_Expect_SendLetterSucceeds() throws NotificationClientException {
             UUID mockUuid = UUID.randomUUID();
             when(mockLetterResponse.getNotificationId()).thenReturn(mockUuid);
-            when(mockClient.sendPrecompiledLetter(anyString(), any(File.class))).thenReturn(mockLetterResponse);
+            when(mockClient.sendPrecompiledLetterWithInputStream(
+                    anyString(), any(InputStream.class))).thenReturn(mockLetterResponse);
 
             GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
 
             assertTrue(result.success());
             assertEquals(mockLetterResponse, result.response());
-            verify(mockClient).sendPrecompiledLetter(VALID_RECIPIENT, mockPdf);
+            verify(mockClient).sendPrecompiledLetterWithInputStream(VALID_RECIPIENT, mockPdf);
         }
 
         @Test
         @DisplayName("When_ClientReturnsNullResponse_Expect_SendLetterReturnsFalse")
         void When_ClientReturnsNullResponse_Expect_SendLetterReturnsFalse() throws NotificationClientException {
-            when(mockClient.sendPrecompiledLetter(anyString(), any(File.class))).thenReturn(null);
+            when(mockClient.sendPrecompiledLetterWithInputStream(
+                    anyString(), any(InputStream.class))).thenReturn(null);
 
             GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
 
@@ -173,7 +175,8 @@ public class GovUKNotifyServiceTest {
         @DisplayName("When_ResponseHasNullNotificationId_Expect_SendLetterReturnsFalse")
         void When_ResponseHasNullNotificationId_Expect_SendLetterReturnsFalse() throws NotificationClientException {
             when(mockLetterResponse.getNotificationId()).thenReturn(null);
-            when(mockClient.sendPrecompiledLetter(anyString(), any(File.class))).thenReturn(mockLetterResponse);
+            when(mockClient.sendPrecompiledLetterWithInputStream(anyString(),
+                    any(InputStream.class))).thenReturn(mockLetterResponse);
 
             GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
 
@@ -184,7 +187,7 @@ public class GovUKNotifyServiceTest {
         @Test
         @DisplayName("When_ClientThrowsException_Expect_SendLetterReturnsFalse")
         void When_ClientThrowsException_Expect_SendLetterReturnsFalse() throws NotificationClientException {
-            when(mockClient.sendPrecompiledLetter(anyString(), any(File.class)))
+            when(mockClient.sendPrecompiledLetterWithInputStream(anyString(), any(InputStream.class)))
                     .thenThrow(new NotificationClientException("Test exception"));
 
             GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
