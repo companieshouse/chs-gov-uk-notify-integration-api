@@ -4,6 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,25 +15,29 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 
-import org.junit.jupiter.api.BeforeAll;
+import java.io.File;
+import java.util.UUID;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.gov.service.notify.LetterResponse;
+import uk.gov.service.notify.NotificationClient;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @Tag("integration-test")
-@SpringBootTest("gov.uk.notify.api.key=${GOV_UK_NOTIFY_API_KEY}")
+@SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
 class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
@@ -54,18 +61,20 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @SystemStub
-    private static EnvironmentVariables variables;
+    @MockitoBean
+    private NotificationClient notificationClient;
 
-    @BeforeAll
-    static void setup() {
-        // Given
-        variables.set("GOV_UK_NOTIFY_API_KEY", "Token value");
-    }
+    @Mock
+    private LetterResponse letterResponse;
 
     @Test
     @DisplayName("Send letter successfully")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        when(notificationClient.sendPrecompiledLetter(anyString(), any(File.class)))
+                .thenReturn(letterResponse);
+        when(letterResponse.getNotificationId()).thenReturn(UUID.randomUUID());
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")

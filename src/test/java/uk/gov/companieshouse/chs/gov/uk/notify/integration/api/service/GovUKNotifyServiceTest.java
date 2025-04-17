@@ -21,7 +21,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -67,12 +66,10 @@ public class GovUKNotifyServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService("test-api-key"));
+        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
         govUkNotifyService = (GovUkNotifyService) factory.getProxy();
-
-        ReflectionTestUtils.setField(govUkNotifyService, "client", mockClient);
     }
 
     @Nested

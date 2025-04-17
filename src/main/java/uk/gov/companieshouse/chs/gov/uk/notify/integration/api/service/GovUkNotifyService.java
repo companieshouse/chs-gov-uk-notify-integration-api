@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Value;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -16,7 +16,6 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Service
 public class GovUkNotifyService {
@@ -24,10 +23,8 @@ public class GovUkNotifyService {
 
     private final NotificationClient client;
 
-    public GovUkNotifyService(
-            @Value("${gov.uk.notify.api.key}") final String apiKey
-    ) {
-        this.client = new NotificationClient(apiKey);
+    public GovUkNotifyService(NotificationClient client) {
+        this.client = client;
     }
 
     public record EmailResp(boolean success, SendEmailResponse response) {
@@ -57,17 +54,18 @@ public class GovUkNotifyService {
     }
 
     public LetterResp sendLetter(
-            @NotBlank String recipient,
+            @NotBlank String reference,
             @NotNull File precompiledPdf
     ) {
         try {
-            LetterResponse response = client.sendPrecompiledLetter(recipient, precompiledPdf);
-            return new LetterResp(response != null && response.getNotificationId() != null, response);
-        } catch (NotificationClientException e) {
+            LetterResponse response = client.sendPrecompiledLetter(reference, precompiledPdf);
+            return new LetterResp(response != null && response.getNotificationId() != null,
+                    response);
+        } catch (NotificationClientException nce) {
             Map<String, Object> logData = Map.of(
-                    "recipient", recipient
+                    "reference", reference
             );
-            LOGGER.error("Failed to send email", e, new HashMap<>(logData));
+            LOGGER.error("Failed to send email", nce, new HashMap<>(logData));
             return new LetterResp(false, null);
         }
     }

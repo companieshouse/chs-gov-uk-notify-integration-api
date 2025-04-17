@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -100,12 +102,17 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        var letterResp = new GovUkNotifyService.LetterResp(true, null);
-        // hardcoded for now, may eventually use result of below (depending on implementation)
-        // GovUkNotifyService.EmailResp emailResponse = govUkNotifyService.sendLetter(
-        //     govUkLetterDetailsRequest.getRecipientDetails().getName(),
-        //     new File(),
-        // );
+        File file;
+        try {
+            file = getFileFromResource("Demonstrate connectivity.pdf");
+        } catch (URISyntaxException use) {
+            // TODO DEEP-286 If we settle on this approach, then handle errors appropriately.
+            throw new RuntimeException(use);
+        }
+
+        var letterResp =
+                govUkNotifyService.sendLetter(govUkLetterDetailsRequest.getSenderDetails().getReference(),
+                file);
 
         LOGGER.debug("Storing letter response in database",
                 createLogMap(contextId, "store_letter_response"));
@@ -125,5 +132,17 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         logMap.put("contextId", contextId);
         logMap.put("action", action);
         return logMap;
+    }
+
+    private File getFileFromResource(String fileName) throws URISyntaxException {
+
+        var classLoader = getClass().getClassLoader();
+        var resource = classLoader.getResource(fileName);
+        if (resource == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return new File(resource.toURI());
+        }
+
     }
 }
