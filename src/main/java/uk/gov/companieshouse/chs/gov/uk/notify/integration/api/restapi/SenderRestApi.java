@@ -101,11 +101,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 createLogMap(contextId, "process_letter"));
 
         var letterResp = new GovUkNotifyService.LetterResp(true, null);
-        // hardcoded for now, may eventually use result of below (depending on implementation)
-        // GovUkNotifyService.EmailResp emailResponse = govUkNotifyService.sendLetter(
-        //     govUkLetterDetailsRequest.getRecipientDetails().getName(),
-        //     new File(),
-        // );
+        // hardcoded for now, may eventually pull it from the values in the call itself
 
         LOGGER.debug("Storing letter response in database",
                 createLogMap(contextId, "store_letter_response"));
