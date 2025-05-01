@@ -20,10 +20,13 @@ import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -36,6 +39,11 @@ class SenderRestApiTests {
 
     @Mock
     private NotificationDatabaseService notificationDatabaseService;
+
+    // This allows us to see what is logged during unit test execution, assuming that is
+    // thought useful, when the logger is injected. If what is logged is
+    // not of interest, then just inject the logger with @Mock.
+    private final Logger logger = mock(Logger.class, withSettings().verboseLogging());
 
     @InjectMocks
     private SenderRestApi notifyIntegrationSenderController;
