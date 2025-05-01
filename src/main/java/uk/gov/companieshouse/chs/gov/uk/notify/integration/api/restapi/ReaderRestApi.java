@@ -22,6 +22,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 @Controller
 public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterface {
 
+    private static final String RETRIEVED = "Retrieved ";
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
 
@@ -39,7 +40,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         List<NotificationEmailRequest> emails = notificationDatabaseService.findAllEmails();
 
         logMap.put("email_count", emails.size());
-        LOGGER.info("Retrieved " + emails.size() + " email notifications", logMap);
+        LOGGER.info(RETRIEVED + emails.size() + " email notifications", logMap);
 
         return new ResponseEntity<>(
                 emails.stream()
@@ -81,7 +82,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         List<NotificationEmailRequest> emails = notificationDatabaseService.getEmailByReference(reference);
 
         logMap.put("email_count", emails.size());
-        LOGGER.info("Retrieved " + emails.size() + " email notifications with reference: " + reference, logMap);
+        LOGGER.info(RETRIEVED + emails.size() + " email notifications with reference: " + reference, logMap);
 
         return new ResponseEntity<>(
                 emails.stream()
@@ -101,7 +102,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         List<NotificationLetterRequest> letters = notificationDatabaseService.findAllLetters();
 
         logMap.put("letter_count", letters.size());
-        LOGGER.info("Retrieved " + letters.size() + " letter notifications", logMap);
+        LOGGER.info(RETRIEVED + letters.size() + " letter notifications", logMap);
 
         return new ResponseEntity<>(
                 letters.stream()
@@ -144,7 +145,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         List<NotificationLetterRequest> letters = notificationDatabaseService.getLetterByReference(reference);
 
         logMap.put("letter_count", letters.size());
-        LOGGER.info("Retrieved " + letters.size() + " letter notifications with reference: " + reference, logMap);
+        LOGGER.info(RETRIEVED + letters.size() + " letter notifications with reference: " + reference, logMap);
 
         return new ResponseEntity<>(
                 letters.stream()

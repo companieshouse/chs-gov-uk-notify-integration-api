@@ -13,7 +13,7 @@ public record NotificationStatus(
         @Field("requestId") String requestId,
         @Field("responseId") String responseId,
         @Field("status") String status,
-        @Field("statusDetails") Map<String, Object> statusDetails // todo
+        @Field("statusDetails") Map<String, Object> statusDetails
 ) {
     // Empty: using only auto-generated methods
 }
