@@ -15,8 +15,11 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -30,7 +33,9 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -59,6 +64,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private NotificationDatabaseService notificationDatabaseService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private NotificationClient notificationClient;
@@ -91,6 +102,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
     }
 
     @Test
@@ -111,6 +124,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(INVALID_CONTEXT_ID_ERROR_MESSAGE_PREFIX), is(true));
         assertThat(log.getAll().contains(CONTEXT_ID_PATTERN), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
     }
 
     @Test
@@ -131,6 +146,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
 
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
     }
 
     @Test
@@ -149,6 +166,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("no authorised identity"), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
     }
 
     @Test
@@ -167,6 +186,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("invalid identity type [null]"), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
     }
 
     @Test
@@ -185,6 +206,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
     }
 
     @Test
@@ -204,6 +227,22 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
+
+        verifyNoLetterDetailsRequestsAreStored();
+    }
+
+    // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
+    // response payload to fetch the letter created.
+    private void verifyLetterDetailsRequestStoredCorrectly() throws IOException {
+        var sentRequest = objectMapper.readValue(
+                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                GovUkLetterDetailsRequest.class);
+        var storedRequest = notificationDatabaseService.findAllLetters().getFirst().request();
+        assertThat(storedRequest, is(sentRequest));
+    }
+
+    private void verifyNoLetterDetailsRequestsAreStored() {
+        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
     }
 
 }
