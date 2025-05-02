@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -37,6 +39,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @Tag("integration-test")
@@ -105,6 +108,40 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
+    }
+
+    @Test
+    @DisplayName("Send letter with an invalid API key")
+    void sendLetterWithInvalidApiKey(CapturedOutput log) throws Exception {
+
+        // Given
+        // Note exactly what happens in reality, as this mocking results in an exception with a 400
+        // status code rather than the 403 status code expected. Unfortunately, the relevant
+        // NotificationClientException constructor is package accessible only. For the purposes
+        // of this test however, it's good enough.
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class)))
+                .thenThrow(
+                        new NotificationClientException("Invalid token: service has no API keys"));
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isInternalServerError());
+
+        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
+        assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyLetterErrorResponseStored();
     }
 
     @Test
@@ -262,6 +299,15 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private void verifyNoLetterResponsesAreStored() {
         assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(true));
+    }
+
+    private void verifyLetterErrorResponseStored() {
+        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
+        var storedResponse = notificationLetterResponseRepository.findAll().getFirst();
+
+        // TODO DEEP-286 The following info does not look like it will be much use in troubleshooting.
+        assertThat(storedResponse.id(), is(notNullValue()));
+        assertThat(storedResponse.response(), is(nullValue()));
     }
 
 }
