@@ -17,14 +17,12 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -71,21 +70,22 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private NotificationLetterResponseRepository notificationLetterResponseRepository;
+
     @MockitoBean
     private NotificationClient notificationClient;
-
-    @Mock
-    private LetterResponse letterResponse;
 
     @Test
     @DisplayName("Send letter successfully")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class)))
-                .thenReturn(letterResponse);
-        when(letterResponse.getNotificationId()).thenReturn(UUID.randomUUID());
+                .thenReturn(responseReceived);
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
@@ -104,6 +104,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
+        verifyLetterResponseStoredCorrectly(responseReceived);
     }
 
     @Test
@@ -126,6 +127,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(CONTEXT_ID_PATTERN), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -148,6 +150,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -168,6 +171,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("no authorised identity"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -188,6 +192,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("invalid identity type [null]"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -208,6 +213,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -229,6 +235,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
@@ -237,12 +244,24 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var sentRequest = objectMapper.readValue(
                 resourceToString("/fixtures/send-letter-request.json", UTF_8),
                 GovUkLetterDetailsRequest.class);
+        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(false));
         var storedRequest = notificationDatabaseService.findAllLetters().getFirst().request();
         assertThat(storedRequest, is(sentRequest));
     }
 
     private void verifyNoLetterDetailsRequestsAreStored() {
         assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
+    }
+
+    private void verifyLetterResponseStoredCorrectly(LetterResponse receivedResponse) {
+        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
+        var storedResponse = notificationLetterResponseRepository.findAll().getFirst().response();
+        // Unfortunately SendLetter does not implement equals() and hashCode().
+        assertThat(storedResponse.toString(), is(receivedResponse.toString()));
+    }
+
+    private void verifyNoLetterResponsesAreStored() {
+        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(true));
     }
 
 }

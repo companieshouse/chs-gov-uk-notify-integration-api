@@ -10,6 +10,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 
 @Testcontainers(disabledWithoutDocker = true)
 public abstract class AbstractMongoDBTest {
@@ -27,6 +28,9 @@ public abstract class AbstractMongoDBTest {
     @Autowired
     private NotificationLetterRequestRepository notificationLetterRequestRepository;
 
+    @Autowired
+    private NotificationLetterResponseRepository notificationLetterResponseRepository;
+
     @DynamicPropertySource
     static void mongoDbProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
@@ -35,5 +39,6 @@ public abstract class AbstractMongoDBTest {
     @AfterEach
     void tearDown() {
         notificationLetterRequestRepository.deleteAll();
+        notificationLetterResponseRepository.deleteAll();
     }
 }
