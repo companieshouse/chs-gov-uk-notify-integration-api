@@ -15,6 +15,7 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -317,7 +318,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(data.get("data"), is(notNullValue()));
         var map = ((JSONObject) data.get("data")).get("map");
         assertThat(map, is(notNullValue()));
-        assertThat(((JSONObject) map).get("error"),  is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
+        assertThat(((JSONObject) map).get(ERROR_MESSAGE_KEY),
+                is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
 
 }

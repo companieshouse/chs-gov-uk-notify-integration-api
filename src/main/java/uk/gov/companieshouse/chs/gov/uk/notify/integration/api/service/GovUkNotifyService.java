@@ -24,6 +24,8 @@ import uk.gov.service.notify.SendEmailResponse;
 public class GovUkNotifyService {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
+    public static final String ERROR_MESSAGE_KEY = "error";
+
     private final NotificationClient client;
 
     public GovUkNotifyService(NotificationClient client) {
@@ -84,9 +86,9 @@ public class GovUkNotifyService {
      * @param nce the exception caught
      * @param reference the letter (sender details) reference
      * @return a LetterResponse, which, if stored in the responses collection, may help
-     * troubleshooting
+     *         troubleshooting
      * @throws JsonProcessingException should there be a problem converting the id and reference
-     * provided nto JSON (unlikely)
+     *         provided nto JSON (unlikely)
      */
     private LetterResponse buildLetterResponseForError(
             NotificationClientException nce, String reference)
@@ -100,7 +102,7 @@ public class GovUkNotifyService {
         );
         var jsonData = new ObjectMapper().writeValueAsString(responseData);
         var response = new LetterResponse(jsonData);
-        response.getData().put("error", nce.getMessage());
+        response.getData().put(ERROR_MESSAGE_KEY, nce.getMessage());
         return response;
     }
 

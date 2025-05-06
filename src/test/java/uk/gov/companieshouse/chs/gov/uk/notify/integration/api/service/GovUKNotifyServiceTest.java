@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 
 @Tag("unit-test")
 public class GovUKNotifyServiceTest {
@@ -196,7 +197,7 @@ public class GovUKNotifyServiceTest {
             assertFalse(result.success());
             assertNotNull(result.response());
             assertNotNull(result.response().getData());
-            assertEquals("Test exception", result.response().getData().get("error"));
+            assertEquals("Test exception", result.response().getData().get(ERROR_MESSAGE_KEY));
         }
     }
 
