@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -100,9 +101,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
-        try (var precompiledPdf = getClass().getClassLoader().getResourceAsStream(
-                             "Demonstrate connectivity.pdf")) {
+        try (var precompiledPdf = getPrecompiledPdf()) {
 
             var letterResp =
                     govUkNotifyService.sendLetter(
@@ -123,9 +122,15 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             }
 
         } catch (IOException ioe) {
-            // TODO DEEP-286 Handle errors appropriately.
-            throw new RuntimeException(ioe);
+            logger.error("Failed to load precompiled letter PDF. Caught IOException: "
+                            + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    InputStream getPrecompiledPdf() throws IOException {
+        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
+        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
     }
 
     private Map<String, Object> createLogMap(final String contextId, final String action) {

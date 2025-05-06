@@ -34,6 +34,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
@@ -83,6 +84,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @MockitoBean
     private NotificationClient notificationClient;
+
+    @MockitoSpyBean
+    private SenderRestApi senderRestApi;
 
     @Test
     @DisplayName("Send letter successfully")
@@ -289,6 +293,33 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
+
+    @Test
+    @DisplayName("Send letter gracefully handles IOException loading letter PDF")
+    void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        when(senderRestApi.getPrecompiledPdf()).thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isInternalServerError());
+
+        assertThat(log.getAll().contains(
+                "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyNoLetterResponsesAreStored();
+    }
+
 
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
     // response payload to fetch the letter created.
