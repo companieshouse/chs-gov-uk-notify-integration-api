@@ -19,6 +19,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Go
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
@@ -66,6 +67,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
     private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
             "Invalid token: service has no API keys";
+    private static final String PDF_FILE_SIGNATURE = "%PDF-";
 
     @Autowired
     private MockMvc mockMvc;
@@ -89,9 +91,18 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Given
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        var capturedFileSignature = new StringBuilder();
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class)))
-                .thenReturn(responseReceived);
+                .thenAnswer(invocation -> {
+                    InputStream inputStream = invocation.getArgument(1);
+                    byte[] bytes = new byte[5];
+                    if (inputStream.read(bytes) == 5) {
+                        String header = new String(bytes);
+                        capturedFileSignature.append(header);
+                    }
+                    return responseReceived;
+                });
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
@@ -111,6 +122,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
+        verifyLetterPdfSent(capturedFileSignature);
     }
 
     @Test
@@ -320,6 +332,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(map, is(notNullValue()));
         assertThat(((JSONObject) map).get(ERROR_MESSAGE_KEY),
                 is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
+    }
+
+    private void verifyLetterPdfSent(StringBuilder fileSignature) {
+        assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
     }
 
 }
