@@ -313,10 +313,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedResponse.response().getReference().isPresent(), is(true));
         assertThat(storedResponse.response().getReference().get(), is("send-letter-request"));
         assertThat(storedResponse.response().getData(), is(notNullValue()));
-        assertThat(storedResponse.response().getData().get("data"), is(notNullValue()));
-        assertThat(((JSONObject) ((JSONObject)
-                        storedResponse.response().getData().get("data")).get("map")).get("error"),
-                is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
+        var data = storedResponse.response().getData();
+        assertThat(data.get("data"), is(notNullValue()));
+        var map = ((JSONObject) data.get("data")).get("map");
+        assertThat(map, is(notNullValue()));
+        assertThat(((JSONObject) map).get("error"),  is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
 
 }

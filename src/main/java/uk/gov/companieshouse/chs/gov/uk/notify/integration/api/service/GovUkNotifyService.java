@@ -58,32 +58,50 @@ public class GovUkNotifyService {
 
     public LetterResp sendLetter(
             @NotBlank String reference,
-            @NotNull InputStream precompiledPdf
-    ) {
+            @NotNull InputStream precompiledPdf) {
         try {
-            LetterResponse response =
+            var response =
                     client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
-            Map<String, Object> logData = Map.of(
-                    "reference", reference
-            );
+            var logData = Map.of("reference", reference);
             LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
             try {
-                var responseData = Map.of(
-                        "id", UUID.randomUUID(),
-                        "reference", reference
-                );
-                var jsonData = new ObjectMapper().writeValueAsString(responseData);
-                var response = new LetterResponse(jsonData);
-                response.getData().put("error", nce.getMessage());
+                var response = buildLetterResponseForError(nce, reference);
                 return new LetterResp(false, response);
             } catch (JsonProcessingException jpe) {
-                // TODO DEEP-286 Tidy this up.
+                LOGGER.error("Failed to build error response", jpe, new HashMap<>(logData));
             }
             return new LetterResp(false, null);
         }
+    }
+
+    /**
+     * Builds a LetterResponse containing useful information about the error reported by the
+     * NotificationClientException caught.
+     *
+     * @param nce the exception caught
+     * @param reference the letter (sender details) reference
+     * @return a LetterResponse, which, if stored in the responses collection, may help
+     * troubleshooting
+     * @throws JsonProcessingException should there be a problem converting the id and reference
+     * provided nto JSON (unlikely)
+     */
+    private LetterResponse buildLetterResponseForError(
+            NotificationClientException nce, String reference)
+        throws JsonProcessingException {
+        var responseData = Map.of(
+                // id is required because we are using LetterResponse to capture info (for storage).
+                // We might consider just using a different object (or a map) to avoid this,
+                // but that would require a bigger rework.
+                "id", UUID.randomUUID(),
+                "reference", reference
+        );
+        var jsonData = new ObjectMapper().writeValueAsString(responseData);
+        var response = new LetterResponse(jsonData);
+        response.getData().put("error", nce.getMessage());
+        return response;
     }
 
 
