@@ -29,6 +29,7 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -193,7 +194,9 @@ public class GovUKNotifyServiceTest {
             GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
 
             assertFalse(result.success());
-            assertNull(result.response());
+            assertNotNull(result.response());
+            assertNotNull(result.response().getData());
+            assertEquals("Test exception", result.response().getData().get("error"));
         }
     }
 

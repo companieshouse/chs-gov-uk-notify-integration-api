@@ -5,7 +5,6 @@ import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -21,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -63,6 +63,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String X_REQUEST_ID = "X-Request-ID";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
+    private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
+            "Invalid token: service has no API keys";
 
     @Autowired
     private MockMvc mockMvc;
@@ -111,18 +113,18 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter with an invalid API key")
+    @DisplayName("Send letter with an invalid Gov Notify API key")
     void sendLetterWithInvalidApiKey(CapturedOutput log) throws Exception {
 
         // Given
-        // Note exactly what happens in reality, as this mocking results in an exception with a 400
+        // Not exactly what happens in reality, as this mocking results in an exception with a 400
         // status code rather than the 403 status code expected. Unfortunately, the relevant
         // NotificationClientException constructor is package accessible only. For the purposes
         // of this test however, it's good enough.
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class)))
                 .thenThrow(
-                        new NotificationClientException("Invalid token: service has no API keys"));
+                        new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
@@ -305,9 +307,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst();
 
-        // TODO DEEP-286 The following info does not look like it will be much use in troubleshooting.
+        // Ensure the stored response contains information about the error encountered.
         assertThat(storedResponse.id(), is(notNullValue()));
-        assertThat(storedResponse.response(), is(nullValue()));
+        assertThat(storedResponse.response(), is(notNullValue()));
+        assertThat(storedResponse.response().getReference().isPresent(), is(true));
+        assertThat(storedResponse.response().getReference().get(), is("send-letter-request"));
+        assertThat(storedResponse.response().getData(), is(notNullValue()));
+        assertThat(storedResponse.response().getData().get("data"), is(notNullValue()));
+        assertThat(((JSONObject) ((JSONObject)
+                        storedResponse.response().getData().get("data")).get("map")).get("error"),
+                is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
 
 }

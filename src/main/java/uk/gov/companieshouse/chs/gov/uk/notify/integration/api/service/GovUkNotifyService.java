@@ -2,12 +2,15 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -67,6 +70,18 @@ public class GovUkNotifyService {
                     "reference", reference
             );
             LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
+            try {
+                var responseData = Map.of(
+                        "id", UUID.randomUUID(),
+                        "reference", reference
+                );
+                var jsonData = new ObjectMapper().writeValueAsString(responseData);
+                var response = new LetterResponse(jsonData);
+                response.getData().put("error", nce.getMessage());
+                return new LetterResp(false, response);
+            } catch (JsonProcessingException jpe) {
+                // TODO DEEP-286 Tidy this up.
+            }
             return new LetterResp(false, null);
         }
     }
