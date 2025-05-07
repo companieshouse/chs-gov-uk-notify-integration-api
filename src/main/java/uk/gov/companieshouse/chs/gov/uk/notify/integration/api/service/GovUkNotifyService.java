@@ -25,6 +25,7 @@ public class GovUkNotifyService {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     public static final String ERROR_MESSAGE_KEY = "error";
+    public static final UUID NIL_UUID = new UUID(0L, 0L);
 
     private final NotificationClient client;
 
@@ -97,7 +98,7 @@ public class GovUkNotifyService {
                 // id is required because we are using LetterResponse to capture info (for storage).
                 // We might consider just using a different object (or a map) to avoid this,
                 // but that would require a bigger rework.
-                "id", UUID.randomUUID(),
+                "id", NIL_UUID, // Make it clear this is NOT a notification ID issued by Gov Notify.
                 "reference", reference
         );
         var jsonData = new ObjectMapper().writeValueAsString(responseData);

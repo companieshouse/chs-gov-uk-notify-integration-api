@@ -16,6 +16,7 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -354,6 +355,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Ensure the stored response contains information about the error encountered.
         assertThat(storedResponse.id(), is(notNullValue()));
         assertThat(storedResponse.response(), is(notNullValue()));
+        assertThat(storedResponse.response().getNotificationId(), is(NIL_UUID));
         assertThat(storedResponse.response().getReference().isPresent(), is(true));
         assertThat(storedResponse.response().getReference().get(), is("send-letter-request"));
         assertThat(storedResponse.response().getData(), is(notNullValue()));
@@ -361,6 +363,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(data.get("data"), is(notNullValue()));
         var map = ((JSONObject) data.get("data")).get("map");
         assertThat(map, is(notNullValue()));
+        assertThat(((JSONObject) map).get("id"), is(NIL_UUID.toString()));
         assertThat(((JSONObject) map).get(ERROR_MESSAGE_KEY),
                 is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
