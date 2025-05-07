@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -20,6 +22,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
 import uk.gov.service.notify.LetterResponse;
@@ -50,6 +53,9 @@ public class GovUKNotifyServiceTest {
     @Mock
     private NotificationClient mockClient;
 
+    @Spy
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Mock
     private SendEmailResponse mockEmailResponse;
 
@@ -58,6 +64,9 @@ public class GovUKNotifyServiceTest {
 
     @Mock
     private InputStream mockPdf;
+
+    @Mock
+    private JsonProcessingException mockJsonProcessingException;
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
@@ -68,7 +77,7 @@ public class GovUKNotifyServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient));
+        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient, objectMapper));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
         govUkNotifyService = (GovUkNotifyService) factory.getProxy();
@@ -198,6 +207,22 @@ public class GovUKNotifyServiceTest {
             assertNotNull(result.response());
             assertNotNull(result.response().getData());
             assertEquals("Test exception", result.response().getData().get(ERROR_MESSAGE_KEY));
+        }
+
+        @Test
+        @DisplayName("Error encountered building letter response for error is handled gracefully")
+        void errorEncounteredBuildingLetterResponseForErrorIsHandledGracefully()
+                throws NotificationClientException, JsonProcessingException {
+            when(mockClient.sendPrecompiledLetterWithInputStream(anyString(),
+                    any(InputStream.class)))
+                    .thenThrow(new NotificationClientException("Test exception"));
+            when(objectMapper.writeValueAsString(anyMap())).thenThrow(mockJsonProcessingException);
+
+            GovUkNotifyService.LetterResp result =
+                    govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+
+            assertFalse(result.success());
+            assertNull(result.response());
         }
     }
 

@@ -28,9 +28,11 @@ public class GovUkNotifyService {
     public static final UUID NIL_UUID = new UUID(0L, 0L);
 
     private final NotificationClient client;
+    private final ObjectMapper objectMapper;
 
-    public GovUkNotifyService(NotificationClient client) {
+    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper) {
         this.client = client;
+        this.objectMapper = objectMapper;
     }
 
     public record EmailResp(boolean success, SendEmailResponse response) {
@@ -101,7 +103,7 @@ public class GovUkNotifyService {
                 "id", NIL_UUID, // Make it clear this is NOT a notification ID issued by Gov Notify.
                 "reference", reference
         );
-        var jsonData = new ObjectMapper().writeValueAsString(responseData);
+        var jsonData = objectMapper.writeValueAsString(responseData);
         var response = new LetterResponse(jsonData);
         response.getData().put(ERROR_MESSAGE_KEY, nce.getMessage());
         return response;
