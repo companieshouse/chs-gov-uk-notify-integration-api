@@ -128,7 +128,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
     }
 
-    InputStream getPrecompiledPdf() throws IOException {
+    InputStream getPrecompiledPdf() {
         // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
         return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
     }

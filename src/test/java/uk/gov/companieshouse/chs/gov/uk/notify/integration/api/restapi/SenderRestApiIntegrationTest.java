@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -27,6 +28,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -86,6 +88,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @MockitoSpyBean
     private SenderRestApi senderRestApi;
+
+    @Mock
+    private InputStream precompiledPdfInputStream;
 
     @Test
     @DisplayName("Send letter successfully")
@@ -298,7 +303,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(senderRestApi.getPrecompiledPdf()).thenThrow(new IOException("Thrown by test."));
+        when(senderRestApi.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
@@ -316,7 +322,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
-        verifyNoLetterResponsesAreStored();
+        verifyLetterResponseStored();
     }
 
 
@@ -340,6 +346,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst().response();
         // Unfortunately SendLetter does not implement equals() and hashCode().
         assertThat(storedResponse.toString(), is(receivedResponse.toString()));
+    }
+
+    private void verifyLetterResponseStored() {
+        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
     }
 
     private void verifyNoLetterResponsesAreStored() {
