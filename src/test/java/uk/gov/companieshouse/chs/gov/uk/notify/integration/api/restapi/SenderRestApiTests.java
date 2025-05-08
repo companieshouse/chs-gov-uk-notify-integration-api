@@ -43,6 +43,7 @@ class SenderRestApiTests {
     // This allows us to see what is logged during unit test execution, assuming that is
     // thought useful, when the logger is injected. If what is logged is
     // not of interest, then just inject the logger with @Mock.
+    @SuppressWarnings("java:S1068") // This field is actually used.
     private final Logger logger = mock(Logger.class, withSettings().verboseLogging());
 
     @InjectMocks
