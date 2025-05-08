@@ -326,6 +326,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
 
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
     // response payload to fetch the letter created.
     private void verifyLetterDetailsRequestStoredCorrectly() throws IOException {

@@ -128,6 +128,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
     }
 
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     InputStream getPrecompiledPdf() {
         // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
         return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
