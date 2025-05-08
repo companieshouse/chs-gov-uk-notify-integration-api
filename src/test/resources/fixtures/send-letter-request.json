@@ -1,7 +1,7 @@
 {
   "sender_details": {
     "app_id": "TODO",
-    "reference": "TODO",
+    "reference": "send-letter-request",
     "name": "TODO",
     "user_id": "TODO",
     "email_address": "vjackson1@companieshouse.gov.uk"

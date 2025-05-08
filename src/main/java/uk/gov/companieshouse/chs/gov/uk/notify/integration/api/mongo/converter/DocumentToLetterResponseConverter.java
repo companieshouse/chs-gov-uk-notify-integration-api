@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter;
 
+import java.util.List;
 import java.util.UUID;
-
 import org.bson.Document;
 import org.json.JSONObject;
 import org.springframework.core.convert.converter.Converter;
@@ -13,6 +13,7 @@ public class DocumentToLetterResponseConverter implements Converter<Document, Le
 
     public static final String REFERENCE = "reference";
     private static final String POSTAGE = "postage";
+    private static final String DATA = "data";
 
     @Override
     public LetterResponse convert(Document source) {
@@ -27,6 +28,10 @@ public class DocumentToLetterResponseConverter implements Converter<Document, Le
 
         if (source.containsKey(POSTAGE)) {
             json.put(POSTAGE, source.getString(POSTAGE));
+        }
+
+        if (source.containsKey(DATA)) {
+            json.put(DATA, source.getEmbedded(List.of(DATA), Document.class));
         }
 
         return new LetterResponse(json.toString());
