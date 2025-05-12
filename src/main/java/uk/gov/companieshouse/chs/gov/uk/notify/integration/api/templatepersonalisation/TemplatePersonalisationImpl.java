@@ -1,12 +1,18 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
+import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChEmailTemplate;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 
-import java.util.Map;
-
+@Component
 public class TemplatePersonalisationImpl implements TemplatePersonalisationInterface {
+
     /**
      * 1. Validate the parameters | valid personalisation string
      * <p>
@@ -23,13 +29,27 @@ public class TemplatePersonalisationImpl implements TemplatePersonalisationInter
     }
 
     /**
-     * @param template
-     * @param personalisationDetails
-     * @return
+     * Populates the letter Thymeleaf template with the data for the letter.
+     * @param template the {@link ChLetterTemplate} identifying the template to be used
+     * @param  personalisationDetails the {@link Map} providing the data to be substituted into the
+     *               letter template substitution variables
+     * @return the HTML representation of the letter
      */
     @Override
-    public String personaliseLetterTemplate(ChLetterTemplate template, Map<String, String> personalisationDetails) {
+    public String personaliseLetterTemplate(ChLetterTemplate template,
+                                            Map<String, String> personalisationDetails) {
 
-        throw new NotImplementedException();
+        var templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        var filepath = "assets/templates/letters/chips/direction/v1/";
+        templateResolver.setPrefix(filepath);
+
+        var templateEngine = new TemplateEngine();
+        templateEngine.addTemplateResolver(templateResolver);
+
+        var context = new Context();
+
+        return templateEngine.process(template.id(), context);
     }
 }
