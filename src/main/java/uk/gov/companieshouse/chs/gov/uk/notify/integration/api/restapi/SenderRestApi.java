@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonalisationInterface;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -27,13 +27,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
-    private final TemplatePersonalisationInterface templatePersonaliser;
+    private final TemplatePersonaliser templatePersonaliser;
     private final Logger logger;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
-            final TemplatePersonalisationInterface templatePersonaliser,
+            final TemplatePersonaliser templatePersonaliser,
             final Logger logger
     ) {
         this.govUkNotifyService = govUkNotifyService;

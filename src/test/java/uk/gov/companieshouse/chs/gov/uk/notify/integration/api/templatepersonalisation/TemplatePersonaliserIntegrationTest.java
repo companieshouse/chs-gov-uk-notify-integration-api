@@ -18,7 +18,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 
 @SpringBootTest
 @ExtendWith(OutputCaptureExtension.class) // TODO DEEP-287 Am I using this?
-class TemplatePersonalisationImplIntegrationTest {
+class TemplatePersonaliserIntegrationTest {
 
     // Note comparison with an equivalent text block seems to fail incorrectly.
     private static final String LETTER_TITLE = "Verify your identity\n" +
@@ -26,7 +26,7 @@ class TemplatePersonalisationImplIntegrationTest {
             "significant control";
 
     @Autowired
-    private TemplatePersonalisationImpl templatePersonalisation;
+    private TemplatePersonaliser templatePersonalisation;
 
     @Test
     @DisplayName("Generate letter HTML successfully")

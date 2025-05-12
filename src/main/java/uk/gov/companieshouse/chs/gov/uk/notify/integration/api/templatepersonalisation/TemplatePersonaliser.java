@@ -13,7 +13,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 
 @Component
-public class TemplatePersonalisationImpl implements TemplatePersonalisationInterface {
+public class TemplatePersonaliser {
 
     /**
      * 1. Validate the parameters | valid personalisation string
@@ -24,7 +24,6 @@ public class TemplatePersonalisationImpl implements TemplatePersonalisationInter
      * @param personalisationDetails a list of key: value pairs used to replace placeholders in the template
      * @return
      */
-    @Override
     public String personaliseEmailTemplate(ChEmailTemplate template, Map<String, String> personalisationDetails) {
 
         throw new NotImplementedException();
@@ -37,7 +36,6 @@ public class TemplatePersonalisationImpl implements TemplatePersonalisationInter
      *               letter template substitution variables
      * @return the HTML representation of the letter
      */
-    @Override
     public String personaliseLetterTemplate(ChLetterTemplate template,
                                             Map<String, String> personalisationDetails) {
 
