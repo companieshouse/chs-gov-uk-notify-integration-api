@@ -3,31 +3,15 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChEmailTemplate;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 
 @Component
 public class TemplatePersonaliser {
-
-    /**
-     * 1. Validate the parameters | valid personalisation string
-     * <p>
-     * replaces placeholders in the template with the personalisation details | via mapping
-     *
-     * @param template
-     * @param personalisationDetails a list of key: value pairs used to replace placeholders in the template
-     * @return
-     */
-    public String personaliseEmailTemplate(ChEmailTemplate template, Map<String, String> personalisationDetails) {
-
-        throw new NotImplementedException();
-    }
 
     /**
      * Populates the letter Thymeleaf template with the data for the letter.
