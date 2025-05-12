@@ -17,6 +17,8 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonalisationInterface;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -25,15 +27,18 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
+    private final TemplatePersonalisationInterface templatePersonaliser;
     private final Logger logger;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
+            final TemplatePersonalisationInterface templatePersonaliser,
             final Logger logger
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
+        this.templatePersonaliser = templatePersonaliser;
         this.logger = logger;
     }
 
@@ -100,6 +105,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         logger.info("Processing letter for "
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
+
+        var letter = templatePersonaliser.personaliseLetterTemplate(
+                new ChLetterTemplate("directionLetter"),
+                Map.of("",""));
+
+        logger.info("letter = " + letter);
 
         try (var precompiledPdf = getPrecompiledPdf()) {
 
