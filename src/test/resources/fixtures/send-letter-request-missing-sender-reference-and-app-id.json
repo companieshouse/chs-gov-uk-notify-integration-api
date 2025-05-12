@@ -19,7 +19,7 @@
   "letter_details": {
     "template_id": "TODO",
     "template_version": 1,
-    "personalisation_details": "{ \"psc_full_name\": \"Vaughan Jackson\", \"company_name\": \"Tŷ'r Cwmnïau\" \"reference\": \"TODO\", \"deadline_date\": \"18 August 2025\",\"extension_date\": \"1 September 2025\"}"
+    "personalisation_details": "{ \"psc_full_name\": \"Vaughan Jackson\", \"company_name\": \"Tŷ'r Cwmnïau\", \"reference\": \"TODO\", \"deadline_date\": \"18 August 2025\",\"extension_date\": \"1 September 2025\"}"
   },
   "created_at": "2025-04-08T09:19:24.905+05:30"
 }

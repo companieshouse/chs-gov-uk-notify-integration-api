@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.stereotype.Component;
@@ -49,6 +51,13 @@ public class TemplatePersonalisationImpl implements TemplatePersonalisationInter
         templateEngine.addTemplateResolver(templateResolver);
 
         var context = new Context();
+
+        // Use today's date for traceability.
+        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+        context.setVariable("date", LocalDate.now().format(format));
+
+        personalisationDetails.keySet().forEach(name ->
+                context.setVariable(name, personalisationDetails.get(name)));
 
         return templateEngine.process(template.id(), context);
     }

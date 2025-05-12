@@ -106,9 +106,25 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
+        // TODO DEEP-287 According to the current spec letter details and template ID can be null!
+        // TODO DEEP-287 Decide how to make use of version too.
+        var details = govUkLetterDetailsRequest.getLetterDetails();
+        Map<String, String> personalisationDetails;
+        try {
+            logger.debug("Parsing personalisation details",
+                    createLogMap(contextId, "parse_details"));
+            personalisationDetails = OBJECT_MAPPER.readValue(
+                    details.getPersonalisationDetails(),
+                    new TypeReference<>() {}
+            );
+        } catch (JsonProcessingException jpe) {
+            logger.error("Failed to parse personalisation details: " + jpe.getMessage(),
+                    createLogMap(contextId, "parse_error"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         var letter = templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate("directionLetter"),
-                Map.of("",""));
+                new ChLetterTemplate(details.getTemplateId()),
+                personalisationDetails);
 
         logger.info("letter = " + letter);
 
