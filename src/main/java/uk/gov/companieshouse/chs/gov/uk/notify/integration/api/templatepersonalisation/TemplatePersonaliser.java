@@ -6,16 +6,20 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 
 @Component
 public class TemplatePersonaliser {
+
+    private final ITemplateEngine templateEngine;
+
+    public TemplatePersonaliser(ITemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
+    }
 
     /**
      * Populates the letter Thymeleaf template with the data for the letter.
@@ -27,15 +31,6 @@ public class TemplatePersonaliser {
     public String personaliseLetterTemplate(ChLetterTemplate template,
                                             Map<String, String> personalisationDetails,
                                             Address address) {
-
-        var templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setSuffix(".html");
-        templateResolver.setTemplateMode(TemplateMode.HTML);
-        var filepath = "assets/templates/letters/chips/direction/v1/";
-        templateResolver.setPrefix(filepath);
-
-        var templateEngine = new TemplateEngine();
-        templateEngine.addTemplateResolver(templateResolver);
 
         var context = new Context();
 
