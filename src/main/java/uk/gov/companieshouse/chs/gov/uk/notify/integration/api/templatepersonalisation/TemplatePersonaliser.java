@@ -51,7 +51,7 @@ public class TemplatePersonaliser {
     }
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
-        // Company name is always rendered in UPPER CASE in the letter.
+        // Company name must be provided and is always rendered in UPPER CASE in the letter.
         if (isEmpty(personalisationDetails.get("company_name"))) {
             throw new LetterValidationException(
                     "No company name found in the letter personalisation details.");

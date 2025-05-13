@@ -106,7 +106,6 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        // TODO DEEP-287 According to the current spec letter details and template ID can be null!
         // TODO DEEP-287 Decide how to make use of version too.
         var details = govUkLetterDetailsRequest.getLetterDetails();
         Map<String, String> personalisationDetails;
@@ -122,7 +121,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                     createLogMap(contextId, "parse_error"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        // TODO DEEP-287 According to the current spec recipient details and address can be null!
+
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var letter = templatePersonaliser.personaliseLetterTemplate(
                 new ChLetterTemplate(details.getTemplateId()),
