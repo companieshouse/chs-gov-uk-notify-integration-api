@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
             "Invalid token: service has no API keys";
     private static final String PDF_FILE_SIGNATURE = "%PDF-";
+    private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: No company name found in the letter personalisation details.";
 
     @Autowired
     private MockMvc mockMvc;
@@ -131,6 +134,28 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
+    }
+
+    @Test
+    @DisplayName("Send letter without providing the company name in the personalisation details")
+    void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithoutCompanyName()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -338,6 +363,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedRequest, is(sentRequest));
     }
 
+    private void verifyLetterDetailsRequestStored() {
+        assertThat(notificationDatabaseService.findAllLetters().size(), is(1));
+    }
+
     private void verifyNoLetterDetailsRequestsAreStored() {
         assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
     }
@@ -377,8 +406,25 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
 
-    private void verifyLetterPdfSent(StringBuilder fileSignature) {
+    private static void verifyLetterPdfSent(StringBuilder fileSignature) {
         assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
+    }
+
+    private static String getRequestWithoutCompanyName() throws IOException {
+        var request  = JsonParser.parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .getAsJsonObject();
+        var letterDetails = request.get("letter_details")
+                .getAsJsonObject();
+        var personalisationDetailsString = letterDetails
+                .get("personalisation_details")
+                .getAsString();
+        var personalisationDetails = JsonParser.parseString(personalisationDetailsString).getAsJsonObject();
+        personalisationDetails.remove("company_name");
+        request.remove("letter_details");
+        letterDetails.remove("personalisation_details");
+        letterDetails.addProperty("personalisation_details", personalisationDetails.toString());
+        request.add("letter_details", letterDetails);
+        return request.toString();
     }
 
 }

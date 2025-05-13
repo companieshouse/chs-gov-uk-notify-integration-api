@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
@@ -74,6 +75,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         return super.handleMethodArgumentNotValid(manve, headers, status, request);
+    }
+
+    /**
+     * Returns HTTP Status 400 Bad Request when there is an exception implying that
+     * the incoming letter request content is invalid.
+     *
+     * @param lve exception thrown when input from letter sending request is found to be invalid
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(LetterValidationException.class)
+    public ResponseEntity<Object> handleLetterValidationException(
+            LetterValidationException lve) {
+        var message = "Error in " + APPLICATION_NAMESPACE + ": "
+                + buildMessage(lve.getMessage());
+        myLogger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(message);
     }
 
     /**
