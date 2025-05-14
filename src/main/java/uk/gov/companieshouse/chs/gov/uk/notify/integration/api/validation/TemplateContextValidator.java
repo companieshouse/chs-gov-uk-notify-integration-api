@@ -15,6 +15,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 @Component
 public class TemplateContextValidator {
 
+    // ImmutableSet preserves ordering of set elements, java.util.Set does not.
+    @SuppressWarnings("java:S4738")
     private static final Map<ChLetterTemplate, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<ChLetterTemplate, Set<String>>(
