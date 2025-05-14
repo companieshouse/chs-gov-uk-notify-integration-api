@@ -72,7 +72,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "Invalid token: service has no API keys";
     private static final String PDF_FILE_SIGNATURE = "%PDF-";
     private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: No company name found in the letter personalisation details.";
+            "Error in chs-gov-uk-notify-integration-api: No company name found in the "
+                    + "letter personalisation details.";
+    private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
+                    + "missing for ChLetterTemplate[id=directionLetter, version=1].";
 
     @Autowired
     private MockMvc mockMvc;
@@ -153,6 +157,28 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter without providing the psc full name in the personalisation details")
+    void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithoutPscFullName()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
@@ -411,15 +437,27 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private static String getRequestWithoutCompanyName() throws IOException {
-        var request  = JsonParser.parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+        return getRequestWithoutPersonalisation("company_name");
+    }
+
+    private static String getRequestWithoutPscFullName() throws IOException {
+        return getRequestWithoutPersonalisation("psc_full_name");
+    }
+
+    private static String getRequestWithoutPersonalisation(String personalisationName)
+            throws IOException {
+        var request  = JsonParser
+                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
                 .getAsJsonObject();
         var letterDetails = request.get("letter_details")
                 .getAsJsonObject();
         var personalisationDetailsString = letterDetails
                 .get("personalisation_details")
                 .getAsString();
-        var personalisationDetails = JsonParser.parseString(personalisationDetailsString).getAsJsonObject();
-        personalisationDetails.remove("company_name");
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.remove(personalisationName);
         request.remove("letter_details");
         letterDetails.remove("personalisation_details");
         letterDetails.addProperty("personalisation_details", personalisationDetails.toString());

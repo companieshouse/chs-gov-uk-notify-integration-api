@@ -107,13 +107,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 createLogMap(contextId, "process_letter"));
 
         // TODO DEEP-287 Decide how to make use of version too.
-        var details = govUkLetterDetailsRequest.getLetterDetails();
+        var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         Map<String, String> personalisationDetails;
         try {
             logger.debug("Parsing personalisation details",
                     createLogMap(contextId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
-                    details.getPersonalisationDetails(),
+                    letterDetails.getPersonalisationDetails(),
                     new TypeReference<>() {}
             );
         } catch (JsonProcessingException jpe) {
@@ -124,7 +124,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var letter = templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(details.getTemplateId()),
+                new ChLetterTemplate(letterDetails.getTemplateId(),
+                        letterDetails.getTemplateVersion()),
                 personalisationDetails,
                 address);
 

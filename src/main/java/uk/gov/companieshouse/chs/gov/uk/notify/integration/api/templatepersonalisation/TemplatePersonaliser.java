@@ -11,14 +11,18 @@ import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
 @Component
 public class TemplatePersonaliser {
 
     private final ITemplateEngine templateEngine;
+    private final TemplateContextValidator validator;
 
-    public TemplatePersonaliser(ITemplateEngine templateEngine) {
+    public TemplatePersonaliser(ITemplateEngine templateEngine,
+                                TemplateContextValidator validator) {
         this.templateEngine = templateEngine;
+        this.validator = validator;
     }
 
     /**
@@ -41,6 +45,8 @@ public class TemplatePersonaliser {
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);
         personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
+
+        validator.validateContextForTemplate(context, template);
 
         return templateEngine.process(template.id(), context);
     }
@@ -68,6 +74,7 @@ public class TemplatePersonaliser {
         context.setVariable("address_line_6",
                 uppercaseIfCompanyName(address.getAddressLine6(), upperCaseCompanyName));
         // TODO DEEP-287 postcode_or_country or just line 7?
+        // Consider populating this field with the last populated address line...
         context.setVariable("postcode_or_country", address.getAddressLine7());
     }
 

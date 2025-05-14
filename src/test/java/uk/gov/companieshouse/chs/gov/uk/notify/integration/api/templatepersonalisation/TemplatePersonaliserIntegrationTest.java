@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
+import static java.math.BigDecimal.ONE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -31,7 +32,7 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
-                new ChLetterTemplate("directionLetter"),
+                new ChLetterTemplate("directionLetter", ONE),
                 Map.of("psc_full_name", "Vaughan Jackson",
                         "company_name", "Tŷ'r Cwmnïau",
                         "reference", "reference",
