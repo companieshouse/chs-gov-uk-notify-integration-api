@@ -77,6 +77,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
                     + "missing for ChLetterTemplate[id=directionLetter, version=1].";
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
+            "Failed to parse personalisation details";
 
     @Autowired
     private MockMvc mockMvc;
@@ -179,6 +181,28 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with unparsable personalisation details")
+    void sendLetterWithUnparsablePersonalisationDetails(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithUnparsablePersonalisationDetails()))
+                .andExpect(status().isBadRequest());
+
+        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE),
+                is(true));
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
@@ -461,6 +485,23 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         request.remove("letter_details");
         letterDetails.remove("personalisation_details");
         letterDetails.addProperty("personalisation_details", personalisationDetails.toString());
+        request.add("letter_details", letterDetails);
+        return request.toString();
+    }
+
+    private static String getRequestWithUnparsablePersonalisationDetails()
+            throws IOException {
+        var request  = JsonParser
+                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .getAsJsonObject();
+        var letterDetails = request.get("letter_details")
+                .getAsJsonObject();
+        var personalisationDetailsString = letterDetails
+                .get("personalisation_details")
+                .getAsString().replace("}",",}"); // this comma makes it unparsable
+        request.remove("letter_details");
+        letterDetails.remove("personalisation_details");
+        letterDetails.addProperty("personalisation_details", personalisationDetailsString);
         request.add("letter_details", letterDetails);
         return request.toString();
     }
