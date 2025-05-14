@@ -19,7 +19,7 @@ public class TemplateContextValidator {
     @SuppressWarnings("java:S4738")
     private static final Map<ChLetterTemplate, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
-                    new AbstractMap.SimpleEntry<ChLetterTemplate, Set<String>>(
+                    new AbstractMap.SimpleEntry<>(
                             new ChLetterTemplate("directionLetter", ONE),
                             ImmutableSet.of(
                                     "address_line_1", "address_line_2", "postcode_or_country",
@@ -33,6 +33,14 @@ public class TemplateContextValidator {
                     )
             );
 
+    /**
+     * Validate that the context provided contains the variables expected for the letter
+     * template identified.
+     *
+     * @param context the Thymeleaf context assumed to contain the variable values required for
+     *                substitutions of field variables in the Thymeleaf template identified
+     * @param template identifies the letter template to be personalised
+     */
     public void validateContextForTemplate(Context context, ChLetterTemplate template) {
         var validContext = VALID_CONTEXTS.get(template);
         if (validContext == null) {
