@@ -107,6 +107,25 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
+        var letter = personaliseLetter(govUkLetterDetailsRequest, contextId);
+        return sendLetterPdf(govUkLetterDetailsRequest, contextId, letter);
+    }
+
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
+    InputStream getPrecompiledPdf() {
+        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
+        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
+    }
+
+    private Map<String, Object> createLogMap(final String contextId, final String action) {
+        Map<String, Object> logMap = new HashMap<>();
+        logMap.put("contextId", contextId);
+        logMap.put("action", action);
+        return logMap;
+    }
+
+    private String personaliseLetter(final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+                                     final String contextId) {
         // TODO DEEP-287 Decide how to make use of version too.
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         Map<String, String> personalisationDetails;
@@ -124,12 +143,19 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
 
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
-        var letter = templatePersonaliser.personaliseLetterTemplate(
+        return templatePersonaliser.personaliseLetterTemplate(
                 new ChLetterTemplate(letterDetails.getTemplateId(),
                         letterDetails.getTemplateVersion()),
                 personalisationDetails,
                 address);
+    }
 
+    private ResponseEntity<Void> sendLetterPdf(
+            final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            final String contextId,
+            final String letter) {
+
+        // TODO DEEP-288 Stop logging the entire letter HMTL content.
         logger.info("letter = " + letter);
 
         try (var precompiledPdf = getPrecompiledPdf()) {
@@ -154,22 +180,10 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         } catch (IOException ioe) {
             logger.error("Failed to load precompiled letter PDF. Caught IOException: "
-                            + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
 
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
-    InputStream getPrecompiledPdf() {
-        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
-        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
-    }
-
-    private Map<String, Object> createLogMap(final String contextId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("contextId", contextId);
-        logMap.put("action", action);
-        return logMap;
     }
 
 }
