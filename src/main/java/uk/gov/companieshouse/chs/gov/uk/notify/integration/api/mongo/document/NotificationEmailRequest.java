@@ -1,14 +1,76 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 
-@Document(collection = "email_details")
-public record NotificationEmailRequest(
-        @Id String id,
-        @Field("request") GovUkEmailDetailsRequest request
-) {
-    // Empty: using only auto-generated methods
+import java.time.LocalDateTime;
+
+@EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
+public class NotificationEmailRequest {
+    @Field("created_at") @CreatedDate
+    private LocalDateTime createdAt;
+
+    @Field("updated_at") @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    private GovUkEmailDetailsRequest request;
+
+    private String Id;
+
+    public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkEmailDetailsRequest request, String id) {
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.request = request;
+        Id = id;
+    }
+
+    public GovUkEmailDetailsRequest getRequest() {
+        return request;
+    }
+
+    public String getId() {
+        return Id;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setRequest(GovUkEmailDetailsRequest request) {
+        this.request = request;
+    }
+
+    public void setId(String id) {
+        Id = id;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "NotificationEmailRequest{" +
+                "createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", request=" + request +
+                ", Id='" + Id + '\'' +
+                '}';
+    }
+
+
 }
+
