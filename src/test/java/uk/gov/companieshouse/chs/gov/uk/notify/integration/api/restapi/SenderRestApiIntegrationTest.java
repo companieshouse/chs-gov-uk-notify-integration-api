@@ -77,8 +77,17 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
                     + "missing for ChLetterTemplate[id=directionLetter, version=1].";
+
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
+            "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
+                    + " Unexpected character ('}' (code 125)): was expecting double-quote to "
+                    + "start field name";
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
+            " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
+                    + "line: 1, column: 168]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
-            "Failed to parse personalisation details";
+            UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
+            + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
 
     @Autowired
     private MockMvc mockMvc;
@@ -199,9 +208,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(getRequestWithUnparsablePersonalisationDetails()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE));
 
-        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE),
+        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1),
+                is(true));
+        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2),
                 is(true));
 
         verifyLetterDetailsRequestStored();

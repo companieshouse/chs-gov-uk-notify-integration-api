@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationSenderControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
@@ -117,9 +118,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                     new TypeReference<>() {}
             );
         } catch (JsonProcessingException jpe) {
-            logger.error("Failed to parse personalisation details: " + jpe.getMessage(),
-                    createLogMap(contextId, "parse_error"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            var message = "Failed to parse personalisation details: " + jpe.getMessage();
+            logger.error(message, createLogMap(contextId, "parse_error"));
+            throw new LetterValidationException(message);
         }
 
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
