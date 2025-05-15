@@ -11,8 +11,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 @Configuration
 public class ThymeleafConfig {
 
-    private static final String FIRST_TEMPLATE_FILEPATH =
-            "assets/templates/letters/chips/direction/v1/";
+    private static final String FIRST_TEMPLATE_FILEPATH = "assets/templates/letters/chips/";
 
     /**
      * Creates ITemplateResolver which helps the application locate letter templates and their
