@@ -4,12 +4,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.service.notify.LetterResponse;
 
 
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
@@ -29,7 +26,7 @@ public class NotificationStatus {
 
      @Field("statusDetails") Map<String, Object> statusDetails;
 
-     private String Id;
+     private String id;
 
     public NotificationStatus(LocalDateTime createdAt, LocalDateTime updatedAt, String requestId, String responseId, String status, Map<String, Object> statusDetails, String id) {
         this.createdAt = createdAt;
@@ -38,7 +35,7 @@ public class NotificationStatus {
         this.responseId = responseId;
         this.status = status;
         this.statusDetails = statusDetails;
-        Id = id;
+        this.id = id;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -90,11 +87,11 @@ public class NotificationStatus {
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public void setId(String id) {
-        Id = id;
+        this.id = id;
     }
 
     @Override
@@ -106,7 +103,7 @@ public class NotificationStatus {
                 ", responseId='" + responseId + '\'' +
                 ", status='" + status + '\'' +
                 ", statusDetails=" + statusDetails +
-                ", Id='" + Id + '\'' +
+                ", Id='" + id + '\'' +
                 '}';
     }
 }

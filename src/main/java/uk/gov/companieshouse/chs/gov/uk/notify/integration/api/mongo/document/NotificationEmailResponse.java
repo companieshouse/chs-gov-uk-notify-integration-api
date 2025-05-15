@@ -1,12 +1,9 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.LocalDateTime;
@@ -23,13 +20,13 @@ public class NotificationEmailResponse {
 
     private SendEmailResponse response;
 
-    private String Id;
+    private String id;
 
     public NotificationEmailResponse(LocalDateTime createdAt, LocalDateTime updatedAt, SendEmailResponse response, String id) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.response = response;
-        Id = id;
+        this.id = id;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -57,11 +54,11 @@ public class NotificationEmailResponse {
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public void setId(String id) {
-        Id = id;
+        this.id = id;
     }
 
     @Override
@@ -70,7 +67,7 @@ public class NotificationEmailResponse {
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", response=" + response +
-                ", Id='" + Id + '\'' +
+                ", Id='" + id + '\'' +
                 '}';
     }
 }

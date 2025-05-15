@@ -44,7 +44,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailRequest storeEmail(final GovUkEmailDetailsRequest emailDetailsRequest) {
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, emailDetailsRequest));
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, null, null));
     }
 
     public Optional<NotificationEmailRequest> getEmail(final String id) {
@@ -60,7 +60,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationLetterRequest storeLetter(final GovUkLetterDetailsRequest letterDetails) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, letterDetails));
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, null, null));
     }
 
     public Optional<NotificationLetterRequest> getLetter(final String letterId) {
@@ -76,11 +76,11 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailResponse storeResponse(final GovUkNotifyService.EmailResp emailResp) {
-        return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, emailResp.response()));
+        return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, null, null, null));
     }
 
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
-        return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, letterResp.response()));
+        return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, null, null, null));
     }
 
     public NotificationStatus updateStatus(final NotificationStatus notificationStatus) {

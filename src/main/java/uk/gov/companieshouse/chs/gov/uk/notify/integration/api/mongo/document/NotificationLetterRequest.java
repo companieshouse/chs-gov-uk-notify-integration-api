@@ -22,13 +22,13 @@ public class NotificationLetterRequest {
 
     private GovUkLetterDetailsRequest request;
 
-    private String Id;
+    private String id;
 
     public NotificationLetterRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkLetterDetailsRequest request, String id) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.request = request;
-        Id = id;
+        this.id = id;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -56,11 +56,11 @@ public class NotificationLetterRequest {
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public void setId(String id) {
-        Id = id;
+        this.id = id;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class NotificationLetterRequest {
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
-                ", Id='" + Id + '\'' +
+                ", Id='" + id + '\'' +
                 '}';
     }
 }

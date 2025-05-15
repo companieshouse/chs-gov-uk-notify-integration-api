@@ -20,13 +20,13 @@ public class NotificationEmailRequest {
 
     private GovUkEmailDetailsRequest request;
 
-    private String Id;
+    private String id;
 
     public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkEmailDetailsRequest request, String id) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.request = request;
-        Id = id;
+        this.id = id;
     }
 
     public GovUkEmailDetailsRequest getRequest() {
@@ -34,7 +34,7 @@ public class NotificationEmailRequest {
     }
 
     public String getId() {
-        return Id;
+        return id;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -50,7 +50,7 @@ public class NotificationEmailRequest {
     }
 
     public void setId(String id) {
-        Id = id;
+        id = id;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
@@ -67,7 +67,7 @@ public class NotificationEmailRequest {
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
-                ", Id='" + Id + '\'' +
+                ", Id='" + id + '\'' +
                 '}';
     }
 

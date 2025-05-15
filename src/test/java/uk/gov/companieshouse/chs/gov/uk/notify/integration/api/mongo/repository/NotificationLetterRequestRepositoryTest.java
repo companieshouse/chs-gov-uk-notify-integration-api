@@ -25,29 +25,29 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main St");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, letterRequest));
+        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
 
         assertNotNull(savedRequest);
-        assertNotNull(savedRequest.id());
+        assertNotNull(savedRequest.getId());
     }
 
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 Oak Ave");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, letterRequest));
+        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
 
-        Optional<NotificationLetterRequest> retrievedRequest = requestRepository.findById(savedRequest.id());
+        Optional<NotificationLetterRequest> retrievedRequest = requestRepository.findById(savedRequest.getId());
 
         assertTrue(retrievedRequest.isPresent());
-        assertEquals(savedRequest.id(), retrievedRequest.get().id());
-        assertEquals("456 Oak Ave", retrievedRequest.get().request().getRecipientDetails().getPhysicalAddress().getAddressLine1());
+        assertEquals(savedRequest.getId(), retrievedRequest.get().getId());
+        assertEquals("456 Oak Ave", retrievedRequest.get().getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
     }
 
     @Test
     void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
-        requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("123 First St")));
-        requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("456 Second Ave")));
-        requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("789 Third Blvd")));
+        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("123 First St"), null));
+        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("456 Second Ave"), null));
+        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("789 Third Blvd"), null));
 
         List<NotificationLetterRequest> allRequests = requestRepository.findAll();
 
@@ -56,26 +56,26 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestDeleted_Expect_RequestNotFoundById() {
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, createSampleLetterRequest("Test Address")));
+        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("Test Address"), null));
 
-        requestRepository.deleteById(savedRequest.id());
+        requestRepository.deleteById(savedRequest.getId());
 
-        Optional<NotificationLetterRequest> deletedRequest = requestRepository.findById(savedRequest.id());
+        Optional<NotificationLetterRequest> deletedRequest = requestRepository.findById(savedRequest.getId());
         assertFalse(deletedRequest.isPresent());
     }
 
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
         GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, initialRequest));
+        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
 
         GovUkLetterDetailsRequest updatedRequest = createSampleLetterRequest("Updated Address");
-        requestRepository.save(new NotificationLetterRequest(savedRequest.id(), updatedRequest));
+        requestRepository.save(new NotificationLetterRequest(null, null, updatedRequest, savedRequest.getId()));
 
-        NotificationLetterRequest retrievedRequest = requestRepository.findById(savedRequest.id()).orElse(null);
+        NotificationLetterRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
         assertNotNull(retrievedRequest);
-        assertEquals("Updated Address", retrievedRequest.request().getRecipientDetails().getPhysicalAddress().getAddressLine1());
+        assertEquals("Updated Address", retrievedRequest.getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
     }
     
 }
