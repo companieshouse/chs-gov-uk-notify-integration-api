@@ -15,8 +15,11 @@ import org.springframework.stereotype.Controller;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationSenderControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -25,15 +28,18 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
+    private final TemplatePersonaliser templatePersonaliser;
     private final Logger logger;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
+            final TemplatePersonaliser templatePersonaliser,
             final Logger logger
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
+        this.templatePersonaliser = templatePersonaliser;
         this.logger = logger;
     }
 
@@ -101,6 +107,59 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
+        var letter = personaliseLetter(govUkLetterDetailsRequest, contextId);
+        return sendLetterPdf(govUkLetterDetailsRequest, contextId, letter);
+    }
+
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
+    InputStream getPrecompiledPdf() {
+        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
+        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
+    }
+
+    private Map<String, Object> createLogMap(final String contextId, final String action) {
+        Map<String, Object> logMap = new HashMap<>();
+        logMap.put("contextId", contextId);
+        logMap.put("action", action);
+        return logMap;
+    }
+
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
+    private String personaliseLetter(final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+                                     final String contextId) {
+        // TODO DEEP-287 Decide how to make use of version too.
+        var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        Map<String, String> personalisationDetails;
+        try {
+            logger.debug("Parsing personalisation details",
+                    createLogMap(contextId, "parse_details"));
+            personalisationDetails = OBJECT_MAPPER.readValue(
+                    letterDetails.getPersonalisationDetails(),
+                    new TypeReference<>() {}
+            );
+        } catch (JsonProcessingException jpe) {
+            var message = "Failed to parse personalisation details: " + jpe.getMessage();
+            logger.error(message, createLogMap(contextId, "parse_error"));
+            throw new LetterValidationException(message);
+        }
+
+        var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
+        return templatePersonaliser.personaliseLetterTemplate(
+                new ChLetterTemplate(letterDetails.getTemplateId(),
+                        letterDetails.getTemplateVersion()),
+                personalisationDetails,
+                address);
+    }
+
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
+    private ResponseEntity<Void> sendLetterPdf(
+            final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            final String contextId,
+            final String letter) {
+
+        // TODO DEEP-288 Stop logging the entire letter HMTL content.
+        logger.info("letter = " + letter);
+
         try (var precompiledPdf = getPrecompiledPdf()) {
 
             var letterResp =
@@ -123,22 +182,10 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         } catch (IOException ioe) {
             logger.error("Failed to load precompiled letter PDF. Caught IOException: "
-                            + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
 
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
-    InputStream getPrecompiledPdf() {
-        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
-        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
-    }
-
-    private Map<String, Object> createLogMap(final String contextId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("contextId", contextId);
-        logMap.put("action", action);
-        return logMap;
     }
 
 }
