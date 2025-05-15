@@ -143,9 +143,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             throw new LetterValidationException(message);
         }
 
+        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         return templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(letterDetails.getTemplateId(),
+                new ChLetterTemplate(
+                        senderDetails.getAppId(),
+                        letterDetails.getTemplateId(),
                         letterDetails.getTemplateVersion()),
                 personalisationDetails,
                 address);

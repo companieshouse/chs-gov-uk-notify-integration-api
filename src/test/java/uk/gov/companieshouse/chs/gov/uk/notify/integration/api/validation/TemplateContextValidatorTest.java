@@ -22,15 +22,16 @@ class TemplateContextValidatorTest {
 
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
-            "Unable to find a valid context for ChLetterTemplate[id=directionLetter, version=2]";
+            "Unable to find a valid context for ChLetterTemplate"
+                    + "[appId=chips, id=directionLetter, version=2]";
     private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [company_name, deadline_date] missing for "
-                    + "ChLetterTemplate[id=directionLetter, version=1].";
+                    + "ChLetterTemplate[appId=chips, id=directionLetter, version=1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, postcode_or_country, "
                     + "date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
-                    + "ChLetterTemplate[id=directionLetter, version=1].";
+                    + "ChLetterTemplate[appId=chips, id=directionLetter, version=1].";
 
     @InjectMocks
     private TemplateContextValidator validator;
@@ -41,7 +42,7 @@ class TemplateContextValidatorTest {
     void noErrorWhereAllRequiredVariablesPresent() {
 
         // Given
-        var letter = new ChLetterTemplate("directionLetter", ONE);
+        var letter = new ChLetterTemplate("chips", "directionLetter", ONE);
         var context = new Context();
         context.setVariable("address_line_1", TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable("address_line_2", TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -62,7 +63,7 @@ class TemplateContextValidatorTest {
     void errorsWhereTemplateIsUnknown() {
 
         // Given
-        var letter = new ChLetterTemplate("directionLetter", TWO);
+        var letter = new ChLetterTemplate("chips", "directionLetter", TWO);
         var context = new Context();
 
         // When and then
@@ -77,7 +78,7 @@ class TemplateContextValidatorTest {
     void errorsWhereSomeRequiredVariablesMissing() {
 
         // Given
-        var letter = new ChLetterTemplate("directionLetter", ONE);
+        var letter = new ChLetterTemplate("chips", "directionLetter", ONE);
         var context = new Context();
         context.setVariable("address_line_1", TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable("address_line_2", TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -99,7 +100,7 @@ class TemplateContextValidatorTest {
     void errorsWhereAllRequiredVariablesMissing() {
 
         // Given
-        var letter = new ChLetterTemplate("directionLetter", ONE);
+        var letter = new ChLetterTemplate("chips", "directionLetter", ONE);
         var context = new Context();
 
         // When and then

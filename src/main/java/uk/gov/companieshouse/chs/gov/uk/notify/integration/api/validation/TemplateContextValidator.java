@@ -20,7 +20,7 @@ public class TemplateContextValidator {
     private static final Map<ChLetterTemplate, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<>(
-                            new ChLetterTemplate("directionLetter", ONE),
+                            new ChLetterTemplate("chips", "directionLetter", ONE),
                             ImmutableSet.of(
                                     "address_line_1", "address_line_2", "postcode_or_country",
                                     "date",

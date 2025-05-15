@@ -32,7 +32,7 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
-                new ChLetterTemplate("directionLetter", ONE),
+                new ChLetterTemplate("chips", "directionLetter", ONE),
                 Map.of("psc_full_name", "Vaughan Jackson",
                         "company_name", "Tŷ'r Cwmnïau",
                         "reference", "reference",
