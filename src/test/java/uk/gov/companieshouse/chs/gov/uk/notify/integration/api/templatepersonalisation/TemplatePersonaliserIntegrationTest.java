@@ -18,7 +18,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 @SpringBootTest
 class TemplatePersonaliserIntegrationTest {
 
-    // Note comparison with an equivalent text block seems to fail incorrectly.
+    @SuppressWarnings("java:S6126") // Comparison with an equivalent text block fails incorrectly.
     private static final String LETTER_TITLE = "Verify your identity\n" +
             "—Person with\n" +
             "significant control";
