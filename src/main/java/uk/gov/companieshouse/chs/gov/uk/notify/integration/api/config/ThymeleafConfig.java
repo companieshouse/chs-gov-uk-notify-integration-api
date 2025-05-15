@@ -5,13 +5,12 @@ import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
 @Configuration
 public class ThymeleafConfig {
-
-    private static final String FIRST_TEMPLATE_FILEPATH = "assets/templates/letters/chips/";
 
     /**
      * Creates ITemplateResolver which helps the application locate letter templates and their
@@ -20,11 +19,10 @@ public class ThymeleafConfig {
      * @return the letter template resolver
      */
     @Bean
-    public ITemplateResolver getTemplateResolver() {
+    public AbstractConfigurableTemplateResolver getTemplateResolver() {
         var templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setSuffix(".html");
         templateResolver.setTemplateMode(TemplateMode.HTML);
-        templateResolver.setPrefix(FIRST_TEMPLATE_FILEPATH);
         return templateResolver;
     }
 

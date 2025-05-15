@@ -8,31 +8,39 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
 @Component
 public class TemplatePersonaliser {
 
     private final ITemplateEngine templateEngine;
+    private final TemplateLookup templateLookup;
+    private final AbstractConfigurableTemplateResolver templateResolver;
     private final TemplateContextValidator validator;
 
     public TemplatePersonaliser(ITemplateEngine templateEngine,
+                                TemplateLookup templateLookup,
+                                AbstractConfigurableTemplateResolver templateResolver,
                                 TemplateContextValidator validator) {
         this.templateEngine = templateEngine;
+        this.templateLookup = templateLookup;
+        this.templateResolver = templateResolver;
         this.validator = validator;
     }
 
     /**
-     * Populates the letter Thymeleaf template with the data for the letter.
-     * @param template the {@link ChLetterTemplate} identifying the template to be used
+     * Populates the letter Thymeleaf templateLookupKey with the data for the letter.
+     * @param templateLookupKey the {@link ChLetterTemplate} identifying the template to be used
      * @param  personalisationDetails the {@link Map} providing the data to be substituted into the
-     *               letter template substitution variables
+     *               letter templateLookupKey substitution variables
      * @return the HTML representation of the letter
      */
-    public String personaliseLetterTemplate(ChLetterTemplate template,
+    public String personaliseLetterTemplate(ChLetterTemplate templateLookupKey,
                                             Map<String, String> personalisationDetails,
                                             Address address) {
 
@@ -46,9 +54,11 @@ public class TemplatePersonaliser {
         populateAddress(context, address, upperCaseCompanyName);
         personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
 
-        validator.validateContextForTemplate(context, template);
+        validator.validateContextForTemplate(context, templateLookupKey);
 
-        return templateEngine.process(template.id(), context);
+        var templateSpec = templateLookup.lookupTemplate(templateLookupKey);
+        templateResolver.setPrefix(templateSpec.prefix());
+        return templateEngine.process(templateSpec.filename(), context);
     }
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
