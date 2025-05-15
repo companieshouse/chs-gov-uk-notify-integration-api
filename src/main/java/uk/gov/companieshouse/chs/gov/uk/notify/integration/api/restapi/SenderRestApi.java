@@ -124,6 +124,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         return logMap;
     }
 
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private String personaliseLetter(final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                      final String contextId) {
         // TODO DEEP-287 Decide how to make use of version too.
@@ -150,6 +151,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 address);
     }
 
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private ResponseEntity<Void> sendLetterPdf(
             final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
             final String contextId,

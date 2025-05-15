@@ -60,6 +60,7 @@ public class TemplatePersonaliser {
         return personalisationDetails.get("company_name").toUpperCase();
     }
 
+    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
         context.setVariable("address_line_1",
                 uppercaseIfCompanyName(address.getAddressLine1(), upperCaseCompanyName));
