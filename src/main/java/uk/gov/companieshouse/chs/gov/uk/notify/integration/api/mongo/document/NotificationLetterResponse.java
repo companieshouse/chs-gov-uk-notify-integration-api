@@ -29,6 +29,9 @@ public class NotificationLetterResponse {
         this.id = id;
     }
 
+    public NotificationLetterResponse() {
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

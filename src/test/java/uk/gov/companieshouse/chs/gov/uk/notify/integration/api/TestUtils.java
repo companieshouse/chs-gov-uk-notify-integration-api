@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -94,7 +95,7 @@ public class TestUtils {
                 .emailDetails(emailDetails)
                 .createdAt(OffsetDateTime.now());
 
-        return new NotificationEmailRequest(null, null, null, null);
+        return new NotificationEmailRequest(LocalDateTime.now(), LocalDateTime.now().plusHours(1), emailRequest, "1");
     }
 
     public static SendEmailResponse createSampleEmailResponse() {

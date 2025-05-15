@@ -38,6 +38,9 @@ public class NotificationStatus {
         this.id = id;
     }
 
+    public NotificationStatus() {
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

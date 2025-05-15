@@ -10,6 +10,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 
 import java.time.LocalDateTime;
 
+@Document(collection = "requests")
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationEmailRequest {
     @Field("created_at") @CreatedDate
@@ -18,8 +19,10 @@ public class NotificationEmailRequest {
     @Field("updated_at") @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Field("request")
     private GovUkEmailDetailsRequest request;
 
+    @Id
     private String id;
 
     public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkEmailDetailsRequest request, String id) {
@@ -27,6 +30,9 @@ public class NotificationEmailRequest {
         this.updatedAt = updatedAt;
         this.request = request;
         this.id = id;
+    }
+
+    public NotificationEmailRequest() {
     }
 
     public GovUkEmailDetailsRequest getRequest() {
