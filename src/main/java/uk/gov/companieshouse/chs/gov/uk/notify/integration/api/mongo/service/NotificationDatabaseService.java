@@ -45,7 +45,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailRequest storeEmail(final GovUkEmailDetailsRequest emailDetailsRequest) {
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(LocalDateTime.now(), LocalDateTime.now().plusHours(1), emailDetailsRequest, "1"));
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(LocalDateTime.now(), LocalDateTime.now().plusHours(1), emailDetailsRequest, null));
     }
 
     public Optional<NotificationEmailRequest> getEmail(final String id) {
@@ -61,7 +61,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationLetterRequest storeLetter(final GovUkLetterDetailsRequest letterDetails) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(LocalDateTime.now(), LocalDateTime.now().plusHours(1), letterDetails, "1"));
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(LocalDateTime.now(), LocalDateTime.now().plusHours(1), letterDetails, null));
     }
 
     public Optional<NotificationLetterRequest> getLetter(final String letterId) {
@@ -77,11 +77,11 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailResponse storeResponse(final GovUkNotifyService.EmailResp emailResp) {
-        return notificationEmailResponseRepository.save(new NotificationEmailResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), emailResp.response(), "1"));
+        return notificationEmailResponseRepository.save(new NotificationEmailResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), emailResp.response(), null));
     }
 
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
-        return notificationLetterResponseRepository.save(new NotificationLetterResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), letterResp.response(), "1"));
+        return notificationLetterResponseRepository.save(new NotificationLetterResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), letterResp.response(), null));
     }
 
     public NotificationStatus updateStatus(final NotificationStatus notificationStatus) {

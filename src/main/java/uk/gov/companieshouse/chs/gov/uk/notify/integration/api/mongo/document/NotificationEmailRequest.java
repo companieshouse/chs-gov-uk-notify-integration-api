@@ -10,7 +10,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 
 import java.time.LocalDateTime;
 
-@Document(collection = "requests")
+@Document(collection = "email_details")
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationEmailRequest {
     @Field("created_at") @CreatedDate
