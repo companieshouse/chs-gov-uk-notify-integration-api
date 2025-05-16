@@ -26,10 +26,15 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
     void When_NewResponseSaved_Expect_IdAssigned() {
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID());
 
+        NotificationEmailResponse notificationEmailResponse = new NotificationEmailResponse();
+        notificationEmailResponse.setCreatedAt(null);
+        notificationEmailResponse.setUpdatedAt(null);
+        notificationEmailResponse.setResponse(emailResponse);
+        notificationEmailResponse.setId(null);
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, null, null, null));
+                notificationEmailResponse);
 
-        assertNotNull(savedResponse);
+        assertNotNull(savedResponse.toString());
         assertNotNull(savedResponse.getId());
         assertNotNull(savedResponse.getCreatedAt());
         assertNotNull(savedResponse.getUpdatedAt());

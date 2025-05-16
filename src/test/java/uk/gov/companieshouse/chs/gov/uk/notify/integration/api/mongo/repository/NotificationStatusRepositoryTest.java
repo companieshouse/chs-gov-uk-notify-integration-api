@@ -35,20 +35,19 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
     void When_NewStatusSaved_Expect_IdAssigned() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
-        NotificationStatus status = new NotificationStatus(
-                null,
-                null,
-                testData.requestId,
-                testData.responseId,
-                "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z"),
-                null
-        );
+        NotificationStatus notificationStatus = new NotificationStatus();
+        notificationStatus.setCreatedAt(null);
+        notificationStatus.setUpdatedAt(null);
+        notificationStatus.setRequestId(testData.requestId);
+        notificationStatus.setResponseId(testData.responseId);
+        notificationStatus.setStatus("SENT");
+        notificationStatus.setStatusDetails(Map.of("sentAt", "2023-03-15T14:30:00Z"));
+        notificationStatus.setId(null);
 
 
-        NotificationStatus savedStatus = statusRepository.save(status);
+        NotificationStatus savedStatus = statusRepository.save(notificationStatus);
 
-        assertNotNull(savedStatus);
+        assertNotNull(savedStatus.toString());
         assertNotNull(savedStatus.getId());
         assertNotNull(savedStatus.getCreatedAt());
         assertNotNull(savedStatus.getUpdatedAt());

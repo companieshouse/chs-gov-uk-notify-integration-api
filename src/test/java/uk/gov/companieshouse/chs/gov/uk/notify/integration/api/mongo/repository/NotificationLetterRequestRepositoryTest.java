@@ -25,9 +25,14 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main St");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
+        NotificationLetterRequest notificationLetterRequest = new NotificationLetterRequest();
+        notificationLetterRequest.setRequest(letterRequest);
+        notificationLetterRequest.setId(null);
+        notificationLetterRequest.setCreatedAt(null);
+        notificationLetterRequest.setUpdatedAt(null);
+        NotificationLetterRequest savedRequest = requestRepository.save(notificationLetterRequest);
 
-        assertNotNull(savedRequest);
+        assertNotNull(savedRequest.toString());
         assertNotNull(savedRequest.getId());
         assertNotNull(savedRequest.getCreatedAt());
         assertNotNull(savedRequest.getUpdatedAt());

@@ -25,9 +25,14 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("john.doe@example.com");
-        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
+        NotificationEmailRequest notificationEmailRequest = new NotificationEmailRequest();
+        notificationEmailRequest.setRequest(emailRequest);
+        notificationEmailRequest.setId(null);
+        notificationEmailRequest.setCreatedAt(null);
+        notificationEmailRequest.setUpdatedAt(null);
+        NotificationEmailRequest savedRequest = requestRepository.save(notificationEmailRequest);
 
-        assertNotNull(savedRequest);
+        assertNotNull(savedRequest.toString());
         assertNotNull(savedRequest.getId());
         assertNotNull(savedRequest.getCreatedAt());
         assertNotNull(savedRequest.getUpdatedAt());
