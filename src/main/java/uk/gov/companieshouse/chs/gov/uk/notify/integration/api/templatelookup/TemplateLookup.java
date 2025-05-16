@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TemplateLookup {
 
-    private static final String LETTER_TEMPLATE_ASSETS_FILEPATH = "assets/templates/letters/";
+    private static final String LETTER_TEMPLATES_ROOT_DIRECTORY = "assets/templates/letters/";
 
     /**
      * Derives a specification of the template location from the template look up key
@@ -19,8 +19,12 @@ public class TemplateLookup {
      */
     public LetterTemplateLocatorSpec lookupTemplate(ChLetterTemplate templateLookupKey) {
         return new LetterTemplateLocatorSpec(
-                LETTER_TEMPLATE_ASSETS_FILEPATH + templateLookupKey.appId() + "/",
+                getLetterTemplatesRootDirectory() + templateLookupKey.appId() + "/",
                 templateLookupKey.id() + "_v" + templateLookupKey.version());
+    }
+
+    public String getLetterTemplatesRootDirectory() {
+        return LETTER_TEMPLATES_ROOT_DIRECTORY;
     }
 
 }

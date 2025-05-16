@@ -19,13 +19,12 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Objects;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +43,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -95,9 +95,14 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
                     + "ChLetterTemplate[appId=chips, id=directionLetter, version=2147483647]";
-    public static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
+    private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
                     + "ChLetterTemplate[appId=chips, id=new_letter, version=1]";
+    private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
+    "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
+            + "(template: \"unknown_directory/chips/directionLetter_v1.html\") "
+            + "[cause: java.io.FileNotFoundException: ClassLoader resource "
+            + "\"unknown_directory/chips/directionLetter_v1.html\" could not be resolved]";
 
     @Autowired
     private MockMvc mockMvc;
@@ -116,6 +121,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @MockitoSpyBean
     private SenderRestApi senderRestApi;
+
+    @MockitoSpyBean
+    private TemplateLookup templateLookup;
 
     @Mock
     private InputStream precompiledPdfInputStream;
@@ -483,6 +491,31 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter cannot find letter template")
+    void sendLetterCannotFindTemplate(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(
+                TEMPLATE_NOT_FOUND_ERROR_MESSAGE.replace("\"", "\\\"")),
+                is(true));
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
