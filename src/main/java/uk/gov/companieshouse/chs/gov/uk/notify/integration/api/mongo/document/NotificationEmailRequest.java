@@ -56,7 +56,7 @@ public class NotificationEmailRequest {
     }
 
     public void setId(String id) {
-        id = id;
+        this.id = id;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
