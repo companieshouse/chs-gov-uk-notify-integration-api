@@ -21,6 +21,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Go
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,6 +89,15 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
+    private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
+                    + "ChLetterTemplate[appId=unknown_application, id=directionLetter, version=1]";
+    private static final String UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
+                    + "ChLetterTemplate[appId=chips, id=directionLetter, version=2147483647]";
+    public static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
+                    + "ChLetterTemplate[appId=chips, id=new_letter, version=1]";
 
     @Autowired
     private MockMvc mockMvc;
@@ -412,6 +422,72 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterResponseStored();
     }
 
+    @Test
+    @DisplayName("Send letter with unknown application ID")
+    void sendLetterWithUnknownApplicationId(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithUnknownApplicationId()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(UNKNOWN_APPLICATION_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(UNKNOWN_APPLICATION_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with unknown template version")
+    void sendLetterWithUnknownTemplateVersion(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithUnknownTemplateVersion()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with unknown template ID (aka letter)")
+    void sendLetterWithUnknownTemplateId(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithUnknownTemplateId()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
@@ -516,6 +592,33 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         letterDetails.addProperty("personalisation_details", personalisationDetailsString);
         request.add("letter_details", letterDetails);
         return request.toString();
+    }
+
+    private String getRequestWithUnknownApplicationId()
+            throws IOException {
+        var request = objectMapper.readValue(
+                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                GovUkLetterDetailsRequest.class);
+        request.getSenderDetails().setAppId("unknown_application");
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithUnknownTemplateVersion()
+            throws IOException {
+        var request = objectMapper.readValue(
+                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                GovUkLetterDetailsRequest.class);
+        request.getLetterDetails().setTemplateVersion(new BigDecimal(Integer.MAX_VALUE));
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithUnknownTemplateId()
+            throws IOException {
+        var request = objectMapper.readValue(
+                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                GovUkLetterDetailsRequest.class);
+        request.getLetterDetails().setTemplateId("new_letter");
+        return objectMapper.writeValueAsString(request);
     }
 
 }
