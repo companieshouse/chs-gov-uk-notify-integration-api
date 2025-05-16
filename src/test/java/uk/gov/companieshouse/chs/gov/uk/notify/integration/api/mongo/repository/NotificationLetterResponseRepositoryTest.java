@@ -30,6 +30,8 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(savedResponse);
         assertNotNull(savedResponse.getId());
+        assertNotNull(savedResponse.getCreatedAt());
+        assertNotNull(savedResponse.getUpdatedAt());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +31,8 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(savedResponse);
         assertNotNull(savedResponse.getId());
+        assertNotNull(savedResponse.getCreatedAt());
+        assertNotNull(savedResponse.getUpdatedAt());
     }
 
     @Test
@@ -67,9 +68,9 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         UUID updatedNotificationId = UUID.randomUUID();
 
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), createSampleEmailResponse(UUID.randomUUID(),initialNotificationId), "1"));
+                new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),initialNotificationId), "1"));
 
-        responseRepository.save(new NotificationEmailResponse(LocalDateTime.now(), LocalDateTime.now().plusHours(1), createSampleEmailResponse(UUID.randomUUID(),updatedNotificationId), savedResponse.getId()));
+        responseRepository.save(new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),updatedNotificationId), savedResponse.getId()));
 
         NotificationEmailResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
 

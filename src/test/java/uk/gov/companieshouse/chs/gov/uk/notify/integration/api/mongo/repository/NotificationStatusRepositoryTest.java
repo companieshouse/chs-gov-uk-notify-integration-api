@@ -50,6 +50,8 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(savedStatus);
         assertNotNull(savedStatus.getId());
+        assertNotNull(savedStatus.getCreatedAt());
+        assertNotNull(savedStatus.getUpdatedAt());
     }
 
     @Test

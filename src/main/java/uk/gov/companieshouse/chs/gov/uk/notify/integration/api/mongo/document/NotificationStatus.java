@@ -4,13 +4,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "status")
-@EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationStatus {
 
     @Field("created_at") @CreatedDate
@@ -19,15 +18,20 @@ public class NotificationStatus {
     @Field("updated_at") @LastModifiedDate
     private LocalDateTime updatedAt;
 
-     @Field("requestId") String requestId;
+    @Field("requestId")
+    private String requestId;
 
-     @Field("responseId") String responseId;
+    @Field("responseId")
+    private String responseId;
 
-     @Field("status") String status;
+    @Field("status")
+    private String status;
 
-     @Field("statusDetails") Map<String, Object> statusDetails;
+    @Field("statusDetails")
+    private Map<String, Object> statusDetails;
 
-     private String id;
+    @Id
+    private String id;
 
     public NotificationStatus(LocalDateTime createdAt, LocalDateTime updatedAt, String requestId, String responseId, String status, Map<String, Object> statusDetails, String id) {
         this.createdAt = createdAt;

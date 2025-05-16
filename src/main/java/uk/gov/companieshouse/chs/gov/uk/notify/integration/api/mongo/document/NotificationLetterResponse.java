@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.service.notify.LetterResponse;
@@ -10,7 +10,6 @@ import uk.gov.service.notify.LetterResponse;
 import java.time.LocalDateTime;
 
 @Document(collection = "responses")
-@EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationLetterResponse {
 
     @Field("created_at") @CreatedDate
@@ -19,8 +18,10 @@ public class NotificationLetterResponse {
     @Field("updated_at") @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Field("response")
     private LetterResponse response;
 
+    @Id
     private String id;
 
     public NotificationLetterResponse(LocalDateTime createdAt, LocalDateTime updatedAt, LetterResponse response, String id) {

@@ -29,6 +29,8 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(savedRequest);
         assertNotNull(savedRequest.getId());
+        assertNotNull(savedRequest.getCreatedAt());
+        assertNotNull(savedRequest.getUpdatedAt());
     }
 
     @Test

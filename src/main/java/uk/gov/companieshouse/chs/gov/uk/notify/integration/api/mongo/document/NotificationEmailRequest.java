@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -11,7 +10,6 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import java.time.LocalDateTime;
 
 @Document(collection = "email_details")
-@EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationEmailRequest {
     @Field("created_at") @CreatedDate
     private LocalDateTime createdAt;
@@ -73,10 +71,8 @@ public class NotificationEmailRequest {
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
-                ", Id='" + id + '\'' +
+                ", id='" + id + '\'' +
                 '}';
     }
-
-
 }
 

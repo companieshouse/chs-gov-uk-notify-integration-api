@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -10,7 +10,6 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import java.time.LocalDateTime;
 
 @Document(collection = "letter_details")
-@EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class NotificationLetterRequest {
 
     @Field("created_at") @CreatedDate
@@ -19,8 +18,10 @@ public class NotificationLetterRequest {
     @Field("updated_at") @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Field("request")
     private GovUkLetterDetailsRequest request;
 
+    @Id
     private String id;
 
     public NotificationLetterRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkLetterDetailsRequest request, String id) {
