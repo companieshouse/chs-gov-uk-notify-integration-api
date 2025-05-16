@@ -6,5 +6,5 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup;
  *               template resides
  * @param filename the name of the template file
  */
-public record LetterTemplateSpec(String prefix, String filename) {
+public record LetterTemplateLocatorSpec(String prefix, String filename) {
 }
