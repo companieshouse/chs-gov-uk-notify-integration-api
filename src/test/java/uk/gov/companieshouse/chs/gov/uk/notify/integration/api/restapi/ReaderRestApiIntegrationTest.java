@@ -100,7 +100,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void When_RequestingEmailById_Expect_SuccessfulResponseWithMatchingEmail() throws Exception {
         GovUkEmailDetailsRequest emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
         NotificationEmailRequest savedEmail = notificationDatabaseService.storeEmail(emailRequest);
-        String emailId = savedEmail.id();
+        String emailId = savedEmail.getId();
 
         MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/email/" + emailId)
                         .accept(MediaType.APPLICATION_JSON)

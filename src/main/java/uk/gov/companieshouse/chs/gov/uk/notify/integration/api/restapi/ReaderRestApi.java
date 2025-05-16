@@ -44,7 +44,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         return new ResponseEntity<>(
                 emails.stream()
-                        .map(NotificationEmailRequest::request)
+                        .map(NotificationEmailRequest::getRequest)
                         .toList(),
                 HttpStatus.OK
         );
@@ -63,7 +63,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         if (emailRequest.isPresent()) {
             LOGGER.info("Email notification found with ID: " + id, logMap);
-            return new ResponseEntity<>(emailRequest.get().request(), HttpStatus.OK);
+            return new ResponseEntity<>(emailRequest.get().getRequest(), HttpStatus.OK);
         } else {
             LOGGER.info("Email notification not found with ID: " + id, logMap);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -86,7 +86,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         return new ResponseEntity<>(
                 emails.stream()
-                        .map(NotificationEmailRequest::request)
+                        .map(NotificationEmailRequest::getRequest)
                         .toList(),
                 HttpStatus.OK
         );
@@ -106,7 +106,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         return new ResponseEntity<>(
                 letters.stream()
-                        .map(NotificationLetterRequest::request)
+                        .map(NotificationLetterRequest::getRequest)
                         .toList(),
                 HttpStatus.OK
         );
@@ -126,7 +126,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         if (letterRequest.isPresent()) {
             LOGGER.info("Letter notification found with ID: " + id, logMap);
-            return new ResponseEntity<>(letterRequest.get().request(), HttpStatus.OK);
+            return new ResponseEntity<>(letterRequest.get().getRequest(), HttpStatus.OK);
         } else {
             LOGGER.info("Letter notification not found with ID: " + id, logMap);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -149,7 +149,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         return new ResponseEntity<>(
                 letters.stream()
-                        .map(NotificationLetterRequest::request)
+                        .map(NotificationLetterRequest::getRequest)
                         .toList(),
                 HttpStatus.OK
         );

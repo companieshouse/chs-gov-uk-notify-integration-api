@@ -26,10 +26,18 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
     void When_NewResponseSaved_Expect_IdAssigned() {
         LetterResponse letterResponse = createSampleLetterResponse(UUID.randomUUID());
 
-        NotificationLetterResponse savedResponse = responseRepository.save(new NotificationLetterResponse(null, letterResponse));
+        NotificationLetterResponse notificationLetterResponse = new NotificationLetterResponse();
+        notificationLetterResponse.setCreatedAt(null);
+        notificationLetterResponse.setUpdatedAt(null);
+        notificationLetterResponse.setResponse(letterResponse);
+        notificationLetterResponse.setId(null);
 
-        assertNotNull(savedResponse);
-        assertNotNull(savedResponse.id());
+        NotificationLetterResponse savedResponse = responseRepository.save(notificationLetterResponse);
+
+        assertNotNull(savedResponse.toString());
+        assertNotNull(savedResponse.getId());
+        assertNotNull(savedResponse.getCreatedAt());
+        assertNotNull(savedResponse.getUpdatedAt());
     }
 
     @Test
@@ -38,24 +46,24 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
         LetterResponse letterResponse = createSampleLetterResponse(notificationId);
 
         NotificationLetterResponse savedResponse = responseRepository.save(
-                new NotificationLetterResponse(null, letterResponse));
+                new NotificationLetterResponse(null, null, letterResponse, null));
 
-        Optional<NotificationLetterResponse> retrievedResponse = responseRepository.findById(savedResponse.id());
+        Optional<NotificationLetterResponse> retrievedResponse = responseRepository.findById(savedResponse.getId());
 
         assertTrue(retrievedResponse.isPresent());
-        assertEquals(savedResponse.id(), retrievedResponse.get().id());
-        assertEquals(notificationId, retrievedResponse.get().response().getNotificationId());
+        assertEquals(savedResponse.getId(), retrievedResponse.get().getId());
+        assertEquals(notificationId, retrievedResponse.get().getResponse().getNotificationId());
     }
 
 
     @Test
     void When_ResponseDeleted_Expect_ResponseNotFoundById() {
         NotificationLetterResponse savedResponse = responseRepository.save(
-                new NotificationLetterResponse(null, createSampleLetterResponse(UUID.randomUUID())));
+                new NotificationLetterResponse(null, null, createSampleLetterResponse(UUID.randomUUID()), null));
 
-        responseRepository.deleteById(savedResponse.id());
+        responseRepository.deleteById(savedResponse.getId());
 
-        Optional<NotificationLetterResponse> deletedResponse = responseRepository.findById(savedResponse.id());
+        Optional<NotificationLetterResponse> deletedResponse = responseRepository.findById(savedResponse.getId());
         assertFalse(deletedResponse.isPresent());
     }
 
@@ -65,15 +73,15 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
         UUID updatedNotificationId = UUID.randomUUID();
 
         NotificationLetterResponse savedResponse = responseRepository.save(
-                new NotificationLetterResponse(null, createSampleLetterResponse(initialNotificationId)));
+                new NotificationLetterResponse(null, null, createSampleLetterResponse(initialNotificationId), null));
 
-        responseRepository.save(new NotificationLetterResponse(savedResponse.id(),
-                createSampleLetterResponse(updatedNotificationId)));
+        responseRepository.save(new NotificationLetterResponse(null, null,
+                createSampleLetterResponse(updatedNotificationId), savedResponse.getId()));
 
-        NotificationLetterResponse retrievedResponse = responseRepository.findById(savedResponse.id()).orElse(null);
+        NotificationLetterResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
 
         assertNotNull(retrievedResponse);
-        assertEquals(updatedNotificationId, retrievedResponse.response().getNotificationId());
+        assertEquals(updatedNotificationId, retrievedResponse.getResponse().getNotificationId());
     }
 
     private LetterResponse createSampleLetterResponse(UUID notificationId) {

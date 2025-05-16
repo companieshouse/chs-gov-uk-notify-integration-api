@@ -35,18 +35,22 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
     void When_NewStatusSaved_Expect_IdAssigned() {
         TestData testData = setupTestDataWithRequestAndResponse();
 
-        NotificationStatus status = new NotificationStatus(
-                null,
-                testData.requestId,
-                testData.responseId,
-                "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")
-        );
+        NotificationStatus notificationStatus = new NotificationStatus();
+        notificationStatus.setCreatedAt(null);
+        notificationStatus.setUpdatedAt(null);
+        notificationStatus.setRequestId(testData.requestId);
+        notificationStatus.setResponseId(testData.responseId);
+        notificationStatus.setStatus("SENT");
+        notificationStatus.setStatusDetails(Map.of("sentAt", "2023-03-15T14:30:00Z"));
+        notificationStatus.setId(null);
 
-        NotificationStatus savedStatus = statusRepository.save(status);
 
-        assertNotNull(savedStatus);
-        assertNotNull(savedStatus.id());
+        NotificationStatus savedStatus = statusRepository.save(notificationStatus);
+
+        assertNotNull(savedStatus.toString());
+        assertNotNull(savedStatus.getId());
+        assertNotNull(savedStatus.getCreatedAt());
+        assertNotNull(savedStatus.getUpdatedAt());
     }
 
     @Test
@@ -55,19 +59,21 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
         NotificationStatus status = new NotificationStatus(
                 null,
+                null,
                 testData.requestId,
                 testData.responseId,
                 "DELIVERED",
-                Map.of("deliveredAt", "2023-03-15T14:32:00Z")
+                Map.of("deliveredAt", "2023-03-15T14:32:00Z"),
+                null
         );
 
         NotificationStatus savedStatus = statusRepository.save(status);
 
-        Optional<NotificationStatus> retrievedStatus = statusRepository.findById(savedStatus.id());
+        Optional<NotificationStatus> retrievedStatus = statusRepository.findById(savedStatus.getId());
 
         assertTrue(retrievedStatus.isPresent());
-        assertEquals(savedStatus.id(), retrievedStatus.get().id());
-        assertEquals("DELIVERED", retrievedStatus.get().status());
+        assertEquals(savedStatus.getId(), retrievedStatus.get().getId());
+        assertEquals("DELIVERED", retrievedStatus.get().getStatus());
     }
 
     @Test
@@ -76,10 +82,12 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
         NotificationStatus status = new NotificationStatus(
                 null,
+                null,
                 testData.requestId,
                 testData.responseId,
                 "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")
+                Map.of("sentAt", "2023-03-15T14:30:00Z"),
+                null
         );
 
         statusRepository.save(status);
@@ -87,7 +95,7 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
         List<NotificationStatus> statuses = statusRepository.findByRequestId(testData.requestId);
 
         assertEquals(1, statuses.size());
-        assertEquals("SENT", statuses.getFirst().status());
+        assertEquals("SENT", statuses.getFirst().getStatus());
     }
 
     @Test
@@ -96,10 +104,12 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
         NotificationStatus status = new NotificationStatus(
                 null,
+                null,
                 testData.requestId,
                 testData.responseId,
                 "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")
+                Map.of("sentAt", "2023-03-15T14:30:00Z"),
+                null
         );
 
         statusRepository.save(status);
@@ -107,7 +117,7 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
         List<NotificationStatus> statuses = statusRepository.findByResponseId(testData.responseId);
 
         assertEquals(1, statuses.size());
-        assertEquals("SENT", statuses.getFirst().status());
+        assertEquals("SENT", statuses.getFirst().getStatus());
     }
 
     @Test
@@ -115,11 +125,11 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         statusRepository.save(new NotificationStatus(
-                null, testData.requestId, testData.responseId, "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")));
+                null, null, testData.requestId, testData.responseId, "SENT",
+                Map.of("sentAt", "2023-03-15T14:30:00Z"), null));
         statusRepository.save(new NotificationStatus(
-                null, testData.requestId, testData.responseId, "DELIVERED",
-                Map.of("deliveredAt", "2023-03-15T14:32:00Z")));
+                null, null, testData.requestId, testData.responseId, "DELIVERED",
+                Map.of("deliveredAt", "2023-03-15T14:32:00Z"), null));
 
         List<NotificationStatus> statuses = statusRepository.findByResponseId(testData.responseId);
 
@@ -131,12 +141,12 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus savedStatus = statusRepository.save(new NotificationStatus(
-                null, testData.requestId, testData.responseId, "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")));
+                null, null, testData.requestId, testData.responseId, "SENT",
+                Map.of("sentAt", "2023-03-15T14:30:00Z"), null));
 
-        statusRepository.deleteById(savedStatus.id());
+        statusRepository.deleteById(savedStatus.getId());
 
-        Optional<NotificationStatus> deletedStatus = statusRepository.findById(savedStatus.id());
+        Optional<NotificationStatus> deletedStatus = statusRepository.findById(savedStatus.getId());
         assertFalse(deletedStatus.isPresent());
     }
 
@@ -145,28 +155,28 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
         TestData testData = setupTestDataWithRequestAndResponse();
 
         NotificationStatus savedStatus = statusRepository.save(new NotificationStatus(
-                null, testData.requestId, testData.responseId, "SENT",
-                Map.of("sentAt", "2023-03-15T14:30:00Z")));
+                null, null, testData.requestId, testData.responseId, "SENT",
+                Map.of("sentAt", "2023-03-15T14:30:00Z"), null));
 
         statusRepository.save(new NotificationStatus(
-                savedStatus.id(), testData.requestId, testData.responseId, "FAILED",
-                Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email")));
+                null, null, testData.requestId, testData.responseId, "FAILED",
+                Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email"), savedStatus.getId()));
 
-        NotificationStatus retrievedStatus = statusRepository.findById(savedStatus.id()).orElse(null);
+        NotificationStatus retrievedStatus = statusRepository.findById(savedStatus.getId()).orElse(null);
 
         assertNotNull(retrievedStatus);
-        assertEquals("FAILED", retrievedStatus.status());
-        assertEquals("Invalid email", retrievedStatus.statusDetails().get("reason"));
+        assertEquals("FAILED", retrievedStatus.getStatus());
+        assertEquals("Invalid email", retrievedStatus.getStatusDetails().get("reason"));
     }
 
     private TestData setupTestDataWithRequestAndResponse() {
         NotificationEmailRequest savedRequest = requestRepository.save(createSampleNotificationRequest());
 
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, createSampleEmailResponse())
+                new NotificationEmailResponse(null, null, createSampleEmailResponse(), null)
         );
 
-        return new TestData(savedRequest.id(), savedResponse.id());
+        return new TestData(savedRequest.getId(), savedResponse.getId());
     }
 
     private static class TestData {

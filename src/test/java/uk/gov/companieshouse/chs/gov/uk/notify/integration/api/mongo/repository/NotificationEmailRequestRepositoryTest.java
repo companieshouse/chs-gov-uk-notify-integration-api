@@ -25,29 +25,36 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("john.doe@example.com");
-        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, emailRequest));
+        NotificationEmailRequest notificationEmailRequest = new NotificationEmailRequest();
+        notificationEmailRequest.setRequest(emailRequest);
+        notificationEmailRequest.setId(null);
+        notificationEmailRequest.setCreatedAt(null);
+        notificationEmailRequest.setUpdatedAt(null);
+        NotificationEmailRequest savedRequest = requestRepository.save(notificationEmailRequest);
 
-        assertNotNull(savedRequest);
-        assertNotNull(savedRequest.id());
+        assertNotNull(savedRequest.toString());
+        assertNotNull(savedRequest.getId());
+        assertNotNull(savedRequest.getCreatedAt());
+        assertNotNull(savedRequest.getUpdatedAt());
     }
 
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("jane.doe@example.com");
-        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, emailRequest));
+        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
 
-        Optional<NotificationEmailRequest> retrievedRequest = requestRepository.findById(savedRequest.id());
+        Optional<NotificationEmailRequest> retrievedRequest = requestRepository.findById(savedRequest.getId());
 
         assertTrue(retrievedRequest.isPresent());
-        assertEquals(savedRequest.id(), retrievedRequest.get().id());
-        assertEquals("jane.doe@example.com", retrievedRequest.get().request().getRecipientDetails().getEmailAddress());
+        assertEquals(savedRequest.getId(), retrievedRequest.get().getId());
+        assertEquals("jane.doe@example.com", retrievedRequest.get().getRequest().getRecipientDetails().getEmailAddress());
     }
 
     @Test
     void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
-        requestRepository.save(new NotificationEmailRequest(null, createSampleEmailRequest("user1@example.com")));
-        requestRepository.save(new NotificationEmailRequest(null, createSampleEmailRequest("user2@example.com")));
-        requestRepository.save(new NotificationEmailRequest(null, createSampleEmailRequest("user3@example.com")));
+        requestRepository.save(new NotificationEmailRequest(null, null, createSampleEmailRequest("user1@example.com"), null));
+        requestRepository.save(new NotificationEmailRequest(null, null, createSampleEmailRequest("user2@example.com"), null));
+        requestRepository.save(new NotificationEmailRequest(null, null, createSampleEmailRequest("user3@example.com"), null));
 
         List<NotificationEmailRequest> allRequests = requestRepository.findAll();
 
@@ -56,26 +63,26 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestDeleted_Expect_RequestNotFoundById() {
-        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, createSampleEmailRequest("test@example.com")));
+        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, createSampleEmailRequest("test@example.com"), null));
 
-        requestRepository.deleteById(savedRequest.id());
+        requestRepository.deleteById(savedRequest.getId());
 
-        Optional<NotificationEmailRequest> deletedRequest = requestRepository.findById(savedRequest.id());
+        Optional<NotificationEmailRequest> deletedRequest = requestRepository.findById(savedRequest.getId());
         assertFalse(deletedRequest.isPresent());
     }
 
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
         GovUkEmailDetailsRequest initialRequest = createSampleEmailRequest("initial@example.com");
-        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, initialRequest));
+        NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, initialRequest, null));
 
         GovUkEmailDetailsRequest updatedRequest = createSampleEmailRequest("updated@example.com");
-        requestRepository.save(new NotificationEmailRequest(savedRequest.id(), updatedRequest));
+        requestRepository.save(new NotificationEmailRequest(null, null, updatedRequest, savedRequest.getId()));
 
-        NotificationEmailRequest retrievedRequest = requestRepository.findById(savedRequest.id()).orElse(null);
+        NotificationEmailRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
         assertNotNull(retrievedRequest);
-        assertEquals("updated@example.com", retrievedRequest.request().getRecipientDetails().getEmailAddress());
+        assertEquals("updated@example.com", retrievedRequest.getRequest().getRecipientDetails().getEmailAddress());
     }
     
 }
