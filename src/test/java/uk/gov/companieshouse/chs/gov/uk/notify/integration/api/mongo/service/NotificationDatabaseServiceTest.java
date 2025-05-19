@@ -22,12 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequestWithReference;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailResponse;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithReference;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.*;
 
 @SpringBootTest
 class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
@@ -41,20 +36,20 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
         NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
 
         assertNotNull(savedRequest);
-        assertNotNull(savedRequest.id());
+        assertNotNull(savedRequest.getId());
     }
 
     @Test
     void When_GetEmail_ThenEmailRetrieved() {
         GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("jane.smith@example.com");
         NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
-        String id = savedRequest.id();
+        String id = savedRequest.getId();
 
         Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService.getEmail(id);
 
         assertTrue(retrievedRequest.isPresent());
-        assertEquals(id, retrievedRequest.get().id());
-        assertEquals("jane.smith@example.com", retrievedRequest.get().request().getRecipientDetails().getEmailAddress());
+        assertEquals(id, retrievedRequest.get().getId());
+        assertEquals("jane.smith@example.com", retrievedRequest.get().getRequest().getRecipientDetails().getEmailAddress());
     }
 
     @Test
@@ -81,20 +76,20 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
         NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
 
         assertNotNull(savedRequest);
-        assertNotNull(savedRequest.id());
+        assertNotNull(savedRequest.getId());
     }
 
     @Test
     void When_GetLetter_ThenLetterRetrieved() {
         GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 High Street");
         NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
-        String id = savedRequest.id();
+        String id = savedRequest.getId();
 
         Optional<NotificationLetterRequest> retrievedRequest = notificationDatabaseService.getLetter(id);
 
         assertTrue(retrievedRequest.isPresent());
-        assertEquals(id, retrievedRequest.get().id());
-        assertEquals("456 High Street", retrievedRequest.get().request().getRecipientDetails().getPhysicalAddress().getAddressLine1());
+        assertEquals(id, retrievedRequest.get().getId());
+        assertEquals("456 High Street", retrievedRequest.get().getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
     }
 
     @Test
@@ -127,21 +122,23 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         NotificationStatus status = new NotificationStatus(
                 null,
+                null,
                 requestId,
                 responseId,
                 "SENT",
-                statusDetails
+                statusDetails,
+                null
         );
 
         NotificationStatus savedStatus = notificationDatabaseService.updateStatus(status);
 
         assertNotNull(savedStatus);
-        assertNotNull(savedStatus.id());
-        assertEquals(requestId, savedStatus.requestId());
-        assertEquals(responseId, savedStatus.responseId());
-        assertEquals("SENT", savedStatus.status());
-        assertNotNull(savedStatus.statusDetails());
-        assertEquals("Email sent successfully", savedStatus.statusDetails().get("message"));
+        assertNotNull(savedStatus.getId());
+        assertEquals(requestId, savedStatus.getRequestId());
+        assertEquals(responseId, savedStatus.getResponseId());
+        assertEquals("SENT", savedStatus.getStatus());
+        assertNotNull(savedStatus.getStatusDetails());
+        assertEquals("Email sent successfully", savedStatus.getStatusDetails().get("message"));
     }
 
     @Test
@@ -154,7 +151,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedEmails);
         assertFalse(retrievedEmails.isEmpty());
-        assertEquals(reference, retrievedEmails.get(0).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedEmails.get(0).getRequest().getSenderDetails().getReference());
     }
 
     @Test
@@ -175,7 +172,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedLetters);
         assertFalse(retrievedLetters.isEmpty());
-        assertEquals(reference, retrievedLetters.get(0).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedLetters.get(0).getRequest().getSenderDetails().getReference());
     }
 
     @Test
@@ -213,8 +210,8 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedEmails);
         assertEquals(2, retrievedEmails.size());
-        assertEquals(reference, retrievedEmails.get(0).request().getSenderDetails().getReference());
-        assertEquals(reference, retrievedEmails.get(1).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedEmails.get(0).getRequest().getSenderDetails().getReference());
+        assertEquals(reference, retrievedEmails.get(1).getRequest().getSenderDetails().getReference());
     }
 
     @Test
@@ -230,7 +227,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedLetters);
         assertEquals(2, retrievedLetters.size());
-        assertEquals(reference, retrievedLetters.get(0).request().getSenderDetails().getReference());
-        assertEquals(reference, retrievedLetters.get(1).request().getSenderDetails().getReference());
+        assertEquals(reference, retrievedLetters.get(0).getRequest().getSenderDetails().getReference());
+        assertEquals(reference, retrievedLetters.get(1).getRequest().getSenderDetails().getReference());
     }
 }
