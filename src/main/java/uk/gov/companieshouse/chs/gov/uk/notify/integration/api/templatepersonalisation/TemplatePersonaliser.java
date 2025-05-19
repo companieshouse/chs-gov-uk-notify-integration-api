@@ -43,8 +43,8 @@ public class TemplatePersonaliser {
         context.setVariable("date", LocalDate.now().format(format));
 
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
-        populateAddress(context, address, upperCaseCompanyName);
-        personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
+        context = populateAddress(context, address, upperCaseCompanyName);
+        context = personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
 
         validator.validateContextForTemplate(context, template);
 
@@ -61,7 +61,7 @@ public class TemplatePersonaliser {
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
-    private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
+    private Context populateAddress(Context context, Address address, String upperCaseCompanyName) {
         context.setVariable("address_line_1",
                 uppercaseIfCompanyName(address.getAddressLine1(), upperCaseCompanyName));
         context.setVariable("address_line_2",
@@ -77,15 +77,17 @@ public class TemplatePersonaliser {
         // TODO DEEP-287 postcode_or_country or just line 7?
         // Consider populating this field with the last populated address line...
         context.setVariable("postcode_or_country", address.getAddressLine7());
+        return context;
     }
 
-    private void personaliseLetter(Context context,
+    private Context personaliseLetter(Context context,
                                    Map<String, String> personalisationDetails,
                                    String upperCaseCompanyName) {
         personalisationDetails.keySet().forEach(name ->
                 context.setVariable(name,
                         uppercaseIfCompanyName(personalisationDetails.get(name),
                                 upperCaseCompanyName)));
+        return context;
     }
 
     /**
