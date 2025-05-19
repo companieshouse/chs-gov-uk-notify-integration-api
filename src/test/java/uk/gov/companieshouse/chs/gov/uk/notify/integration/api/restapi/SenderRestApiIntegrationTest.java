@@ -39,6 +39,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
@@ -149,15 +151,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 });
 
         // When and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
-                .andExpect(status().isCreated());
+        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                status().isCreated());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
@@ -174,15 +169,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithoutCompanyName()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithoutCompanyName(),
+                status().isBadRequest())
                 .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
@@ -196,15 +184,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithoutPscFullName()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithoutPscFullName(),
+                status().isBadRequest())
                 .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
@@ -218,15 +199,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnparsablePersonalisationDetails(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithUnparsablePersonalisationDetails()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithUnparsablePersonalisationDetails(),
+                status().isBadRequest())
                 .andExpect(content().string(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1),
@@ -253,15 +227,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
         // When and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
-                .andExpect(status().isInternalServerError());
+        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                status().isInternalServerError());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
@@ -300,16 +267,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithInvalidRequest(CapturedOutput log) throws Exception {
 
         // When and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, INVALID_CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
-                                UTF_8)))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
+                        UTF_8),
+                status().isBadRequest())
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
 
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
@@ -412,15 +372,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
-                .andExpect(status().isInternalServerError());
+        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                status().isInternalServerError());
 
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
@@ -435,15 +388,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownApplicationId(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithUnknownApplicationId()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithUnknownApplicationId(),
+                status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_APPLICATION_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_APPLICATION_ERROR_MESSAGE), is(true));
@@ -457,15 +403,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownTemplateVersion(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithUnknownTemplateVersion()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithUnknownTemplateVersion(),
+                status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE), is(true));
@@ -479,15 +418,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownTemplateId(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(getRequestWithUnknownTemplateId()))
-                .andExpect(status().isBadRequest())
+        postSendLetterRequest(getRequestWithUnknownTemplateId(),
+                status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE), is(true));
@@ -502,15 +434,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given, when and then
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
-        mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
-                .andExpect(status().isInternalServerError())
+        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(
@@ -521,6 +446,19 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
+    private ResultActions postSendLetterRequest(String requestBody,
+                                                ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(requestBody))
+                .andExpect(expectedResponseStatus);
+    }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
