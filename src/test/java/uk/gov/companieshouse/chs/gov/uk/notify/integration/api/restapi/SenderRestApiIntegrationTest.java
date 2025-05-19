@@ -151,7 +151,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 });
 
         // When and then
-        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+        postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isCreated());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -227,7 +227,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
         // When and then
-        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+        postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -251,7 +251,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                        .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(INVALID_CONTEXT_ID_ERROR_MESSAGE));
 
@@ -289,7 +289,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(X_REQUEST_ID, CONTEXT_ID)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                        .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isUnauthorized());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -310,7 +310,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(X_REQUEST_ID, CONTEXT_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                        .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -331,7 +331,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(X_REQUEST_ID, CONTEXT_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                        .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -353,7 +353,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, NON_INTERNAL_USER_ROLES)
-                        .content(resourceToString("/fixtures/send-letter-request.json", UTF_8)))
+                        .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
@@ -372,7 +372,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
-        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+        postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(
@@ -434,7 +434,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given, when and then
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
-        postSendLetterRequest(resourceToString("/fixtures/send-letter-request.json", UTF_8),
+        postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -460,12 +460,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(expectedResponseStatus);
     }
 
+    private static String getValidSendLetterRequestBody() throws IOException {
+        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
+    }
+
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
     // response payload to fetch the letter created.
     private void verifyLetterDetailsRequestStoredCorrectly() throws IOException {
         var sentRequest = objectMapper.readValue(
-                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(false));
         var storedRequest = notificationDatabaseService.findAllLetters().getFirst().request();
@@ -530,7 +534,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static String getRequestWithoutPersonalisation(String personalisationName)
             throws IOException {
         var request  = JsonParser
-                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .parseString(getValidSendLetterRequestBody())
                 .getAsJsonObject();
         var letterDetails = request.get("letter_details")
                 .getAsJsonObject();
@@ -551,7 +555,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static String getRequestWithUnparsablePersonalisationDetails()
             throws IOException {
         var request  = JsonParser
-                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .parseString(getValidSendLetterRequestBody())
                 .getAsJsonObject();
         var letterDetails = request.get("letter_details")
                 .getAsJsonObject();
@@ -568,7 +572,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private String getRequestWithUnknownApplicationId()
             throws IOException {
         var request = objectMapper.readValue(
-                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         request.getSenderDetails().setAppId("unknown_application");
         return objectMapper.writeValueAsString(request);
@@ -577,7 +581,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private String getRequestWithUnknownTemplateVersion()
             throws IOException {
         var request = objectMapper.readValue(
-                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         request.getLetterDetails().setTemplateVersion(new BigDecimal(Integer.MAX_VALUE));
         return objectMapper.writeValueAsString(request);
@@ -586,7 +590,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private String getRequestWithUnknownTemplateId()
             throws IOException {
         var request = objectMapper.readValue(
-                resourceToString("/fixtures/send-letter-request.json", UTF_8),
+                getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         request.getLetterDetails().setTemplateId("new_letter");
         return objectMapper.writeValueAsString(request);
