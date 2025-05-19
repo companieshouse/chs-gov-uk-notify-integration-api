@@ -523,50 +523,42 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
     }
 
-    private static String getRequestWithoutCompanyName() throws IOException {
+    private String getRequestWithoutCompanyName() throws IOException {
         return getRequestWithoutPersonalisation("company_name");
     }
 
-    private static String getRequestWithoutPscFullName() throws IOException {
+    private String getRequestWithoutPscFullName() throws IOException {
         return getRequestWithoutPersonalisation("psc_full_name");
     }
 
-    private static String getRequestWithoutPersonalisation(String personalisationName)
+    private String getRequestWithoutPersonalisation(String personalisationName)
             throws IOException {
-        var request  = JsonParser
-                .parseString(getValidSendLetterRequestBody())
-                .getAsJsonObject();
-        var letterDetails = request.get("letter_details")
-                .getAsJsonObject();
-        var personalisationDetailsString = letterDetails
-                .get("personalisation_details")
-                .getAsString();
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+
         var personalisationDetails = JsonParser
                 .parseString(personalisationDetailsString)
                 .getAsJsonObject();
         personalisationDetails.remove(personalisationName);
-        request.remove("letter_details");
-        letterDetails.remove("personalisation_details");
-        letterDetails.addProperty("personalisation_details", personalisationDetails.toString());
-        request.add("letter_details", letterDetails);
-        return request.toString();
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        return objectMapper.writeValueAsString(request);
     }
 
-    private static String getRequestWithUnparsablePersonalisationDetails()
+    private String getRequestWithUnparsablePersonalisationDetails()
             throws IOException {
-        var request  = JsonParser
-                .parseString(getValidSendLetterRequestBody())
-                .getAsJsonObject();
-        var letterDetails = request.get("letter_details")
-                .getAsJsonObject();
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
         var personalisationDetailsString = letterDetails
-                .get("personalisation_details")
-                .getAsString().replace("}",",}"); // this comma makes it unparsable
-        request.remove("letter_details");
-        letterDetails.remove("personalisation_details");
-        letterDetails.addProperty("personalisation_details", personalisationDetailsString);
-        request.add("letter_details", letterDetails);
-        return request.toString();
+                .getPersonalisationDetails()
+                .replace("}",",}"); // this comma makes it unparsable
+        letterDetails.setPersonalisationDetails(personalisationDetailsString);
+        return objectMapper.writeValueAsString(request);
     }
 
     private String getRequestWithUnknownApplicationId()
