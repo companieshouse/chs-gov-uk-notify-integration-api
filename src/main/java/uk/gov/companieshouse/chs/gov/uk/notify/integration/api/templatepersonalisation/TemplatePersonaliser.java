@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -53,11 +53,12 @@ public class TemplatePersonaliser {
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
         // Company name must be provided and is always rendered in UPPER CASE in the letter.
-        if (isEmpty(personalisationDetails.get("company_name"))) {
+        var companyName = personalisationDetails.get("company_name");
+        if (isBlank(companyName)) {
             throw new LetterValidationException(
                     "No company name found in the letter personalisation details.");
         }
-        return personalisationDetails.get("company_name").toUpperCase();
+        return companyName.toUpperCase();
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
