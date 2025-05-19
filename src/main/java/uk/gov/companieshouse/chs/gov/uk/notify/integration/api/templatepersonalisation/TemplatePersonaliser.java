@@ -84,10 +84,8 @@ public class TemplatePersonaliser {
     private Context personaliseLetter(Context context,
                                    Map<String, String> personalisationDetails,
                                    String upperCaseCompanyName) {
-        personalisationDetails.keySet().forEach(name ->
-                context.setVariable(name,
-                        uppercaseIfCompanyName(personalisationDetails.get(name),
-                                upperCaseCompanyName)));
+        personalisationDetails.forEach((key, value) ->
+                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
         return context;
     }
 
