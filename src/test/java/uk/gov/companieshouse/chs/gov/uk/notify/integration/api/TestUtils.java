@@ -94,7 +94,7 @@ public class TestUtils {
                 .emailDetails(emailDetails)
                 .createdAt(OffsetDateTime.now());
 
-        return new NotificationEmailRequest(null, emailRequest);
+        return new NotificationEmailRequest(null, null, emailRequest, "1");
     }
 
     public static SendEmailResponse createSampleEmailResponse() {
