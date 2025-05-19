@@ -1,6 +1,15 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation;
 
 import static java.math.BigDecimal.ONE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -22,13 +31,13 @@ public class TemplateContextValidator {
                     new AbstractMap.SimpleEntry<>(
                             new ChLetterTemplate("directionLetter", ONE),
                             ImmutableSet.of(
-                                    "address_line_1", "address_line_2", "postcode_or_country",
-                                    "date",
-                                    "reference",
-                                    "company_name",
-                                    "psc_full_name",
-                                    "deadline_date",
-                                    "extension_date"
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, POSTCODE_OR_COUNTRY,
+                                    DATE,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    PSC_FULL_NAME,
+                                    DEADLINE_DATE,
+                                    EXTENSION_DATE
                             )
                     )
             );

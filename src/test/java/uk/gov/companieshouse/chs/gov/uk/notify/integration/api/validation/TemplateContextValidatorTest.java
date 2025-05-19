@@ -15,6 +15,15 @@ import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -43,15 +52,15 @@ class TemplateContextValidatorTest {
         // Given
         var letter = new ChLetterTemplate("directionLetter", ONE);
         var context = new Context();
-        context.setVariable("address_line_1", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("address_line_2", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("postcode_or_country", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("date", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("reference", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("company_name", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("psc_full_name", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("deadline_date", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("extension_date", TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(POSTCODE_OR_COUNTRY, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(COMPANY_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(PSC_FULL_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(DEADLINE_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(EXTENSION_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
 
         // When
         validator.validateContextForTemplate(context, letter);
@@ -79,13 +88,13 @@ class TemplateContextValidatorTest {
         // Given
         var letter = new ChLetterTemplate("directionLetter", ONE);
         var context = new Context();
-        context.setVariable("address_line_1", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("address_line_2", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("postcode_or_country", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("date", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("reference", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("psc_full_name", TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable("extension_date", TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(POSTCODE_OR_COUNTRY, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(PSC_FULL_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(EXTENSION_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
 
         // When and then
         var exception = assertThrows(LetterValidationException.class,

@@ -1,6 +1,15 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_4;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_5;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -40,7 +49,7 @@ public class TemplatePersonaliser {
 
         // Use today's date for traceability.
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        context.setVariable("date", LocalDate.now().format(format));
+        context.setVariable(DATE, LocalDate.now().format(format));
 
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         context = populateAddress(context, address, upperCaseCompanyName);
@@ -53,7 +62,7 @@ public class TemplatePersonaliser {
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
         // Company name must be provided and is always rendered in UPPER CASE in the letter.
-        var companyName = personalisationDetails.get("company_name");
+        var companyName = personalisationDetails.get(COMPANY_NAME);
         if (isBlank(companyName)) {
             throw new LetterValidationException(
                     "No company name found in the letter personalisation details.");
@@ -64,16 +73,16 @@ public class TemplatePersonaliser {
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private Context populateAddress(Context context, Address address, String upperCaseCompanyName) {
         var addressLines = Map.of(
-                "address_line_1", address.getAddressLine1(),
-                "address_line_2", address.getAddressLine2(),
-                "address_line_3", address.getAddressLine3(),
-                "address_line_4", address.getAddressLine4(),
-                "address_line_5", address.getAddressLine5(),
-                "address_line_6", address.getAddressLine6(),
+                ADDRESS_LINE_1, address.getAddressLine1(),
+                ADDRESS_LINE_2, address.getAddressLine2(),
+                ADDRESS_LINE_3, address.getAddressLine3(),
+                ADDRESS_LINE_4, address.getAddressLine4(),
+                ADDRESS_LINE_5, address.getAddressLine5(),
+                ADDRESS_LINE_6, address.getAddressLine6(),
 
                 // TODO DEEP-287 postcode_or_country or just line 7?
                 // Consider populating this field with the last populated address line...
-                "postcode_or_country", address.getAddressLine7()
+                POSTCODE_OR_COUNTRY, address.getAddressLine7()
         );
 
         addressLines.forEach((key, value) ->

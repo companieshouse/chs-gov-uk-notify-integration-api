@@ -4,6 +4,11 @@ import static java.math.BigDecimal.ONE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 
 import java.util.Map;
 import org.hamcrest.Matcher;
@@ -33,11 +38,11 @@ class TemplatePersonaliserIntegrationTest {
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
                 new ChLetterTemplate("directionLetter", ONE),
-                Map.of("psc_full_name", "Vaughan Jackson",
-                        "company_name", "Tŷ'r Cwmnïau",
-                        "reference", "reference",
-                        "deadline_date", "18 August 2025",
-                        "extension_date", "1 September 2025"),
+                Map.of(PSC_FULL_NAME, "Vaughan Jackson",
+                        COMPANY_NAME, "Tŷ'r Cwmnïau",
+                        REFERENCE, "reference",
+                        DEADLINE_DATE, "18 August 2025",
+                        EXTENSION_DATE, "1 September 2025"),
                 new Address()
                         .addressLine1("Line 1")
                         .addressLine2("Line 2")

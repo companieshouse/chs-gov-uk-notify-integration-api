@@ -16,6 +16,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
@@ -473,11 +475,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private static String getRequestWithoutCompanyName() throws IOException {
-        return getRequestWithoutPersonalisation("company_name");
+        return getRequestWithoutPersonalisation(COMPANY_NAME);
     }
 
     private static String getRequestWithoutPscFullName() throws IOException {
-        return getRequestWithoutPersonalisation("psc_full_name");
+        return getRequestWithoutPersonalisation(PSC_FULL_NAME);
     }
 
     private static String getRequestWithoutPersonalisation(String personalisationName)
