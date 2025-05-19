@@ -62,21 +62,22 @@ public class TemplatePersonaliser {
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private Context populateAddress(Context context, Address address, String upperCaseCompanyName) {
-        context.setVariable("address_line_1",
-                uppercaseIfCompanyName(address.getAddressLine1(), upperCaseCompanyName));
-        context.setVariable("address_line_2",
-                uppercaseIfCompanyName(address.getAddressLine2(), upperCaseCompanyName));
-        context.setVariable("address_line_3",
-                uppercaseIfCompanyName(address.getAddressLine3(), upperCaseCompanyName));
-        context.setVariable("address_line_4",
-                uppercaseIfCompanyName(address.getAddressLine4(), upperCaseCompanyName));
-        context.setVariable("address_line_5",
-                uppercaseIfCompanyName(address.getAddressLine5(), upperCaseCompanyName));
-        context.setVariable("address_line_6",
-                uppercaseIfCompanyName(address.getAddressLine6(), upperCaseCompanyName));
-        // TODO DEEP-287 postcode_or_country or just line 7?
-        // Consider populating this field with the last populated address line...
-        context.setVariable("postcode_or_country", address.getAddressLine7());
+        var addressLines = Map.of(
+                "address_line_1", address.getAddressLine1(),
+                "address_line_2", address.getAddressLine2(),
+                "address_line_3", address.getAddressLine3(),
+                "address_line_4", address.getAddressLine4(),
+                "address_line_5", address.getAddressLine5(),
+                "address_line_6", address.getAddressLine6(),
+
+                // TODO DEEP-287 postcode_or_country or just line 7?
+                // Consider populating this field with the last populated address line...
+                "postcode_or_country", address.getAddressLine7()
+        );
+
+        addressLines.forEach((key, value) ->
+                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
+
         return context;
     }
 
