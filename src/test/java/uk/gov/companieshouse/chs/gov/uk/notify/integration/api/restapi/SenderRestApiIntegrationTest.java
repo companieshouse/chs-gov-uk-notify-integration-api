@@ -16,6 +16,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
@@ -472,7 +474,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(false));
-        var storedRequest = notificationDatabaseService.findAllLetters().getFirst().request();
+        var storedRequest = notificationDatabaseService.findAllLetters().getFirst().getRequest();
         assertThat(storedRequest, is(sentRequest));
     }
 
@@ -486,7 +488,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private void verifyLetterResponseStoredCorrectly(LetterResponse receivedResponse) {
         assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
-        var storedResponse = notificationLetterResponseRepository.findAll().getFirst().response();
+        var storedResponse = notificationLetterResponseRepository.findAll().getFirst().getResponse();
         // Unfortunately SendLetter does not implement equals() and hashCode().
         assertThat(storedResponse.toString(), is(receivedResponse.toString()));
     }
@@ -504,13 +506,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst();
 
         // Ensure the stored response contains information about the error encountered.
-        assertThat(storedResponse.id(), is(notNullValue()));
-        assertThat(storedResponse.response(), is(notNullValue()));
-        assertThat(storedResponse.response().getNotificationId(), is(NIL_UUID));
-        assertThat(storedResponse.response().getReference().isPresent(), is(true));
-        assertThat(storedResponse.response().getReference().get(), is("send-letter-request"));
-        assertThat(storedResponse.response().getData(), is(notNullValue()));
-        var data = storedResponse.response().getData();
+        assertThat(storedResponse.getId(), is(notNullValue()));
+        assertThat(storedResponse.getResponse(), is(notNullValue()));
+        assertThat(storedResponse.getResponse().getNotificationId(), is(NIL_UUID));
+        assertThat(storedResponse.getResponse().getReference().isPresent(), is(true));
+        assertThat(storedResponse.getResponse().getReference().get(), is("send-letter-request"));
+        assertThat(storedResponse.getResponse().getData(), is(notNullValue()));
+        var data = storedResponse.getResponse().getData();
         assertThat(data.get("data"), is(notNullValue()));
         var map = ((JSONObject) data.get("data")).get("map");
         assertThat(map, is(notNullValue()));
@@ -524,11 +526,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private String getRequestWithoutCompanyName() throws IOException {
-        return getRequestWithoutPersonalisation("company_name");
+        return getRequestWithoutPersonalisation(COMPANY_NAME);
     }
 
     private String getRequestWithoutPscFullName() throws IOException {
-        return getRequestWithoutPersonalisation("psc_full_name");
+        return getRequestWithoutPersonalisation(PSC_FULL_NAME);
     }
 
     private String getRequestWithoutPersonalisation(String personalisationName)

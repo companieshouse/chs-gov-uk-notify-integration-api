@@ -1,6 +1,15 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_4;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_5;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -48,7 +57,7 @@ public class TemplatePersonaliser {
 
         // Use today's date for traceability.
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        context.setVariable("date", LocalDate.now().format(format));
+        context.setVariable(DATE, LocalDate.now().format(format));
 
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);
@@ -63,39 +72,38 @@ public class TemplatePersonaliser {
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
         // Company name must be provided and is always rendered in UPPER CASE in the letter.
-        if (isEmpty(personalisationDetails.get("company_name"))) {
+        var companyName = personalisationDetails.get(COMPANY_NAME);
+        if (isBlank(companyName)) {
             throw new LetterValidationException(
                     "No company name found in the letter personalisation details.");
         }
-        return personalisationDetails.get("company_name").toUpperCase();
+        return companyName.toUpperCase();
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
-        context.setVariable("address_line_1",
-                uppercaseIfCompanyName(address.getAddressLine1(), upperCaseCompanyName));
-        context.setVariable("address_line_2",
-                uppercaseIfCompanyName(address.getAddressLine2(), upperCaseCompanyName));
-        context.setVariable("address_line_3",
-                uppercaseIfCompanyName(address.getAddressLine3(), upperCaseCompanyName));
-        context.setVariable("address_line_4",
-                uppercaseIfCompanyName(address.getAddressLine4(), upperCaseCompanyName));
-        context.setVariable("address_line_5",
-                uppercaseIfCompanyName(address.getAddressLine5(), upperCaseCompanyName));
-        context.setVariable("address_line_6",
-                uppercaseIfCompanyName(address.getAddressLine6(), upperCaseCompanyName));
-        // TODO DEEP-287 postcode_or_country or just line 7?
-        // Consider populating this field with the last populated address line...
-        context.setVariable("postcode_or_country", address.getAddressLine7());
+        var addressLines = Map.of(
+                ADDRESS_LINE_1, address.getAddressLine1(),
+                ADDRESS_LINE_2, address.getAddressLine2(),
+                ADDRESS_LINE_3, address.getAddressLine3(),
+                ADDRESS_LINE_4, address.getAddressLine4(),
+                ADDRESS_LINE_5, address.getAddressLine5(),
+                ADDRESS_LINE_6, address.getAddressLine6(),
+
+                // TODO DEEP-287 postcode_or_country or just line 7?
+                // Consider populating this field with the last populated address line...
+                POSTCODE_OR_COUNTRY, address.getAddressLine7()
+        );
+
+        addressLines.forEach((key, value) ->
+                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
     }
 
     private void personaliseLetter(Context context,
                                    Map<String, String> personalisationDetails,
                                    String upperCaseCompanyName) {
-        personalisationDetails.keySet().forEach(name ->
-                context.setVariable(name,
-                        uppercaseIfCompanyName(personalisationDetails.get(name),
-                                upperCaseCompanyName)));
+        personalisationDetails.forEach((key, value) ->
+                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
     }
 
     /**

@@ -26,11 +26,18 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
     void When_NewResponseSaved_Expect_IdAssigned() {
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID());
 
+        NotificationEmailResponse notificationEmailResponse = new NotificationEmailResponse();
+        notificationEmailResponse.setCreatedAt(null);
+        notificationEmailResponse.setUpdatedAt(null);
+        notificationEmailResponse.setResponse(emailResponse);
+        notificationEmailResponse.setId(null);
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, emailResponse));
+                notificationEmailResponse);
 
-        assertNotNull(savedResponse);
-        assertNotNull(savedResponse.id());
+        assertNotNull(savedResponse.toString());
+        assertNotNull(savedResponse.getId());
+        assertNotNull(savedResponse.getCreatedAt());
+        assertNotNull(savedResponse.getUpdatedAt());
     }
 
     @Test
@@ -39,24 +46,24 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), notificationId);
 
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, emailResponse));
+                new NotificationEmailResponse(null, null, emailResponse, "1"));
 
-        Optional<NotificationEmailResponse> retrievedResponse = responseRepository.findById(savedResponse.id());
+        Optional<NotificationEmailResponse> retrievedResponse = responseRepository.findById(savedResponse.getId());
 
         assertTrue(retrievedResponse.isPresent());
-        assertEquals(savedResponse.id(), retrievedResponse.get().id());
-        assertEquals(notificationId, retrievedResponse.get().response().getNotificationId());
+        assertEquals(savedResponse.getId(), retrievedResponse.get().getId());
+        assertEquals(notificationId, retrievedResponse.get().getResponse().getNotificationId());
     }
 
 
     @Test
     void When_ResponseDeleted_Expect_ResponseNotFoundById() {
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, createSampleEmailResponse(UUID.randomUUID(), UUID.randomUUID())));
+                new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),UUID.randomUUID()), null ));
 
-        responseRepository.deleteById(savedResponse.id());
+        responseRepository.deleteById(savedResponse.getId());
 
-        Optional<NotificationEmailResponse> deletedResponse = responseRepository.findById(savedResponse.id());
+        Optional<NotificationEmailResponse> deletedResponse = responseRepository.findById(savedResponse.getId());
         assertFalse(deletedResponse.isPresent());
     }
 
@@ -66,15 +73,14 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         UUID updatedNotificationId = UUID.randomUUID();
 
         NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, createSampleEmailResponse(UUID.randomUUID(), initialNotificationId)));
+                new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),initialNotificationId), "1"));
 
-        responseRepository.save(new NotificationEmailResponse(savedResponse.id(),
-                createSampleEmailResponse(UUID.randomUUID(), updatedNotificationId)));
+        responseRepository.save(new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),updatedNotificationId), savedResponse.getId()));
 
-        NotificationEmailResponse retrievedResponse = responseRepository.findById(savedResponse.id()).orElse(null);
+        NotificationEmailResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
 
         assertNotNull(retrievedResponse);
-        assertEquals(updatedNotificationId, retrievedResponse.response().getNotificationId());
+        assertEquals(updatedNotificationId, retrievedResponse.getResponse().getNotificationId());
     }
 
     private SendEmailResponse createSampleEmailResponse(UUID templateId, UUID notificationId) {

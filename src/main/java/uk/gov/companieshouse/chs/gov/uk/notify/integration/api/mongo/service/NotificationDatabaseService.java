@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +43,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailRequest storeEmail(final GovUkEmailDetailsRequest emailDetailsRequest) {
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, emailDetailsRequest));
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailDetailsRequest, null));
     }
 
     public Optional<NotificationEmailRequest> getEmail(final String id) {
@@ -60,7 +59,7 @@ public class NotificationDatabaseService {
     }
 
     public NotificationLetterRequest storeLetter(final GovUkLetterDetailsRequest letterDetails) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, letterDetails));
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterDetails, null));
     }
 
     public Optional<NotificationLetterRequest> getLetter(final String letterId) {
@@ -76,11 +75,11 @@ public class NotificationDatabaseService {
     }
 
     public NotificationEmailResponse storeResponse(final GovUkNotifyService.EmailResp emailResp) {
-        return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, emailResp.response()));
+        return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, null, emailResp.response(), null));
     }
 
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
-        return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, letterResp.response()));
+        return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, null, letterResp.response(), null));
     }
 
     public NotificationStatus updateStatus(final NotificationStatus notificationStatus) {
