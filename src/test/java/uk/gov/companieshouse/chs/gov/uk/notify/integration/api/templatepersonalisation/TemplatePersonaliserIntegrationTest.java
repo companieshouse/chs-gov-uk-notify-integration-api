@@ -40,6 +40,15 @@ class TemplatePersonaliserIntegrationTest {
     private static final Map<String, String> PERSONALISATION_DETAILS =
             Map.of("company_name", "Amazon");
 
+    private static final Address ADDRESS = new Address()
+                        .addressLine1("Line 1")
+                        .addressLine2("Line 2")
+                        .addressLine3("Line 3")
+                        .addressLine4("Line 4")
+                        .addressLine5("Line 5")
+                        .addressLine6("Line 6")
+                        .addressLine7("Line 7");
+
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
 
@@ -61,15 +70,7 @@ class TemplatePersonaliserIntegrationTest {
                         REFERENCE, "reference",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
-                new Address()
-                        .addressLine1("Line 1")
-                        .addressLine2("Line 2")
-                        .addressLine3("Line 3")
-                        .addressLine4("Line 4")
-                        .addressLine5("Line 5")
-                        .addressLine6("Line 6")
-                        .addressLine7("Line 7")
-                        );
+                ADDRESS);
 
         // Then
         verifyLetterPersonalised(letter);
@@ -92,11 +93,11 @@ class TemplatePersonaliserIntegrationTest {
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
                 PERSONALISATION_DETAILS,
-                new Address());
+                ADDRESS);
         var letter2 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec2,
                 PERSONALISATION_DETAILS,
-                new Address());
+                ADDRESS);
 
         assertThat(letter1, is("This is letter1_v1.html in app1."));
         assertThat(letter2, is("This is letter1_v1.html in app2."));
@@ -117,7 +118,7 @@ class TemplatePersonaliserIntegrationTest {
         var letter = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec,
                 PERSONALISATION_DETAILS,
-                new Address());
+                ADDRESS);
 
         assertThat(letter, is("This is letter1_v2.html in app1."));
     }
@@ -137,7 +138,7 @@ class TemplatePersonaliserIntegrationTest {
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
                 PERSONALISATION_DETAILS,
-                new Address());
+                ADDRESS);
 
         assertThat(letter1, is("This is letter2_v1.html in app1."));
     }
