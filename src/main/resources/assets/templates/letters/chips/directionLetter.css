@@ -14,9 +14,6 @@
     line-height: 6.3mm;
     font-weight: bold;
 }
-.company-name {
-    /* TODO this appears not to work text-transform: capitalize; */
-}
 p {
     margin-bottom: -1mm;
     font-family: Arial, sans-serif;
