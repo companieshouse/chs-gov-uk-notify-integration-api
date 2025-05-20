@@ -16,6 +16,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,6 +73,23 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
             "Invalid token: service has no API keys";
     private static final String PDF_FILE_SIGNATURE = "%PDF-";
+    private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: No company name found in the "
+                    + "letter personalisation details.";
+    private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
+                    + "missing for ChLetterTemplate[id=directionLetter, version=1].";
+
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
+            "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
+                    + " Unexpected character ('}' (code 125)): was expecting double-quote to "
+                    + "start field name";
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
+            " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
+                    + "line: 1, column: 168]";
+    private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
+            UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
+            + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
 
     @Autowired
     private MockMvc mockMvc;
@@ -131,6 +151,75 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
+    }
+
+    @Test
+    @DisplayName("Send letter without providing the company name in the personalisation details")
+    void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithoutCompanyName()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter without providing the psc full name in the personalisation details")
+    void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithoutPscFullName()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with unparsable personalisation details")
+    void sendLetterWithUnparsablePersonalisationDetails(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(getRequestWithUnparsablePersonalisationDetails()))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1),
+                is(true));
+        assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2),
+                is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -338,6 +427,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedRequest, is(sentRequest));
     }
 
+    private void verifyLetterDetailsRequestStored() {
+        assertThat(notificationDatabaseService.findAllLetters().size(), is(1));
+    }
+
     private void verifyNoLetterDetailsRequestsAreStored() {
         assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
     }
@@ -377,8 +470,54 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
     }
 
-    private void verifyLetterPdfSent(StringBuilder fileSignature) {
+    private static void verifyLetterPdfSent(StringBuilder fileSignature) {
         assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
+    }
+
+    private static String getRequestWithoutCompanyName() throws IOException {
+        return getRequestWithoutPersonalisation(COMPANY_NAME);
+    }
+
+    private static String getRequestWithoutPscFullName() throws IOException {
+        return getRequestWithoutPersonalisation(PSC_FULL_NAME);
+    }
+
+    private static String getRequestWithoutPersonalisation(String personalisationName)
+            throws IOException {
+        var request  = JsonParser
+                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .getAsJsonObject();
+        var letterDetails = request.get("letter_details")
+                .getAsJsonObject();
+        var personalisationDetailsString = letterDetails
+                .get("personalisation_details")
+                .getAsString();
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.remove(personalisationName);
+        request.remove("letter_details");
+        letterDetails.remove("personalisation_details");
+        letterDetails.addProperty("personalisation_details", personalisationDetails.toString());
+        request.add("letter_details", letterDetails);
+        return request.toString();
+    }
+
+    private static String getRequestWithUnparsablePersonalisationDetails()
+            throws IOException {
+        var request  = JsonParser
+                .parseString(resourceToString("/fixtures/send-letter-request.json", UTF_8))
+                .getAsJsonObject();
+        var letterDetails = request.get("letter_details")
+                .getAsJsonObject();
+        var personalisationDetailsString = letterDetails
+                .get("personalisation_details")
+                .getAsString().replace("}",",}"); // this comma makes it unparsable
+        request.remove("letter_details");
+        letterDetails.remove("personalisation_details");
+        letterDetails.addProperty("personalisation_details", personalisationDetailsString);
+        request.add("letter_details", letterDetails);
+        return request.toString();
     }
 
 }

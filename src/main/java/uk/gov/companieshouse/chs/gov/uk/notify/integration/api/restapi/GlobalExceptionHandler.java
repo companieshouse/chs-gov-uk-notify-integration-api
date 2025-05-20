@@ -2,7 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
-import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ValidationException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpHeaders;
@@ -42,14 +42,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Returns HTTP Status 400 Bad Request when there is an exception implying that
      * the incoming request content is invalid.
      *
-     * @param cve exception thrown when input from request is found to be invalid
+     * @param ve exception thrown when input from request is found to be invalid
      * @return response with payload reporting underlying cause
      */
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolationException(
-            ConstraintViolationException cve) {
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Object> handleValidationException(
+            ValidationException ve) {
         var message = "Error in " + APPLICATION_NAMESPACE + ": "
-                + buildMessage(cve.getMessage());
+                + buildMessage(ve.getMessage());
         myLogger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

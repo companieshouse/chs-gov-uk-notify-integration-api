@@ -27,7 +27,83 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\" \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"app_id\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"directionLetter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send letter without company name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"app_id\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"directionLetter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send letter without psc full name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"app_id\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"directionLetter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -65,7 +141,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\" \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -103,7 +179,45 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\" \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
+							"raw": "{\n    \"sender_details\": {\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send letter with unparsable personalisation details",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"app_id\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"directionLetter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\",}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -219,7 +333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\" \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\",\n            \"address_line_7\": \"\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
