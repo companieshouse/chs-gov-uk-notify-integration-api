@@ -147,6 +147,19 @@
     font-family: Arial, sans-serif;
     font-size: 8pt;
 
+    /** This line-height, to the nearest 0.1mm, appears to provide the optimal leading for the address block.
+        It cramps the lines together slightly to allow a total of 7 lines in the address block whilst compromising
+        legibility as little as possible.
+
+        DVLA docs state we can get 7 address lines + postcode or country into the address block.
+        Gov Notify docs state we can get 6 address lines + postcode or country into the address block.
+        Gov Notify validation enforces that limit - no more than 7 lines are allowed in the address in total.
+
+        [With default leading (i.e. not specifying a line-height here), we can actually only get 5 address lines +
+        postcode or country into the address block].
+     */
+    line-height: 3.6mm;
+
     /* overflow-wrap: anywhere  is not recognised by the version of Flying Saucer we are using,
        but word-wrap: break-word is. */
     word-wrap: break-word;

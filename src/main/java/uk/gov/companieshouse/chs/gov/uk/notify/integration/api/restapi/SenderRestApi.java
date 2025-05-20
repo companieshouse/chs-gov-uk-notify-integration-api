@@ -127,7 +127,6 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private String personaliseLetter(final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                      final String contextId) {
-        // TODO DEEP-287 Decide how to make use of version too.
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         Map<String, String> personalisationDetails;
         try {
@@ -143,9 +142,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             throw new LetterValidationException(message);
         }
 
+        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         return templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(letterDetails.getTemplateId(),
+                new ChLetterTemplate(
+                        senderDetails.getAppId(),
+                        letterDetails.getTemplateId(),
                         letterDetails.getTemplateVersion()),
                 personalisationDetails,
                 address);
