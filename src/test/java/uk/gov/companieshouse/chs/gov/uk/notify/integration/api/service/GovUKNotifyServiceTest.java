@@ -70,6 +70,7 @@ public class GovUKNotifyServiceTest {
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
+    private static final String VALID_REFERENCE = "valid-reference";
     private static final String VALID_RECIPIENT = "Test Recipient";
     private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
 
@@ -94,7 +95,7 @@ public class GovUKNotifyServiceTest {
             when(mockEmailResponse.getNotificationId()).thenReturn(mockUuid);
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockEmailResponse);
 
-            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
 
             assertTrue(result.success());
             assertEquals(mockEmailResponse, result.response());
@@ -106,7 +107,7 @@ public class GovUKNotifyServiceTest {
         void When_ClientReturnsNullResponse_Expect_SendEmailReturnsFalse() throws NotificationClientException {
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(null);
 
-            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
 
             assertFalse(result.success());
             assertNull(result.response());
@@ -118,7 +119,7 @@ public class GovUKNotifyServiceTest {
             when(mockEmailResponse.getNotificationId()).thenReturn(null);
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockEmailResponse);
 
-            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
 
             assertFalse(result.success());
             assertEquals(mockEmailResponse, result.response());
@@ -130,7 +131,7 @@ public class GovUKNotifyServiceTest {
             when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
                     .thenThrow(new NotificationClientException("Test exception"));
 
-            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION);
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
 
             assertFalse(result.success());
             assertNull(result.response());
@@ -143,7 +144,7 @@ public class GovUKNotifyServiceTest {
             when(mockEmailResponse.getNotificationId()).thenReturn(mockUuid);
             when(mockClient.sendEmail(anyString(), anyString(), isNull(), anyString())).thenReturn(mockEmailResponse);
 
-            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, null);
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, null);
 
             assertTrue(result.success());
             assertEquals(mockEmailResponse, result.response());
@@ -236,7 +237,7 @@ public class GovUKNotifyServiceTest {
         @ValueSource(strings = {"invalid-email", "missing-at.com", "@missinguser.com"})
         void When_EmailInvalidEmailProvided_Expect_ConstraintViolationException(String invalidEmail) {
             assertThrows(ConstraintViolationException.class, () ->
-                    govUkNotifyService.sendEmail(invalidEmail, VALID_TEMPLATE_ID, VALID_PERSONALISATION)
+                    govUkNotifyService.sendEmail(invalidEmail, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION)
             );
         }
 
@@ -245,7 +246,7 @@ public class GovUKNotifyServiceTest {
         @NullAndEmptySource
         void When_EmailInvalidTemplateIdProvided_Expect_ConstraintViolationException(String invalidTemplateId) {
             assertThrows(ConstraintViolationException.class, () ->
-                    govUkNotifyService.sendEmail(VALID_EMAIL, invalidTemplateId, VALID_PERSONALISATION)
+                    govUkNotifyService.sendEmail(VALID_EMAIL, invalidTemplateId, VALID_REFERENCE, VALID_PERSONALISATION)
             );
         }
 
@@ -255,7 +256,7 @@ public class GovUKNotifyServiceTest {
         void When_EmailMultipleInvalidInputsProvided_Expect_ConstraintViolationException(
                 String email, String templateId, String testDescription) {
             assertThrows(ConstraintViolationException.class, () ->
-                    govUkNotifyService.sendEmail(email, templateId, VALID_PERSONALISATION)
+                    govUkNotifyService.sendEmail(email, templateId, VALID_REFERENCE, VALID_PERSONALISATION)
             );
         }
 
