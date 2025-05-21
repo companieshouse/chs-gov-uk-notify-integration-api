@@ -89,7 +89,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "start field name";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
             " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
-                    + "line: 1, column: 168]";
+                    + "line: 1, column: 142]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;

@@ -10,6 +10,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -45,11 +46,13 @@ public class TemplatePersonaliser {
     /**
      * Populates the letter Thymeleaf templateLookupKey with the data for the letter.
      * @param templateLookupKey the {@link ChLetterTemplate} identifying the template to be used
+     * @param reference the letter reference
      * @param  personalisationDetails the {@link Map} providing the data to be substituted into the
      *               letter templateLookupKey substitution variables
      * @return the HTML representation of the letter
      */
     public String personaliseLetterTemplate(ChLetterTemplate templateLookupKey,
+                                            String reference,
                                             Map<String, String> personalisationDetails,
                                             Address address) {
 
@@ -58,6 +61,8 @@ public class TemplatePersonaliser {
         // Use today's date for traceability.
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         context.setVariable(DATE, LocalDate.now().format(format));
+
+        context.setVariable(REFERENCE, reference);
 
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);

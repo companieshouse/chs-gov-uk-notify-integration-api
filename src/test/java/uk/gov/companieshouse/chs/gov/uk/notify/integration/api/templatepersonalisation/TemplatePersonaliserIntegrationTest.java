@@ -65,6 +65,7 @@ class TemplatePersonaliserIntegrationTest {
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
                 new ChLetterTemplate("chips", "direction_letter", ONE),
+                "the reference",
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         REFERENCE, "reference",
@@ -92,10 +93,12 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
         var letter2 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec2,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
@@ -117,6 +120,7 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
@@ -137,6 +141,7 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
