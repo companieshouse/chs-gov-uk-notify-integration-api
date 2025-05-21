@@ -56,6 +56,8 @@ public class TemplatePersonaliser {
                                             Map<String, String> personalisationDetails,
                                             Address address) {
 
+        validatePersonalisationDetails(personalisationDetails);
+
         var context = new Context();
 
         // Use today's date for traceability.
@@ -73,6 +75,16 @@ public class TemplatePersonaliser {
         var templateSpec = templateLookup.lookupTemplate(templateLookupKey);
         templateResolver.setPrefix(templateSpec.prefix());
         return templateEngine.process(templateSpec.filename(), context);
+    }
+
+    private void validatePersonalisationDetails(Map<String, String> personalisationDetails) {
+        // To avoid confusion and the possibility of personalisation details
+        // overwriting values provided in other details, we prevent certain fields from
+        // appearing in the personalisation details.
+        if (!isBlank(personalisationDetails.get(REFERENCE))) {
+            throw new LetterValidationException(
+                    "The key field reference must not appear in the personalisation details.");
+        }
     }
 
     private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {

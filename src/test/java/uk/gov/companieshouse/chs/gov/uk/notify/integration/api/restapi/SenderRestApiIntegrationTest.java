@@ -18,6 +18,7 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
@@ -107,6 +108,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             + "(template: \"unknown_directory/chips/direction_letter_v1.html\") "
             + "[cause: java.io.FileNotFoundException: ClassLoader resource "
             + "\"unknown_directory/chips/direction_letter_v1.html\" could not be resolved]";
+    private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
+                    + "appear in the personalisation details.";
 
     @Autowired
     private MockMvc mockMvc;
@@ -463,6 +467,21 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isCreated());
     }
 
+    @Test
+    @DisplayName("Send letter with reference in personalisation details")
+    void sendLetterWithReferenceInPersonalisationDetails(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        postSendLetterRequest(getRequestWithReferenceInPersonalisationDetails(),
+                status().isBadRequest())
+                .andExpect(content().string(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
     private ResultActions postSendLetterRequest(String requestBody,
                                                 ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -570,6 +589,23 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .parseString(personalisationDetailsString)
                 .getAsJsonObject();
         personalisationDetails.remove(personalisationName);
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithReferenceInPersonalisationDetails()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(REFERENCE, "Test reference");
 
         letterDetails.setPersonalisationDetails(personalisationDetails.toString());
         return objectMapper.writeValueAsString(request);
