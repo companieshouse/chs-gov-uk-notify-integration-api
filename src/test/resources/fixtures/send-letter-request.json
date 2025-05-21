@@ -19,7 +19,7 @@
     }
   },
   "letter_details": {
-    "template_id": "directionLetter",
+    "template_id": "direction_letter",
     "template_version": 1,
     "personalisation_details": "{ \"psc_full_name\": \"Vaughan Jackson\", \"company_name\": \"Tŷ'r Cwmnïau\", \"reference\": \"reference\", \"deadline_date\": \"18 August 2025\",\"extension_date\": \"1 September 2025\"}"
   },
