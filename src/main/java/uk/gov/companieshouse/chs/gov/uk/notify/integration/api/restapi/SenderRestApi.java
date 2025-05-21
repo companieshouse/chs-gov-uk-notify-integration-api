@@ -1,14 +1,15 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -75,6 +76,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var emailResp = govUkNotifyService.sendEmail(
                 govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
+                govUkEmailDetailsRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 

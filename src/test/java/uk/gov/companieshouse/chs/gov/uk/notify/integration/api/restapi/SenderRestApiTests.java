@@ -51,6 +51,7 @@ class SenderRestApiTests {
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
+    private static final String VALID_REFERENCE = "valid-reference";
     private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
     private static final String XHEADER = "1";
 
@@ -64,7 +65,7 @@ class SenderRestApiTests {
                 .emailAddress("john.doe@example.com")
                 .userId("9876543")
                 .name("John Doe")
-                .reference("ref")
+                .reference(VALID_REFERENCE)
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
@@ -74,7 +75,7 @@ class SenderRestApiTests {
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
@@ -92,7 +93,7 @@ class SenderRestApiTests {
                 .emailAddress("john.doe@example.com")
                 .userId("9876543")
                 .name("John Doe")
-                .reference("ref")
+                .reference(VALID_REFERENCE)
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
@@ -102,7 +103,7 @@ class SenderRestApiTests {
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 

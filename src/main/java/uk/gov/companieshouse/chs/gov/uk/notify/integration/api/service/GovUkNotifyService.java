@@ -1,16 +1,15 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -18,6 +17,8 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
+
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 
 @Service
@@ -42,8 +43,8 @@ public class GovUkNotifyService {
     public EmailResp sendEmail(
             @NotBlank @Email String recipient,
             @NotBlank String templateId,
+            @NotBlank String reference,
             Map<String, ?> personalisation) {
-        String reference = recipient + "-" + System.currentTimeMillis();
         try {
             SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
             return new EmailResp(response != null && response.getNotificationId() != null, response);
