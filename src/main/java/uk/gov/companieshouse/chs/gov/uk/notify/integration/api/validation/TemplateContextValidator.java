@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation;
 
-import static java.math.BigDecimal.ONE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
@@ -10,6 +9,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -29,7 +29,7 @@ public class TemplateContextValidator {
     private static final Map<ChLetterTemplate, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<>(
-                            new ChLetterTemplate("chips", "direction_letter", ONE),
+                            CHIPS_DIRECTION_LETTER_1,
                             ImmutableSet.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, POSTCODE_OR_COUNTRY,
                                     DATE,

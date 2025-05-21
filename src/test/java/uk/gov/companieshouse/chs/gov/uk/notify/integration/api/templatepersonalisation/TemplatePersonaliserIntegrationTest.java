@@ -13,6 +13,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
 
 import java.util.Map;
 import org.hamcrest.Matcher;
@@ -63,7 +64,7 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
-                new ChLetterTemplate("chips", "direction_letter", ONE),
+                CHIPS_DIRECTION_LETTER_1,
                 "the reference",
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",

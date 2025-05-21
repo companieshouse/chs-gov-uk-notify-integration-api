@@ -10,7 +10,6 @@ import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 
-import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -24,6 +23,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -51,7 +51,6 @@ class TemplateContextValidatorTest {
     void noErrorWhereAllRequiredVariablesPresent() {
 
         // Given
-        var letter = new ChLetterTemplate("chips", "direction_letter", ONE);
         var context = new Context();
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -64,7 +63,7 @@ class TemplateContextValidatorTest {
         context.setVariable(EXTENSION_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
 
         // When
-        validator.validateContextForTemplate(context, letter);
+        validator.validateContextForTemplate(context, CHIPS_DIRECTION_LETTER_1);
     }
 
     @Test
@@ -87,7 +86,6 @@ class TemplateContextValidatorTest {
     void errorsWhereSomeRequiredVariablesMissing() {
 
         // Given
-        var letter = new ChLetterTemplate("chips", "direction_letter", ONE);
         var context = new Context();
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -99,7 +97,7 @@ class TemplateContextValidatorTest {
 
         // When and then
         var exception = assertThrows(LetterValidationException.class,
-                () -> validator.validateContextForTemplate(context, letter));
+                () -> validator.validateContextForTemplate(context, CHIPS_DIRECTION_LETTER_1));
         assertThat(exception.getMessage(),
                 is(SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE));
     }
@@ -109,12 +107,11 @@ class TemplateContextValidatorTest {
     void errorsWhereAllRequiredVariablesMissing() {
 
         // Given
-        var letter = new ChLetterTemplate("chips", "direction_letter", ONE);
         var context = new Context();
 
         // When and then
         var exception = assertThrows(LetterValidationException.class,
-                () -> validator.validateContextForTemplate(context, letter));
+                () -> validator.validateContextForTemplate(context, CHIPS_DIRECTION_LETTER_1));
         assertThat(exception.getMessage(),
                 is(ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE));
     }
