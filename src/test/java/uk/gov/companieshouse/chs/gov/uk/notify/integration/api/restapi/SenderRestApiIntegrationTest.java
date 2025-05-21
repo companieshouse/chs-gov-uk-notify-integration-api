@@ -448,6 +448,21 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
+    @Test
+    @DisplayName("Send letter successfully with template version 1.0")
+    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        // When and then
+        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
+                status().isCreated());
+    }
+
     private ResultActions postSendLetterRequest(String requestBody,
                                                 ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -531,6 +546,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private String getRequestWithoutPscFullName() throws IOException {
         return getRequestWithoutPersonalisation(PSC_FULL_NAME);
+    }
+
+    private String getRequestWithTemplateVersion1pt0()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        letterDetails.setTemplateVersion(new BigDecimal("1.0"));
+        return objectMapper.writeValueAsString(request);
     }
 
     private String getRequestWithoutPersonalisation(String personalisationName)
