@@ -21,9 +21,9 @@ import uk.gov.companieshouse.logging.Logger;
 public class LetterPayloadGenerator {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    final GovUkNotifyService govUkNotifyService;
-    final NotificationDatabaseService notificationDatabaseService;
-    final TemplatePersonaliser templatePersonaliser;
+    private final GovUkNotifyService govUkNotifyService;
+    private final NotificationDatabaseService notificationDatabaseService;
+    private final TemplatePersonaliser templatePersonaliser;
     private final Logger logger;
 
     public LetterPayloadGenerator(GovUkNotifyService govUkNotifyService,
