@@ -49,7 +49,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.LetterPayloadGenerator;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -134,7 +134,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private NotificationClient notificationClient;
 
     @MockitoSpyBean
-    private LetterPayloadGenerator letterPayloadGenerator;
+    private LetterDispatcher letterDispatcher;
 
     @MockitoSpyBean
     private TemplateLookup templateLookup;
@@ -395,7 +395,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(letterPayloadGenerator.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
+        when(letterDispatcher.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then

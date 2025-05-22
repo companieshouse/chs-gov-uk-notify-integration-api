@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,8 +17,11 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Ch
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
+/**
+ * Responsible for the creation and sending of letter PDFs through the Gov Notify service.
+ */
 @Component
-public class LetterPayloadGenerator {
+public class LetterDispatcher {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
@@ -26,10 +29,10 @@ public class LetterPayloadGenerator {
     private final TemplatePersonaliser templatePersonaliser;
     private final Logger logger;
 
-    public LetterPayloadGenerator(GovUkNotifyService govUkNotifyService,
-                                  NotificationDatabaseService notificationDatabaseService,
-                                  TemplatePersonaliser templatePersonaliser,
-                                  Logger logger) {
+    public LetterDispatcher(GovUkNotifyService govUkNotifyService,
+                            NotificationDatabaseService notificationDatabaseService,
+                            TemplatePersonaliser templatePersonaliser,
+                            Logger logger) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
         this.templatePersonaliser = templatePersonaliser;

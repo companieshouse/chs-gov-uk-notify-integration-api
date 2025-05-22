@@ -14,8 +14,8 @@ import org.springframework.stereotype.Controller;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationSenderControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.LetterPayloadGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -25,18 +25,18 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
-    private final LetterPayloadGenerator letterPayloadGenerator;
+    private final LetterDispatcher letterDispatcher;
     private final Logger logger;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
-            final LetterPayloadGenerator letterPayloadGenerator,
+            final LetterDispatcher letterDispatcher,
             final Logger logger
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
-        this.letterPayloadGenerator = letterPayloadGenerator;
+        this.letterDispatcher = letterDispatcher;
         this.logger = logger;
     }
 
@@ -114,7 +114,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
-            var response = letterPayloadGenerator.sendLetter(
+            var response = letterDispatcher.sendLetter(
                     reference,
                     appId,
                     templateId,
