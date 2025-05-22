@@ -1,12 +1,9 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
@@ -31,7 +28,6 @@ public class TemplateContextValidator {
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_DIRECTION_LETTER_1,
                             ImmutableSet.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, POSTCODE_OR_COUNTRY,
                                     DATE,
                                     REFERENCE,
                                     COMPANY_NAME,

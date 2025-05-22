@@ -49,6 +49,12 @@ class TemplatePersonaliserIntegrationTest {
                         .addressLine6("Line 6")
                         .addressLine7("Line 7");
 
+    private static final Address SHORTER_ADDRESS = new Address()
+            .addressLine1("Line 1")
+            .addressLine2("Line 2")
+            .addressLine3("Line 3")
+            .addressLine4("Line 4");
+
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
 
@@ -75,6 +81,24 @@ class TemplatePersonaliserIntegrationTest {
         // Then
         verifyLetterPersonalised(letter);
         verifyLetterAddressed(letter);
+    }
+
+    @Test
+    @DisplayName("Generate letter HTML successfully with a shorter address")
+    void generateLetterHtmlSuccessfullyWithShorterAddress() {
+        // Given and when
+        var letter = templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_DIRECTION_LETTER_1,
+                "the reference",
+                Map.of(PSC_FULL_NAME, "Vaughan Jackson",
+                        COMPANY_NAME, "Tŷ'r Cwmnïau",
+                        DEADLINE_DATE, "18 August 2025",
+                        EXTENSION_DATE, "1 September 2025"),
+                SHORTER_ADDRESS);
+
+        // Then
+        verifyLetterPersonalised(letter);
+        verifyLetterAddressedWithShorterAddress(letter);
     }
 
     @Test
@@ -164,6 +188,13 @@ class TemplatePersonaliserIntegrationTest {
         assertThat(letter, containsEscapedString("Line 5"));
         assertThat(letter, containsEscapedString("Line 6"));
         assertThat(letter, containsEscapedString("Line 7"));
+    }
+
+    private static void verifyLetterAddressedWithShorterAddress(String letter) {
+        assertThat(letter, containsEscapedString("Line 1"));
+        assertThat(letter, containsEscapedString("Line 2"));
+        assertThat(letter, containsEscapedString("Line 3"));
+        assertThat(letter, containsEscapedString("Line 4"));
     }
 
     private static Matcher<String> containsEscapedString(String substring) {

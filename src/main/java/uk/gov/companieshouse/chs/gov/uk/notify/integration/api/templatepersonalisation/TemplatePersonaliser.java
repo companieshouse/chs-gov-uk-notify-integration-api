@@ -44,11 +44,13 @@ public class TemplatePersonaliser {
     }
 
     /**
-     * Populates the letter Thymeleaf templateLookupKey with the data for the letter.
+     * Populates the letter Thymeleaf template with the data for the letter.
      * @param templateLookupKey the {@link ChLetterTemplate} identifying the template to be used
      * @param reference the letter reference
-     * @param  personalisationDetails the {@link Map} providing the data to be substituted into the
-     *               letter templateLookupKey substitution variables
+     * @param personalisationDetails the {@link Map} providing the data to be substituted into the
+     *                               letter template substitution variables
+     * @param address the {@link Address} providing the data to be substituted into the
+     *                letter address block template substitution variables
      * @return the HTML representation of the letter
      */
     public String personaliseLetterTemplate(ChLetterTemplate templateLookupKey,
@@ -100,20 +102,27 @@ public class TemplatePersonaliser {
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
         var addressLines = Map.of(
-                ADDRESS_LINE_1, address.getAddressLine1(),
-                ADDRESS_LINE_2, address.getAddressLine2(),
-                ADDRESS_LINE_3, address.getAddressLine3(),
-                ADDRESS_LINE_4, address.getAddressLine4(),
-                ADDRESS_LINE_5, address.getAddressLine5(),
-                ADDRESS_LINE_6, address.getAddressLine6(),
+                ADDRESS_LINE_1, blankIfNull(address.getAddressLine1()),
+                ADDRESS_LINE_2, blankIfNull(address.getAddressLine2()),
+                ADDRESS_LINE_3, blankIfNull(address.getAddressLine3()),
+                ADDRESS_LINE_4, blankIfNull(address.getAddressLine4()),
+                ADDRESS_LINE_5, blankIfNull(address.getAddressLine5()),
+                ADDRESS_LINE_6, blankIfNull(address.getAddressLine6()),
 
                 // TODO DEEP-287 postcode_or_country or just line 7?
                 // Consider populating this field with the last populated address line...
-                POSTCODE_OR_COUNTRY, address.getAddressLine7()
+                POSTCODE_OR_COUNTRY, blankIfNull(address.getAddressLine7())
         );
 
-        addressLines.forEach((key, value) ->
-                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
+        addressLines.forEach((key, value) -> {
+            if (!isBlank(value)) {
+                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName));
+            }
+        });
+    }
+
+    private String blankIfNull(final String value) {
+        return value == null ? "" : value;
     }
 
     private void personaliseLetter(Context context,

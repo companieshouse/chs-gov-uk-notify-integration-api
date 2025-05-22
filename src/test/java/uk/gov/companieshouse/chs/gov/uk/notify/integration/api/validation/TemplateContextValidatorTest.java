@@ -37,8 +37,7 @@ class TemplateContextValidatorTest {
             "Context variable(s) [company_name, deadline_date] missing for "
                     + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
-            "Context variable(s) [address_line_1, address_line_2, postcode_or_country, "
-                    + "date, reference, company_name, psc_full_name, deadline_date, "
+            "Context variable(s) [date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
                     + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
 
