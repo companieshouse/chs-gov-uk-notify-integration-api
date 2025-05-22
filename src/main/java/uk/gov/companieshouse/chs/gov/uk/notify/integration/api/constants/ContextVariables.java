@@ -13,7 +13,7 @@ public class ContextVariables {
     public static final String ADDRESS_LINE_4 = "address_line_4";
     public static final String ADDRESS_LINE_5 = "address_line_5";
     public static final String ADDRESS_LINE_6 = "address_line_6";
-    public static final String POSTCODE_OR_COUNTRY = "postcode_or_country";
+    public static final String ADDRESS_LINE_7 = "address_line_7";
 
     // Other letter template fields
     public static final String DATE = "date";

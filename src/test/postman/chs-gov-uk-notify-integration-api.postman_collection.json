@@ -124,6 +124,44 @@
 					"response": []
 				},
 				{
+					"name": "send letter with too short an address",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"vjackson1@companieshouse.gov.uk\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Vaughan Jackson\",\n        \"physical_address\": {\n            \"address_line_1\": \"Vaughan Jackson\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"direction_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Vaughan Jackson\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "send letter without company name",
 					"request": {
 						"method": "POST",

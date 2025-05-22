@@ -7,9 +7,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_4;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_5;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 
 import java.time.LocalDate;
@@ -108,10 +108,7 @@ public class TemplatePersonaliser {
                 ADDRESS_LINE_4, blankIfNull(address.getAddressLine4()),
                 ADDRESS_LINE_5, blankIfNull(address.getAddressLine5()),
                 ADDRESS_LINE_6, blankIfNull(address.getAddressLine6()),
-
-                // TODO DEEP-287 postcode_or_country or just line 7?
-                // Consider populating this field with the last populated address line...
-                POSTCODE_OR_COUNTRY, blankIfNull(address.getAddressLine7())
+                ADDRESS_LINE_7, blankIfNull(address.getAddressLine7())
         );
 
         addressLines.forEach((key, value) -> {
