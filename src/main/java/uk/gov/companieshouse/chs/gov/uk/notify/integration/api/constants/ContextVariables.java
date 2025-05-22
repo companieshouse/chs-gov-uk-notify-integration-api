@@ -15,7 +15,7 @@ public class ContextVariables {
     public static final String ADDRESS_LINE_6 = "address_line_6";
     public static final String POSTCODE_OR_COUNTRY = "postcode_or_country";
 
-    // Personalisation fields
+    // Other letter template fields
     public static final String DATE = "date";
     public static final String REFERENCE = "reference";
     public static final String COMPANY_NAME = "company_name";

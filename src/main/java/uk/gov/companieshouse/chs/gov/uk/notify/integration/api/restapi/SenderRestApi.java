@@ -148,7 +148,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 new ChLetterTemplate(
                         senderDetails.getAppId(),
                         letterDetails.getTemplateId(),
-                        letterDetails.getTemplateVersion()),
+                        letterDetails.getTemplateVersion().stripTrailingZeros()),
+                senderDetails.getReference(),
                 personalisationDetails,
                 address);
     }
