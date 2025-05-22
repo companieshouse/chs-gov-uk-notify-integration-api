@@ -8,8 +8,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
@@ -38,14 +36,14 @@ public class LetterPayloadGenerator {
         this.logger = logger;
     }
 
-    public ResponseEntity<Void> sendLetter(
+    public GovUkNotifyService.LetterResp sendLetter(
             final String reference,
             final String appId,
             final String templateId,
             final BigDecimal templateVersion,
             final Address address,
             final String personalisationDetailsString,
-            final String contextId) {
+            final String contextId) throws IOException {
         var letter = personaliseLetter(
                 reference,
                 appId,
@@ -86,44 +84,33 @@ public class LetterPayloadGenerator {
                         templateId,
                         // Ensure versions "1" and "1.0" are treated as being the same.
                         templateVersion.stripTrailingZeros()),
-                /*senderDetails.getReference()*/reference,
-                personalisationDetails,
-                address);
+                        reference,
+                        personalisationDetails,
+                        address);
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
-    private ResponseEntity<Void> sendLetterPdf(// TODO DEEP-287 Method name?
-            final String reference,
-            final String contextId,
-            final String letter) {
+    private GovUkNotifyService.LetterResp
+            sendLetterPdf(// TODO DEEP-287 Method name?
+                        final String reference,
+                        final String contextId,
+                        final String letter) throws IOException {
 
         // TODO DEEP-288 Stop logging the entire letter HMTL content.
         logger.info("letter = " + letter);
 
         try (var precompiledPdf = getPrecompiledPdf()) {
 
-            var letterResp =
+            var response =
                     govUkNotifyService.sendLetter(
                             reference,
                             precompiledPdf);
 
             logger.debug("Storing letter response in database",
                     createLogMap(contextId, "store_letter_response"));
-            notificationDatabaseService.storeResponse(letterResp);
+            notificationDatabaseService.storeResponse(response);
 
-            if (letterResp.success()) {
-                logger.info("Letter processed successfully",
-                        createLogMap(contextId, "letter_success"));
-                return new ResponseEntity<>(HttpStatus.CREATED);
-            } else {
-                logger.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-
-        } catch (IOException ioe) {
-            logger.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return response;
         }
 
     }

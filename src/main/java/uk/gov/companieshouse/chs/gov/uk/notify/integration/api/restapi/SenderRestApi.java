@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -112,14 +113,28 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
-        return letterPayloadGenerator.sendLetter(
-                reference,
-                appId,
-                templateId,
-                templateVersion,
-                address,
-                personalisationDetails,
-                contextId);
+        try {
+            var response = letterPayloadGenerator.sendLetter(
+                    reference,
+                    appId,
+                    templateId,
+                    templateVersion,
+                    address,
+                    personalisationDetails,
+                    contextId);
+            if (response.success()) {
+                logger.info("Letter processed successfully",
+                        createLogMap(contextId, "letter_success"));
+                return new ResponseEntity<>(HttpStatus.CREATED);
+            } else {
+                logger.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (IOException ioe) {
+            logger.error("Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private Map<String, Object> createLogMap(final String contextId, final String action) {
