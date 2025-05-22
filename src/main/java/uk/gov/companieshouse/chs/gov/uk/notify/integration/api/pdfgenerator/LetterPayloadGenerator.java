@@ -91,7 +91,7 @@ public class LetterPayloadGenerator {
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private GovUkNotifyService.LetterResp
-            sendLetterPdf(// TODO DEEP-287 Method name?
+            sendLetterPdf(
                         final String reference,
                         final String contextId,
                         final String letter) throws IOException {
