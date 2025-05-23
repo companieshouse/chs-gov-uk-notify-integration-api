@@ -44,10 +44,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -111,6 +113,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
+    private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
+                    + "[address_line_2, address_line_3] missing for "
+                    + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
 
     @Autowired
     private MockMvc mockMvc;
@@ -128,7 +134,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private NotificationClient notificationClient;
 
     @MockitoSpyBean
-    private SenderRestApi senderRestApi;
+    private LetterDispatcher letterDispatcher;
 
     @MockitoSpyBean
     private TemplateLookup templateLookup;
@@ -168,6 +174,21 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
+    }
+
+    @Test
+    @DisplayName("Send letter successfully with template version 1.0")
+    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        // When and then
+        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
+                status().isCreated());
     }
 
     @Test
@@ -374,7 +395,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(senderRestApi.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
+        when(letterDispatcher.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
@@ -453,21 +474,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter successfully with template version 1.0")
-    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
-
-        // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
-
-        // When and then
-        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
-                status().isCreated());
-    }
-
-    @Test
     @DisplayName("Send letter with reference in personalisation details")
     void sendLetterWithReferenceInPersonalisationDetails(CapturedOutput log) throws Exception {
 
@@ -477,6 +483,21 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with too short an address")
+    void sendLetterWithTooShortAnAddress(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        postSendLetterRequest(getRequestWithTooShortAnAddress(),
+                status().isBadRequest())
+                .andExpect(content().string(MISSING_ADDRESS_LINES_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_ADDRESS_LINES_ERROR_MESSAGE), is(true));
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
@@ -648,6 +669,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         request.getLetterDetails().setTemplateId("new_letter");
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithTooShortAnAddress()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        request.getRecipientDetails().setPhysicalAddress(
+                new Address().addressLine1("Recipient Name Only"));
         return objectMapper.writeValueAsString(request);
     }
 

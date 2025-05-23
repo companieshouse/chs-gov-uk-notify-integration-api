@@ -42,6 +42,7 @@
         <spring-boot-testcontainers-version>3.4.5</spring-boot-testcontainers-version>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
         <thymeleaf-version>3.1.3.RELEASE</thymeleaf-version>
+        <jsoup-version>1.20.1</jsoup-version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -221,6 +222,11 @@
             <artifactId>system-stubs-core</artifactId>
             <version>${system-stubs.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup-version}</version>
         </dependency>
     </dependencies>
 
