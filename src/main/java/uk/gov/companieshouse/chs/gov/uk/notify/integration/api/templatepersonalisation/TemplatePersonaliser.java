@@ -99,7 +99,6 @@ public class TemplatePersonaliser {
         return companyName.toUpperCase();
     }
 
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
         var addressLines = Map.of(
                 ADDRESS_LINE_1, blankIfNull(address.getAddressLine1()),
