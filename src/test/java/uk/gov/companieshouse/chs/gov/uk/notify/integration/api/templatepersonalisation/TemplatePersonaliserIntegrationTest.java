@@ -2,9 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TWO;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -16,13 +14,13 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
 
 import java.util.Map;
-import org.hamcrest.Matcher;
+import org.jsoup.nodes.Document;
+import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.web.util.HtmlUtils;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
@@ -32,10 +30,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 @SpringBootTest
 class TemplatePersonaliserIntegrationTest {
 
-    @SuppressWarnings("java:S6126") // Comparison with an equivalent text block fails incorrectly.
-    private static final String LETTER_TITLE = "Verify your identity\n" +
-            "—Person with\n" +
-            "significant control";
+    private static final String LETTER_TITLE =
+            "Verify your identity —Person with significant control";
 
     private static final Map<String, String> PERSONALISATION_DETAILS =
             Map.of("company_name", "Amazon");
@@ -69,14 +65,14 @@ class TemplatePersonaliserIntegrationTest {
     void generateLetterHtmlSuccessfully() {
 
         // Given and when
-        var letter = templatePersonalisation.personaliseLetterTemplate(
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_DIRECTION_LETTER_1,
                 "the reference",
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
-                ADDRESS);
+                ADDRESS));
 
         // Then
         verifyLetterPersonalised(letter);
@@ -87,14 +83,14 @@ class TemplatePersonaliserIntegrationTest {
     @DisplayName("Generate letter HTML successfully with a shorter address")
     void generateLetterHtmlSuccessfullyWithShorterAddress() {
         // Given and when
-        var letter = templatePersonalisation.personaliseLetterTemplate(
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_DIRECTION_LETTER_1,
                 "the reference",
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
-                SHORTER_ADDRESS);
+                SHORTER_ADDRESS));
 
         // Then
         verifyLetterPersonalised(letter);
@@ -171,34 +167,45 @@ class TemplatePersonaliserIntegrationTest {
         assertThat(letter1, is("This is letter2_v1.html in app1."));
     }
 
-    private static void verifyLetterPersonalised(String letter) {
-        assertThat(letter, containsEscapedString(LETTER_TITLE));
-        assertThat(letter, containsEscapedString("Vaughan Jackson"));
-        assertThat(letter, containsEscapedString("Tŷ'r Cwmnïau".toUpperCase()));
-        assertThat(letter, containsEscapedString("reference"));
-        assertThat(letter, containsEscapedString("18 August 2025"));
-        assertThat(letter, containsEscapedString("1 September 2025"));
+    private static void verifyLetterPersonalised(final Document letter) {
+        assertThat(getText(letter, ".notify-letter-title"), is(LETTER_TITLE));
+        assertThat(getText(letter, ".close-packed-top .emphasis"), is("Vaughan Jackson"));
+        assertThat(getText(letter, "p .subject-line"), is("Tŷ'r Cwmnïau".toUpperCase()));
+        assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("the reference"));
+        assertThat(getText(letter, "#deadline-date"), is("18 August 2025"));
+        assertThat(getText(letter, "#extension-date"), is("1 September 2025"));
     }
 
-    private static void verifyLetterAddressed(String letter) {
-        assertThat(letter, containsEscapedString("Line 1"));
-        assertThat(letter, containsEscapedString("Line 2"));
-        assertThat(letter, containsEscapedString("Line 3"));
-        assertThat(letter, containsEscapedString("Line 4"));
-        assertThat(letter, containsEscapedString("Line 5"));
-        assertThat(letter, containsEscapedString("Line 6"));
-        assertThat(letter, containsEscapedString("Line 7"));
+    private static void verifyLetterAddressed(final Document letter) {
+        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 2), is("Line 2"));
+        assertThat(getAddressLine(letter, 3), is("Line 3"));
+        assertThat(getAddressLine(letter, 4), is("Line 4"));
+        assertThat(getAddressLine(letter, 5), is("Line 5"));
+        assertThat(getAddressLine(letter, 6), is("Line 6"));
+        assertThat(getAddressLine(letter, 7), is("Line 7"));
     }
 
-    private static void verifyLetterAddressedWithShorterAddress(String letter) {
-        assertThat(letter, containsEscapedString("Line 1"));
-        assertThat(letter, containsEscapedString("Line 2"));
-        assertThat(letter, containsEscapedString("Line 3"));
-        assertThat(letter, containsEscapedString("Line 4"));
+    private static void verifyLetterAddressedWithShorterAddress(final Document letter) {
+        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 2), is("Line 2"));
+        assertThat(getAddressLine(letter, 3), is("Line 3"));
+        assertThat(getAddressLine(letter, 4), is("Line 4"));
     }
 
-    private static Matcher<String> containsEscapedString(String substring) {
-        return containsString(HtmlUtils.htmlEscape(substring, UTF_8.toString()));
+    private static String getAddressLine(final Document document, final int lineNumber) {
+        var selector = "#address-table tbody tr:nth-child({lineNumber})"
+                .replace("{lineNumber}", String.valueOf(lineNumber));
+        return getText(document, selector);
+    }
+
+    private static String getText(final Document document, final String selector) {
+        var element = document.select(selector).first();
+        return element != null ? element.text() : "";
+    }
+
+    private static Document parse(final String letterText) {
+        return Parser.htmlParser().parseInput(letterText, "");
     }
 
 }
