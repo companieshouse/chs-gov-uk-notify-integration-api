@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
@@ -27,15 +28,18 @@ public class LetterDispatcher {
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
     private final TemplatePersonaliser templatePersonaliser;
+    private final HtmlPdfGenerator pdfGenerator;
     private final Logger logger;
 
     public LetterDispatcher(GovUkNotifyService govUkNotifyService,
                             NotificationDatabaseService notificationDatabaseService,
                             TemplatePersonaliser templatePersonaliser,
+                            HtmlPdfGenerator pdfGenerator,
                             Logger logger) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
         this.templatePersonaliser = templatePersonaliser;
+        this.pdfGenerator = pdfGenerator;
         this.logger = logger;
     }
 
@@ -102,7 +106,8 @@ public class LetterDispatcher {
         // TODO DEEP-288 Stop logging the entire letter HMTL content.
         logger.info("letter = " + letter);
 
-        try (var precompiledPdf = getPrecompiledPdf()) {
+        try (var precompiledPdf = /*getPrecompiledPdf()*/
+                     pdfGenerator.generatePdfFromHtml(letter, reference)) {
 
             var response =
                     govUkNotifyService.sendLetter(
