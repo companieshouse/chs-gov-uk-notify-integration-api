@@ -106,8 +106,7 @@ public class LetterDispatcher {
         // TODO DEEP-288 Stop logging the entire letter HMTL content.
         logger.info("letter = " + letter);
 
-        try (var precompiledPdf = /*getPrecompiledPdf()*/
-                     pdfGenerator.generatePdfFromHtml(letter, reference)) {
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(letter, reference)) {
 
             var response =
                     govUkNotifyService.sendLetter(

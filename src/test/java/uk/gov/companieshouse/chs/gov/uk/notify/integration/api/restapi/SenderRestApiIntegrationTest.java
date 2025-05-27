@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.Objects;
 import org.json.JSONObject;
@@ -49,7 +50,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -134,7 +135,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private NotificationClient notificationClient;
 
     @MockitoSpyBean
-    private LetterDispatcher letterDispatcher;
+    private HtmlPdfGenerator pdfGenerator;
 
     @MockitoSpyBean
     private TemplateLookup templateLookup;
@@ -395,8 +396,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(letterDispatcher.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
-        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
 
         // When and then
         postSendLetterRequest(getValidSendLetterRequestBody(),
@@ -407,7 +409,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
-        verifyLetterResponseStored();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -546,10 +548,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst().getResponse();
         // Unfortunately SendLetter does not implement equals() and hashCode().
         assertThat(storedResponse.toString(), is(receivedResponse.toString()));
-    }
-
-    private void verifyLetterResponseStored() {
-        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
     }
 
     private void verifyNoLetterResponsesAreStored() {

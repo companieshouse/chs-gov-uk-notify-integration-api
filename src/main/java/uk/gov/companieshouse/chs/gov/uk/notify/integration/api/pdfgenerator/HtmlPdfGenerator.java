@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import org.springframework.stereotype.Service;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xhtmlrenderer.pdf.util.XHtmlMetaToPdfInfoAdapter;
@@ -36,41 +37,44 @@ public class HtmlPdfGenerator {
         var pdfFilepath = System.getProperty("user.home") + File.separator
                 + "directionLetter_" + reference + ".pdf";
         try (var outputStream = new FileOutputStream(pdfFilepath)) {
-
-            var renderer = new ITextRenderer();
-
-            // Configure "Accessible" PDF/A conformance level PDF/A-1a.
-            renderer.setPDFVersion(PdfWriter.VERSION_1_4);
-            renderer.setPDFXConformance(PdfWriter.PDFA1A);
-            renderer.setColourSpaceProfile(
-                    "/" + COMMON_ASSETS_DIRECTORY + "sRGB Color Space Profile.icm");
-
-            // Register Arial fonts to be able to use them in the PDF.
-            // Otherwise, we get Helvetica despite having styled Arial in the CSS!
-            addFont(renderer, "Arial.ttf");
-            addFont(renderer, "Arial Bold.ttf");
-
-            // Try to handle SVG image as per https://stackoverflow.com/questions/37056791/svg-integration-in-pdf-using-flying-saucer.
-            var chainingReplacedElementFactory = new ChainingReplacedElementFactory();
-            chainingReplacedElementFactory.addReplacedElementFactory(
-                    renderer.getSharedContext().getReplacedElementFactory());
-            chainingReplacedElementFactory.addReplacedElementFactory(svgReplacedElementFactory);
-            renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
-
-            var resolvingUserAgent = new ClasspathResolvingUserAgent(renderer.getOutputDevice());
-            resolvingUserAgent.setSharedContext(renderer.getSharedContext());
-            renderer.getSharedContext().setUserAgentCallback(resolvingUserAgent);
-            renderer.setDocumentFromString(html);
-            renderer.layout();
-
-            // This gets the "creator" metadata into the PDF info as "Author".
-            var metaToPdfInfoAdapter = new XHtmlMetaToPdfInfoAdapter(renderer.getDocument());
-            renderer.setListener(metaToPdfInfoAdapter);
-
-            renderer.createPDF(outputStream);
+            generatePdfFromHtml(html, outputStream);
         }
-
         return new FileInputStream(pdfFilepath);
+    }
+
+    public void generatePdfFromHtml(String html, OutputStream outputStream) throws IOException {
+
+        var renderer = new ITextRenderer();
+
+        // Configure "Accessible" PDF/A conformance level PDF/A-1a.
+        renderer.setPDFVersion(PdfWriter.VERSION_1_4);
+        renderer.setPDFXConformance(PdfWriter.PDFA1A);
+        renderer.setColourSpaceProfile(
+                "/" + COMMON_ASSETS_DIRECTORY + "sRGB Color Space Profile.icm");
+
+        // Register Arial fonts to be able to use them in the PDF.
+        // Otherwise, we get Helvetica despite having styled Arial in the CSS!
+        addFont(renderer, "Arial.ttf");
+        addFont(renderer, "Arial Bold.ttf");
+
+        // Try to handle SVG image as per https://stackoverflow.com/questions/37056791/svg-integration-in-pdf-using-flying-saucer.
+        var chainingReplacedElementFactory = new ChainingReplacedElementFactory();
+        chainingReplacedElementFactory.addReplacedElementFactory(
+                renderer.getSharedContext().getReplacedElementFactory());
+        chainingReplacedElementFactory.addReplacedElementFactory(svgReplacedElementFactory);
+        renderer.getSharedContext().setReplacedElementFactory(chainingReplacedElementFactory);
+
+        var resolvingUserAgent = new ClasspathResolvingUserAgent(renderer.getOutputDevice());
+        resolvingUserAgent.setSharedContext(renderer.getSharedContext());
+        renderer.getSharedContext().setUserAgentCallback(resolvingUserAgent);
+        renderer.setDocumentFromString(html);
+        renderer.layout();
+
+        // This gets the "creator" metadata into the PDF info as "Author".
+        var metaToPdfInfoAdapter = new XHtmlMetaToPdfInfoAdapter(renderer.getDocument());
+        renderer.setListener(metaToPdfInfoAdapter);
+
+        renderer.createPDF(outputStream);
     }
 
     private void addFont(final ITextRenderer renderer, final String fontFilename)
