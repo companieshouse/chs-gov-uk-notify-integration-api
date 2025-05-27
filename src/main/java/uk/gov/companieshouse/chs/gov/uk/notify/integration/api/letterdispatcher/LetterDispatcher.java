@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,15 +95,11 @@ public class LetterDispatcher {
                         address);
     }
 
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private GovUkNotifyService.LetterResp
             sendLetterPdf(
                         final String reference,
                         final String contextId,
                         final String letter) throws IOException {
-
-        // TODO DEEP-288 Stop logging the entire letter HMTL content.
-        logger.info("letter = " + letter);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(letter, reference)) {
 
@@ -120,12 +115,6 @@ public class LetterDispatcher {
             return response;
         }
 
-    }
-
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
-    public InputStream getPrecompiledPdf() {
-        // TODO DEEP-288 Replace temporary test code and remove Demonstrate connectivity.pdf.
-        return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
     }
 
     private Map<String, Object> createLogMap(final String contextId, final String action) {
