@@ -23,5 +23,5 @@ public interface TemplateLookupInterface {
      * @param templateId
      * @return
      */
-    ChLetterTemplate retrieveLetterTemplate(String templateId);
+    LetterTemplateKey retrieveLetterTemplate(String templateId);
 }

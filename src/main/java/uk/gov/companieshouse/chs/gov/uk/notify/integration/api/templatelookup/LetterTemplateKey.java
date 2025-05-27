@@ -8,5 +8,5 @@ import java.math.BigDecimal;
  * @param id the template ID (aka name) corresponding to the type of letter to be sent
  * @param version the version of the template
  */
-public record ChLetterTemplate(String appId, String id, BigDecimal version) {
+public record LetterTemplateKey(String appId, String id, BigDecimal version) {
 }

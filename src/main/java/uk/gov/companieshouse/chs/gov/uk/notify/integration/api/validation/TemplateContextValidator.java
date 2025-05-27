@@ -19,17 +19,17 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 
 @Component
 public class TemplateContextValidator {
 
     // ImmutableSet preserves ordering of set elements, java.util.Set does not.
     @SuppressWarnings("java:S4738")
-    private static final Map<ChLetterTemplate, Set<String>> VALID_CONTEXTS =
+    private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<>(
-                            new ChLetterTemplate("chips", "directionLetter", ONE),
+                            new LetterTemplateKey("chips", "directionLetter", ONE),
                             ImmutableSet.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, POSTCODE_OR_COUNTRY,
                                     DATE,
@@ -50,7 +50,7 @@ public class TemplateContextValidator {
      *                substitutions of field variables in the Thymeleaf template identified
      * @param template identifies the letter template to be personalised
      */
-    public void validateContextForTemplate(Context context, ChLetterTemplate template) {
+    public void validateContextForTemplate(Context context, LetterTemplateKey template) {
         var validContext = VALID_CONTEXTS.get(template);
         if (validContext == null) {
             throw new LetterValidationException(

@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -145,7 +145,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         return templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(
+                new LetterTemplateKey(
                         senderDetails.getAppId(),
                         letterDetails.getTemplateId(),
                         letterDetails.getTemplateVersion()),

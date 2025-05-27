@@ -22,7 +22,7 @@ public class TemplateLookupImpl implements TemplateLookupInterface {
      * @return
      */
     @Override
-    public ChLetterTemplate retrieveLetterTemplate(String templateId) {
+    public LetterTemplateKey retrieveLetterTemplate(String templateId) {
 
         throw new NotImplementedException();
     }

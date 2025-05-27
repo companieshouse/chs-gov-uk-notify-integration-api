@@ -25,7 +25,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.util.HtmlUtils;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
@@ -64,7 +64,7 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
-                new ChLetterTemplate("chips", "directionLetter", ONE),
+                new LetterTemplateKey("chips", "directionLetter", ONE),
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         REFERENCE, "reference",
@@ -84,10 +84,10 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new ChLetterTemplate("app1", "letter1", ONE);
-        var templateSpec2 = new ChLetterTemplate("app2", "letter1", ONE);
+        var templateSpec1 = new LetterTemplateKey("app1", "letter1", ONE);
+        var templateSpec2 = new LetterTemplateKey("app2", "letter1", ONE);
         doNothing().when(templateContextValidator).validateContextForTemplate(
-                any(Context.class), any(ChLetterTemplate.class));
+                any(Context.class), any(LetterTemplateKey.class));
 
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
@@ -110,9 +110,9 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec = new ChLetterTemplate("app1", "letter1", TWO);
+        var templateSpec = new LetterTemplateKey("app1", "letter1", TWO);
         doNothing().when(templateContextValidator).validateContextForTemplate(
-                any(Context.class), any(ChLetterTemplate.class));
+                any(Context.class), any(LetterTemplateKey.class));
 
         // When
         var letter = templatePersonalisation.personaliseLetterTemplate(
@@ -130,9 +130,9 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new ChLetterTemplate("app1", "letter2", ONE);
+        var templateSpec1 = new LetterTemplateKey("app1", "letter2", ONE);
         doNothing().when(templateContextValidator).validateContextForTemplate(
-                any(Context.class), any(ChLetterTemplate.class));
+                any(Context.class), any(LetterTemplateKey.class));
 
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(

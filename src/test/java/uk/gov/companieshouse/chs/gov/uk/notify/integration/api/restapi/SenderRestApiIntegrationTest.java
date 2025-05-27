@@ -81,7 +81,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "letter personalisation details.";
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for ChLetterTemplate[appId=chips, id=directionLetter, version=1].";
+                    + "missing for LetterTemplateKey[appId=chips, id=directionLetter, version=1].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -95,13 +95,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "ChLetterTemplate[appId=unknown_application, id=directionLetter, version=1]";
+                    + "LetterTemplateKey[appId=unknown_application, id=directionLetter, version=1]";
     private static final String UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "ChLetterTemplate[appId=chips, id=directionLetter, version=2147483647]";
+                    + "LetterTemplateKey[appId=chips, id=directionLetter, version=2147483647]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "ChLetterTemplate[appId=chips, id=new_letter, version=1]";
+                    + "LetterTemplateKey[appId=chips, id=new_letter, version=1]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
     "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
             + "(template: \"unknown_directory/chips/directionLetter_v1.html\") "
