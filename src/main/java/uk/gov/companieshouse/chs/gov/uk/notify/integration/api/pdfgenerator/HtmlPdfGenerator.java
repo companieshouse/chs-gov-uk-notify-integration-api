@@ -43,7 +43,7 @@ public class HtmlPdfGenerator {
             renderer.setPDFVersion(PdfWriter.VERSION_1_4);
             renderer.setPDFXConformance(PdfWriter.PDFA1A);
             renderer.setColourSpaceProfile(
-                    "/assets/templates/letters/common/sRGB Color Space Profile.icm");
+                    "/" + COMMON_ASSETS_DIRECTORY + "sRGB Color Space Profile.icm");
 
             // Register Arial fonts to be able to use them in the PDF.
             // Otherwise, we get Helvetica despite having styled Arial in the CSS!
