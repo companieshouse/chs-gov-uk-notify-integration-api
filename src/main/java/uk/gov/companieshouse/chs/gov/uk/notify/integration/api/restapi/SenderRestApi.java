@@ -18,7 +18,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -127,7 +127,6 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for now.
     private String personaliseLetter(final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
                                      final String contextId) {
-        // TODO DEEP-287 Decide how to make use of version too.
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         Map<String, String> personalisationDetails;
         try {
@@ -143,9 +142,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             throw new LetterValidationException(message);
         }
 
+        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         return templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(letterDetails.getTemplateId(),
+                new LetterTemplateKey(
+                        senderDetails.getAppId(),
+                        letterDetails.getTemplateId(),
                         letterDetails.getTemplateVersion()),
                 personalisationDetails,
                 address);

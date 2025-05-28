@@ -1,13 +1,9 @@
-<link th:fragment="head()" href="notifyLetterLayout.css" media="all" rel="stylesheet" type="text/css"/>
-<link th:fragment="head()" href="common/font-awesome.css"
-      rel="stylesheet"
-      type="text/css"
-      media="all"/>
+<link th:fragment="stylesheet()" href="notifyLetterLayout.css" media="all" rel="stylesheet" type="text/css" />
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
     <!-- Headers -->
     <div class="p1-header-left frame title">
-        <div class="content logo" th:insert="~{../../../common/logo}">
+        <div class="content logo" th:insert="~{../common/logo}">
         </div>
     </div>
     <div class="p1-header-centre">
@@ -50,7 +46,7 @@
                     <tr class="date-and-reference-label">Date:</tr>
                     <tr>[[${date}]]</tr>
                     <tr class="date-and-reference-spacing"></tr>
-                    <tr class="date-and-reference-label">[[${referenceLabel}]]</tr>
+                    <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
                     <tr>[[${referenceValue}]]</tr>
                 </table>
             </div>

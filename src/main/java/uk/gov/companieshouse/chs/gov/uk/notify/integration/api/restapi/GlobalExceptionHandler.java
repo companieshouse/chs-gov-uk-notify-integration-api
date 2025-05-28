@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.thymeleaf.exceptions.TemplateInputException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
@@ -53,6 +54,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         myLogger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(message);
+    }
+
+    /**
+     * Returns HTTP Status 500 Internal Server Error when there is a TemplateInputException
+     * implying that a template resource cannot be found. It does not return a 404 Not Found
+     * response because this scenario represents a configuration error as the template lookup
+     * must already have found context validation set up for the template identified in the
+     * request. Possible underlying problems include the template itself cannot be found in the
+     * assets, or a file the template refers to cannot be found in the assets.
+     *
+     * @param tie exception thrown when there is a fundamental problem with the template the engine
+     *            has been directed to process
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(TemplateInputException.class)
+    public ResponseEntity<Object> handleTemplateInputException(
+            TemplateInputException tie) {
+        var message = "Error in " + APPLICATION_NAMESPACE + ": "
+                + buildMessage(tie.getMessage() + " [cause: " + tie.getCause() + "]");
+        myLogger.error("Will handle error `" + message
+                        + "` by responding with 500 Internal Server Error.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(message);
     }
 
