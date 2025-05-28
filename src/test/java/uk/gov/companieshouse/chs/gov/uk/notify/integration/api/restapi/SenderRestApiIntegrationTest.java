@@ -6,8 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -30,6 +32,9 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfXConformanceException;
+import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -128,6 +133,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
                     + "assets/templates/letters/common/warning.svg [cause: null]";
+    private static final String PDFX_CONFORMANCE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
+                    + "This PdfXConformanceException could indicate that a font, style or "
+                    + "stylesheet cannot be found.";
 
     @Autowired
     private MockMvc mockMvc;
@@ -446,6 +455,30 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports PdfXConformanceException rendering PDF with a 500 response")
+    void sendLetterReportsPdfXConformanceException(CapturedOutput log) throws Exception {
+
+        // Given
+        try (final var pdfxConformanceChecker = mockStatic(PdfXConformanceImp.class)) {
+
+            pdfxConformanceChecker.when(
+                    () -> PdfXConformanceImp.checkPDFXConformance(
+                            any(PdfWriter.class), anyInt(), any()))
+                    .thenThrow(new PdfXConformanceException("Thrown by test"));
+
+            // When and then
+            postSendLetterRequest(getValidSendLetterRequestBody(),
+                    status().isInternalServerError())
+                    .andExpect(content().string(PDFX_CONFORMANCE_ERROR_MESSAGE));
+
+            assertThat(log.getAll().contains(PDFX_CONFORMANCE_ERROR_MESSAGE), is(true));
+
+            verifyLetterDetailsRequestStoredCorrectly();
+            verifyNoLetterResponsesAreStored();
+        }
     }
 
     @Test

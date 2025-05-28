@@ -47,6 +47,10 @@ public class HtmlPdfGenerator {
         var renderer = new ITextRenderer();
 
         // Configure "Accessible" PDF/A conformance level PDF/A-1a.
+        // Even if this may seem pointless given that Gov Notify manipulate the
+        // PDF before printing and sending the letter, setting this also has the
+        // positive side effect of alerting us indirectly to the fact when stylesheets
+        // cannot be found.
         renderer.setPDFVersion(PdfWriter.VERSION_1_4);
         renderer.setPDFXConformance(PdfWriter.PDFA1A);
         renderer.setColourSpaceProfile(
