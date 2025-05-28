@@ -6,6 +6,11 @@ public class ContextVariables {
 
     }
 
+    // Resource paths
+    public static final String ROOT_RESOURCE_PATH_VARIABLE = "root";
+    public static final String LETTER_RESOURCE_PATH_VARIABLE = "letter";
+    public static final String COMMON_RESOURCE_PATH_VARIABLE = "common";
+
     // Address fields
     public static final String ADDRESS_LINE_1 = "address_line_1";
     public static final String ADDRESS_LINE_2 = "address_line_2";
