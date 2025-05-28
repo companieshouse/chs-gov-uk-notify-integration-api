@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception;
 
 /**
  * Instances of this report issues rendering SVG images within the PDF.
@@ -6,9 +6,5 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator;
 public class SvgImageException extends RuntimeException {
     public SvgImageException(String message) {
         super(message);
-    }
-
-    public SvgImageException(Throwable cause) {
-        super(cause);
     }
 }

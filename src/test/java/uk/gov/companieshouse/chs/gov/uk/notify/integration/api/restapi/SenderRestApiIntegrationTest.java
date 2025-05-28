@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -118,6 +121,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
                     + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
+    private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
+                    + "creating SVG image assets/templates/letters/common/warning.svg: "
+                    + "Thrown by test. [cause: null]";
+    private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
+                    + "assets/templates/letters/common/warning.svg [cause: null]";
 
     @Autowired
     private MockMvc mockMvc;
@@ -142,6 +152,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Mock
     private InputStream precompiledPdfInputStream;
+
+    @Mock
+    private SAXSVGDocumentFactory svgDocumentFactory;
+
+    @MockitoSpyBean
+    private SvgReplacedElementFactory svgReplacedElementFactory;
 
     @Test
     @DisplayName("Send letter successfully")
@@ -392,8 +408,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter gracefully handles IOException loading letter PDF")
-    void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
+    @DisplayName("Send letter reports IOException loading letter PDF with a 500 response")
+    void sendLetterReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
@@ -407,6 +423,44 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports SvgImageException creating an SVG image with a 500 response")
+    void sendLetterReportsCreationSvgImageException(CapturedOutput log) throws Exception {
+
+        // Given
+        when(svgReplacedElementFactory.getDocumentFactory()).thenReturn(svgDocumentFactory);
+        when(svgDocumentFactory.createSVGDocument(anyString())).
+                thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        postSendLetterRequest(getValidSendLetterRequestBody(),
+                status().isInternalServerError())
+                .andExpect(content().string(CREATE_SVG_IMAGE_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(CREATE_SVG_IMAGE_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports SvgImageException not finding an SVG image with a 500 response")
+    void sendLetterReportsMissingSvgImageException(CapturedOutput log) throws Exception {
+
+        // Given
+        when(svgReplacedElementFactory.getResourceUrl(anyString())).thenReturn(null);
+
+        // When and then
+        postSendLetterRequest(getValidSendLetterRequestBody(),
+                status().isInternalServerError())
+                .andExpect(content().string(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
