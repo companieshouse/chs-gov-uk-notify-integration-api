@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +23,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -31,16 +31,16 @@ class TemplateContextValidatorTest {
 
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
-            "Unable to find a valid context for ChLetterTemplate"
+            "Unable to find a valid context for LetterTemplateKey"
                     + "[appId=chips, id=direction_letter, version=2]";
     private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [company_name, deadline_date] missing for "
-                    + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, postcode_or_country, "
                     + "date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
-                    + "ChLetterTemplate[appId=chips, id=direction_letter, version=1].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
 
     @InjectMocks
     private TemplateContextValidator validator;
@@ -71,7 +71,7 @@ class TemplateContextValidatorTest {
     void errorsWhereTemplateIsUnknown() {
 
         // Given
-        var letter = new ChLetterTemplate("chips", "direction_letter", TWO);
+        var letter = new LetterTemplateKey("chips", "direction_letter", TWO);
         var context = new Context();
 
         // When and then

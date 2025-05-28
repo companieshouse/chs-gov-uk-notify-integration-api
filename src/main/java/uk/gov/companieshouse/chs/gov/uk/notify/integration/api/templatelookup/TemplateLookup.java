@@ -17,7 +17,7 @@ public class TemplateLookup {
      *                          (aka service name),
      * @return the inferred location of the template
      */
-    public LetterTemplateLocatorSpec lookupTemplate(ChLetterTemplate templateLookupKey) {
+    public LetterTemplateLocatorSpec lookupTemplate(LetterTemplateKey templateLookupKey) {
         return new LetterTemplateLocatorSpec(
                 getLetterTemplatesRootDirectory() + templateLookupKey.appId() + "/",
                 templateLookupKey.id() + "_v" + templateLookupKey.version());

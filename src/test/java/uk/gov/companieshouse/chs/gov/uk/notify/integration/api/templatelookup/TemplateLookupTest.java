@@ -16,8 +16,8 @@ import java.math.BigDecimal;
 class TemplateLookupTest {
 
     private static final BigDecimal THE_VERSION = BigDecimal.TEN;
-    private static final ChLetterTemplate LOOKUP_KEY =
-            new ChLetterTemplate("the_client_app", "the_letter", THE_VERSION);
+    private static final LetterTemplateKey LOOKUP_KEY =
+            new LetterTemplateKey("the_client_app", "the_letter", THE_VERSION);
 
     @Test
     @DisplayName("Template look up behaves as expected")
