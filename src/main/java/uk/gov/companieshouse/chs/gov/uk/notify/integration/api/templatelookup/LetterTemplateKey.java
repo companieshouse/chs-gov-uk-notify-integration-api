@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup;
 
+import static java.math.BigDecimal.ONE;
+
 import java.math.BigDecimal;
 
 /**
@@ -9,4 +11,8 @@ import java.math.BigDecimal;
  * @param version the version of the template
  */
 public record LetterTemplateKey(String appId, String id, BigDecimal version) {
+
+    public static final LetterTemplateKey CHIPS_DIRECTION_LETTER_1 =
+            new LetterTemplateKey("chips", "direction_letter", ONE);
+
 }

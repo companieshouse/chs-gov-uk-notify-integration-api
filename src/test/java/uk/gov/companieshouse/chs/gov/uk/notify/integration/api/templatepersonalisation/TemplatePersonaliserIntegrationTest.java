@@ -13,7 +13,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 
 import java.util.Map;
 import org.hamcrest.Matcher;
@@ -64,10 +64,10 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = templatePersonalisation.personaliseLetterTemplate(
-                new LetterTemplateKey("chips", "directionLetter", ONE),
+                CHIPS_DIRECTION_LETTER_1,
+                "the reference",
                 Map.of(PSC_FULL_NAME, "Vaughan Jackson",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
-                        REFERENCE, "reference",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
                 ADDRESS);
@@ -92,10 +92,12 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
         var letter2 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec2,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
@@ -117,6 +119,7 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
@@ -137,6 +140,7 @@ class TemplatePersonaliserIntegrationTest {
         // When
         var letter1 = templatePersonalisation.personaliseLetterTemplate(
                 templateSpec1,
+                "the reference",
                 PERSONALISATION_DETAILS,
                 ADDRESS);
 
