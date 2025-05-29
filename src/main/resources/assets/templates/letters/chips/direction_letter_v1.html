@@ -15,7 +15,7 @@
     <!--    <meta name="keywords" content="IDV PSC"/>-->
 
     <link th:replace="~{../notify_letter_layout :: stylesheet()}">
-    <link href="direction_letter.css" media="all" rel="stylesheet" type="text/css" />
+    <link th:href="@{${letter} + direction_letter.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <section th:replace="~{../notify_letter_layout :: notifyLetterLayout(
