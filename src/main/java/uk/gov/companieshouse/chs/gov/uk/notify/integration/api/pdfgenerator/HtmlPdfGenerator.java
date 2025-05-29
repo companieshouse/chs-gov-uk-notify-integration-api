@@ -25,7 +25,7 @@ public class HtmlPdfGenerator {
     private final Logger logger;
 
     public HtmlPdfGenerator(final SvgReplacedElementFactory svgReplacedElementFactory,
-                            @Value("${save.letter}") final boolean saveLetter,
+                            @Value("${save.letter:false}") final boolean saveLetter,
                             final Logger logger) {
         this.svgReplacedElementFactory = svgReplacedElementFactory;
         this.saveLetter = saveLetter;
