@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator;
 
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -121,7 +122,7 @@ public class HtmlPdfGenerator {
                                               String reference) throws IOException {
         var pdfFilepath = getPdfFilepath(reference);
         logger.info("Saving PDF of letter to " + pdfFilepath + ".");
-        try (var outputStream = new FileOutputStream(pdfFilepath)) {
+        try (var outputStream = new BufferedOutputStream(new FileOutputStream(pdfFilepath))) {
             generatePdfFromHtml(html, outputStream);
         }
         return new FileInputStream(pdfFilepath);
