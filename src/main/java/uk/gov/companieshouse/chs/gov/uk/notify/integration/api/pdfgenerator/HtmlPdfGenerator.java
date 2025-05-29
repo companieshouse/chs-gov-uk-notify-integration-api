@@ -2,9 +2,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator;
 
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,6 +23,7 @@ public class HtmlPdfGenerator {
     }
 
     /**
+     * TODO DEEP-288 Update this.
      * Generates a PDF from the HTML provided, saving it to the user home directory under the name
      * "directionLetter_&lt;reference&gt;.pdf".
      * @param html the final HTML representation of the document to be generated as a PDF
@@ -34,12 +34,12 @@ public class HtmlPdfGenerator {
      */
     public InputStream generatePdfFromHtml(String html,
                                            String reference) throws IOException {
-        var pdfFilepath = System.getProperty("user.home") + File.separator
-                + "directionLetter_" + reference + ".pdf";
-        try (var outputStream = new FileOutputStream(pdfFilepath)) {
+        InputStream in;
+        try (var outputStream = new ByteArrayOutputStream()) {
             generatePdfFromHtml(html, outputStream);
+            in = new ByteArrayInputStream(outputStream.toByteArray());
         }
-        return new FileInputStream(pdfFilepath);
+        return in;
     }
 
     public void generatePdfFromHtml(String html, OutputStream outputStream) throws IOException {
