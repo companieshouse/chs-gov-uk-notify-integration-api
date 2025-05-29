@@ -12,12 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xhtmlrenderer.pdf.util.XHtmlMetaToPdfInfoAdapter;
 import uk.gov.companieshouse.logging.Logger;
 
-@Service
+@Component
 public class HtmlPdfGenerator {
 
     private static final String COMMON_ASSETS_DIRECTORY = "assets/templates/letters/common/";
