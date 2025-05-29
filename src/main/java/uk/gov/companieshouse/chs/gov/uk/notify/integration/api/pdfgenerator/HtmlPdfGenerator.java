@@ -4,28 +4,39 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.xhtmlrenderer.pdf.util.XHtmlMetaToPdfInfoAdapter;
+import uk.gov.companieshouse.logging.Logger;
 
 @Service
 public class HtmlPdfGenerator {
 
     private static final String COMMON_ASSETS_DIRECTORY = "assets/templates/letters/common/";
-
     private final SvgReplacedElementFactory svgReplacedElementFactory;
+    private final boolean saveLetter;
+    private final Logger logger;
 
-    public HtmlPdfGenerator(SvgReplacedElementFactory svgReplacedElementFactory) {
+    public HtmlPdfGenerator(final SvgReplacedElementFactory svgReplacedElementFactory,
+                            @Value("${save.letter}") final boolean saveLetter,
+                            final Logger logger) {
         this.svgReplacedElementFactory = svgReplacedElementFactory;
+        this.saveLetter = saveLetter;
+        this.logger = logger;
     }
 
     /**
-     * TODO DEEP-288 Update this.
-     * Generates a PDF from the HTML provided, saving it to the user home directory under the name
-     * "directionLetter_&lt;reference&gt;.pdf".
+     * Generates a PDF from the HTML provided. If the <code>save.letter</code> property is
+     * <code>true</code>, it saves the letter PDF to the user home directory under the name
+     * "directionLetter_&lt;reference&gt;.pdf", otherwise it holds the PDF in memory only.
+     *
      * @param html the final HTML representation of the document to be generated as a PDF
      * @param reference the reference used to identify the document and name the file containing
      *                  its PDF rendering
@@ -34,12 +45,11 @@ public class HtmlPdfGenerator {
      */
     public InputStream generatePdfFromHtml(String html,
                                            String reference) throws IOException {
-        InputStream in;
-        try (var outputStream = new ByteArrayOutputStream()) {
-            generatePdfFromHtml(html, outputStream);
-            in = new ByteArrayInputStream(outputStream.toByteArray());
+        if (saveLetter) {
+            return getPdfFileInputStream(html, reference);
+        } else {
+            return getPdfInMemoryInputStream(html);
         }
-        return in;
     }
 
     public void generatePdfFromHtml(String html, OutputStream outputStream) throws IOException {
@@ -79,6 +89,47 @@ public class HtmlPdfGenerator {
         renderer.setListener(metaToPdfInfoAdapter);
 
         renderer.createPDF(outputStream);
+    }
+
+    /**
+     * Generates a PDF from the HTML provided, holding it in memory.
+     *
+     * @param html the final HTML representation of the document to be generated as a PDF
+     * @return the {@link InputStream} for the PDF as written out to the file
+     * @throws IOException should something go wrong whilst creating or writing the PDF
+     */
+    private InputStream getPdfInMemoryInputStream(String html) throws IOException {
+        InputStream in;
+        try (var outputStream = new ByteArrayOutputStream()) {
+            generatePdfFromHtml(html, outputStream);
+            in = new ByteArrayInputStream(outputStream.toByteArray());
+        }
+        return in;
+    }
+
+    /**
+     * Generates a PDF from the HTML provided, saving it to the user home directory under the name
+     * "directionLetter_&lt;reference&gt;.pdf".
+     *
+     * @param html the final HTML representation of the document to be generated as a PDF
+     * @param reference the reference used to identify the document and name the file containing
+     *                  its PDF rendering
+     * @return the {@link InputStream} for the PDF as written out to the file
+     * @throws IOException should something go wrong whilst creating or saving the PDF
+     */
+    private InputStream getPdfFileInputStream(String html,
+                                              String reference) throws IOException {
+        var pdfFilepath = getPdfFilepath(reference);
+        logger.info("Saving PDF of letter to " + pdfFilepath + ".");
+        try (var outputStream = new FileOutputStream(pdfFilepath)) {
+            generatePdfFromHtml(html, outputStream);
+        }
+        return new FileInputStream(pdfFilepath);
+    }
+
+    public static String getPdfFilepath(String reference) {
+        return System.getProperty("user.home") + File.separator
+                + "directionLetter_" + reference + ".pdf";
     }
 
     private void addFont(final ITextRenderer renderer, final String fontFilename)
