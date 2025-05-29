@@ -35,7 +35,7 @@ public class HtmlPdfGenerator {
     /**
      * Generates a PDF from the HTML provided. If the <code>save.letter</code> property is
      * <code>true</code>, it saves the letter PDF to the user home directory under the name
-     * "directionLetter_&lt;reference&gt;.pdf", otherwise it holds the PDF in memory only.
+     * "letter_&lt;reference&gt;.pdf", otherwise it holds the PDF in memory only.
      *
      * @param html the final HTML representation of the document to be generated as a PDF
      * @param reference the reference used to identify the document and name the file containing
@@ -109,7 +109,7 @@ public class HtmlPdfGenerator {
 
     /**
      * Generates a PDF from the HTML provided, saving it to the user home directory under the name
-     * "directionLetter_&lt;reference&gt;.pdf".
+     * "letter_&lt;reference&gt;.pdf".
      *
      * @param html the final HTML representation of the document to be generated as a PDF
      * @param reference the reference used to identify the document and name the file containing
@@ -129,7 +129,7 @@ public class HtmlPdfGenerator {
 
     public static String getPdfFilepath(String reference) {
         return System.getProperty("user.home") + File.separator
-                + "directionLetter_" + reference + ".pdf";
+                + "letter_" + reference + ".pdf";
     }
 
     private void addFont(final ITextRenderer renderer, final String fontFilename)
