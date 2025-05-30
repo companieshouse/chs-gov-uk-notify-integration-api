@@ -20,11 +20,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -122,45 +125,58 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private void verifyLetterPdfContent() throws IOException {
         try (var document = Loader.loadPDF(new File(SAVED_LETTER_FILEPATH))) {
-            var textStripper = new PDFTextStripper();
-            var letter = textStripper.getText(document);
+
+            // Substitutions all occur on page 1.
+            var page1 = getPageText(document, 1);
+
             var request = objectMapper.readValue(
                     getValidSendLetterRequestBody(),
                     GovUkLetterDetailsRequest.class);
 
+            // Date
+            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+            var date = LocalDate.now().format(format);
+            assertThat(page1, containsString(date));
+
             // Reference
             var reference = request.getSenderDetails().getReference();
-            assertThat(letter, containsString(reference));
+            assertThat(page1, containsString(reference));
 
             // Address block
             var address = request.getRecipientDetails().getPhysicalAddress();
             var addressLine1 = address.getAddressLine1();
-            assertThat(letter, containsString(addressLine1));
+            assertThat(page1, containsString(addressLine1));
             var addressLine2 = address.getAddressLine2().toUpperCase(); // company name
-            assertThat(letter, containsString(addressLine2));
+            assertThat(page1, containsString(addressLine2));
             var addressLine3 = address.getAddressLine3();
-            assertThat(letter, containsString(addressLine3));
+            assertThat(page1, containsString(addressLine3));
             var addressLine4 = address.getAddressLine4();
-            assertThat(letter, containsString(addressLine4));
+            assertThat(page1, containsString(addressLine4));
             var addressLine5 = address.getAddressLine5();
-            assertThat(letter, containsString(addressLine5));
+            assertThat(page1, containsString(addressLine5));
             var addressLine6 = address.getAddressLine6();
-            assertThat(letter, containsString(addressLine6));
+            assertThat(page1, containsString(addressLine6));
 
             // Personalisation details
             Map<String,String> personalisationDetails =
                     objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
                             new TypeReference<>() {});
             var pscFullName = personalisationDetails.get("psc_full_name");
-            assertThat(letter, containsString(pscFullName));
+            assertThat(page1, containsString(pscFullName));
             var companyName = personalisationDetails.get("company_name").toUpperCase();
-            assertThat(letter, containsString(companyName));
+            assertThat(page1, containsString(companyName));
             var deadlineDate = personalisationDetails.get("deadline_date");
-            assertThat(letter, containsString(deadlineDate));
+            assertThat(page1, containsString(deadlineDate));
             var extensionDate = personalisationDetails.get("extension_date");
-            assertThat(letter, containsString(extensionDate));
-
+            assertThat(page1, containsString(extensionDate));
         }
+    }
+
+    private String getPageText(PDDocument document, int pageNumber) throws IOException {
+        var textStripper = new PDFTextStripper();
+        textStripper.setStartPage(pageNumber);
+        textStripper.setEndPage(pageNumber);
+        return textStripper.getText(document);
     }
 
 }
