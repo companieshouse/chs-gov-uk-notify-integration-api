@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +40,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
@@ -55,6 +63,9 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private NotificationClient notificationClient;
@@ -82,6 +93,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(SAVING_LETTER_LOG_MESSAGE), is(true));
 
         verifyLetterPdfSaved();
+        verifyLetterPdfContent();
     }
 
     private ResultActions postSendLetterRequest(String requestBody,
@@ -106,6 +118,49 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static void verifyLetterPdfSaved() {
         var savedLetterFilepath = Paths.get(SAVED_LETTER_FILEPATH);
         assertThat(Files.exists(savedLetterFilepath), is(true));
+    }
+
+    private void verifyLetterPdfContent() throws IOException {
+        try (var document = Loader.loadPDF(new File(SAVED_LETTER_FILEPATH))) {
+            var textStripper = new PDFTextStripper();
+            var letter = textStripper.getText(document);
+            var request = objectMapper.readValue(
+                    getValidSendLetterRequestBody(),
+                    GovUkLetterDetailsRequest.class);
+
+            // Reference
+            var reference = request.getSenderDetails().getReference();
+            assertThat(letter, containsString(reference));
+
+            // Address block
+            var address = request.getRecipientDetails().getPhysicalAddress();
+            var addressLine1 = address.getAddressLine1();
+            assertThat(letter, containsString(addressLine1));
+            var addressLine2 = address.getAddressLine2().toUpperCase(); // company name
+            assertThat(letter, containsString(addressLine2));
+            var addressLine3 = address.getAddressLine3();
+            assertThat(letter, containsString(addressLine3));
+            var addressLine4 = address.getAddressLine4();
+            assertThat(letter, containsString(addressLine4));
+            var addressLine5 = address.getAddressLine5();
+            assertThat(letter, containsString(addressLine5));
+            var addressLine6 = address.getAddressLine6();
+            assertThat(letter, containsString(addressLine6));
+
+            // Personalisation details
+            Map<String,String> personalisationDetails =
+                    objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
+                            new TypeReference<>() {});
+            var pscFullName = personalisationDetails.get("psc_full_name");
+            assertThat(letter, containsString(pscFullName));
+            var companyName = personalisationDetails.get("company_name").toUpperCase();
+            assertThat(letter, containsString(companyName));
+            var deadlineDate = personalisationDetails.get("deadline_date");
+            assertThat(letter, containsString(deadlineDate));
+            var extensionDate = personalisationDetails.get("extension_date");
+            assertThat(letter, containsString(extensionDate));
+
+        }
     }
 
 }
