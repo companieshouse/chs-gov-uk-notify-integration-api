@@ -33,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -53,6 +54,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @SpringBootTest(properties = {"save.letter=true"})
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
+@Isolated
 class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
