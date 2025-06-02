@@ -150,7 +150,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 new LetterTemplateKey(
                         senderDetails.getAppId(),
                         letterDetails.getTemplateId(),
-                        letterDetails.getTemplateVersion()),
+                        letterDetails.getTemplateVersion().stripTrailingZeros()),
+                senderDetails.getReference(),
                 personalisationDetails,
                 address);
     }
