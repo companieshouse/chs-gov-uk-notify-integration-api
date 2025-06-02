@@ -13,7 +13,7 @@ import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -82,7 +82,7 @@ public class LetterDispatcher {
         }
 
         return templatePersonaliser.personaliseLetterTemplate(
-                new ChLetterTemplate(
+                new LetterTemplateKey(
                         appId,
                         templateId,
                         // Ensure versions "1" and "1.0" are treated as being the same.

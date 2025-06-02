@@ -72,6 +72,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var emailResp = govUkNotifyService.sendEmail(
                 govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
+                govUkEmailDetailsRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 
