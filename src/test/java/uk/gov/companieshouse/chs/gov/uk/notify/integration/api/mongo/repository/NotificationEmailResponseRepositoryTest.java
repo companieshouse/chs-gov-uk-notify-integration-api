@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
@@ -18,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-@Isolated
 class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
     
     @Autowired

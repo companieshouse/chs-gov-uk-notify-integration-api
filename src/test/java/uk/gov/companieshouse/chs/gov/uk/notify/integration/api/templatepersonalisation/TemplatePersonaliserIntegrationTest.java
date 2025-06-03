@@ -18,7 +18,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -29,7 +28,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Te
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
 @SpringBootTest
-@Isolated
 class TemplatePersonaliserIntegrationTest {
 
     private static final String LETTER_TITLE =
