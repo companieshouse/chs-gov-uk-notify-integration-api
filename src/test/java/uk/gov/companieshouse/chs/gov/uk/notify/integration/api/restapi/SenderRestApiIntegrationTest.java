@@ -168,7 +168,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
-        assertThat(log.getAll().contains("\"xRequestId\":\"" + REQUEST_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
@@ -259,7 +259,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
-        assertThat(log.getAll().contains("\"xRequestId\":\"" + REQUEST_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
