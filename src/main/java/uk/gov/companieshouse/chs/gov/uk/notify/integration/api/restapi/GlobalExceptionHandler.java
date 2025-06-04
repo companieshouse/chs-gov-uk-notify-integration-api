@@ -30,7 +30,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     private static final Map<String, String>
             ERROR_MESSAGE_PARAMETER_NAME_SUBSTITUTIONS =
-            Map.of("sendLetter.arg1", "context ID (X-Request-ID)");
+            Map.of("sendLetter.arg1", "request ID (X-Request-ID)");
 
     /** Given this name to avoid any confusion with `ResponseEntityExceptionHandler.logger`. **/
     private final Logger myLogger;

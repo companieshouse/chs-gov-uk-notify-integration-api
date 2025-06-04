@@ -1,12 +1,13 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
@@ -124,10 +125,4 @@ public class LetterDispatcher {
         return getClass().getClassLoader().getResourceAsStream("Demonstrate connectivity.pdf");
     }
 
-    private Map<String, Object> createLogMap(final String contextId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("contextId", contextId);
-        logMap.put("action", action);
-        return logMap;
-    }
 }
