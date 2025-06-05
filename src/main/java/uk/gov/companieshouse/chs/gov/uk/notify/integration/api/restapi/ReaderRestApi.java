@@ -1,10 +1,11 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import java.util.HashMap;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,8 +17,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Controller
 public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterface {
@@ -155,10 +154,4 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         );
     }
 
-    private Map<String, Object> createLogMap(final String xRequestId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("xRequestId", xRequestId);
-        logMap.put("action", action);
-        return logMap;
-    }
 }
