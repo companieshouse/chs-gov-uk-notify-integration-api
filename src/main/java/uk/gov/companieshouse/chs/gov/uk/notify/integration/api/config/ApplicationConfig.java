@@ -1,13 +1,13 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 import uk.gov.service.notify.NotificationClient;
-
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Configuration
 public class ApplicationConfig {

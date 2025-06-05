@@ -1,4 +1,4 @@
-<link th:fragment="stylesheet()" href="notify_letter_layout.css" media="all" rel="stylesheet" type="text/css" />
+<link th:fragment="stylesheet()" href="../notify_letter_layout.css" media="all" rel="stylesheet" type="text/css" />
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
     <!-- Headers -->
@@ -32,11 +32,11 @@
                 <table id="address-table">
                     <tr th:text="${address_line_1}"></tr>
                     <tr th:text="${address_line_2}"></tr>
-                    <tr th:text="${address_line_3}" th:if="${address_line_3 != null}"></tr>
+                    <tr th:text="${address_line_3}"></tr>
                     <tr th:text="${address_line_4}" th:if="${address_line_4 != null}"></tr>
                     <tr th:text="${address_line_5}" th:if="${address_line_5 != null}"></tr>
                     <tr th:text="${address_line_6}" th:if="${address_line_6 != null}"></tr>
-                    <tr th:text="${postcode_or_country}"></tr>
+                    <tr th:text="${address_line_7}" th:if="${address_line_7 != null}"></tr>
                 </table>
             </div>
         </div>

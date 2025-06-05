@@ -44,10 +44,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -59,13 +61,13 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
 class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
-    private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
-    private static final String INVALID_CONTEXT_ID = "X9uND6rXQxfbZ:cMVFA7JI4h2KOh";
-    private static final String INVALID_CONTEXT_ID_ERROR_MESSAGE_PREFIX =
-            "Error in chs-gov-uk-notify-integration-api: context ID (X-Request-ID): must match ";
-    private static final String CONTEXT_ID_PATTERN = "[0-9A-Za-z-_]{8,32}";
-    private static final String INVALID_CONTEXT_ID_ERROR_MESSAGE =
-            INVALID_CONTEXT_ID_ERROR_MESSAGE_PREFIX + "\"" + CONTEXT_ID_PATTERN + "\"";
+    private static final String REQUEST_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
+    private static final String INVALID_REQUEST_ID = "X9uND6rXQxfbZ:cMVFA7JI4h2KOh";
+    private static final String INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX =
+            "Error in chs-gov-uk-notify-integration-api: request ID (X-Request-ID): must match ";
+    private static final String REQUEST_ID_PATTERN = "[0-9A-Za-z-_]{8,32}";
+    private static final String INVALID_REQUEST_ID_ERROR_MESSAGE =
+            INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX + "\"" + REQUEST_ID_PATTERN + "\"";
     private static final String EXPECTED_NULL_FIELDS_ERRORS =
             "Error(s) in chs-gov-uk-notify-integration-api: "
             + "[govUkLetterDetailsRequest senderDetails.appId must not be null, "
@@ -111,6 +113,10 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
+    private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
+                    + "[address_line_2, address_line_3] missing for "
+                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
 
     @Autowired
     private MockMvc mockMvc;
@@ -128,7 +134,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private NotificationClient notificationClient;
 
     @MockitoSpyBean
-    private SenderRestApi senderRestApi;
+    private LetterDispatcher letterDispatcher;
 
     @MockitoSpyBean
     private TemplateLookup templateLookup;
@@ -160,14 +166,29 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isCreated());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
-        assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
+    }
+
+    @Test
+    @DisplayName("Send letter successfully with template version 1.0")
+    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        // When and then
+        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
+                status().isCreated());
     }
 
     @Test
@@ -236,9 +257,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         postSendLetterRequest(getValidSendLetterRequestBody(),
                 status().isInternalServerError());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
-        assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
@@ -253,16 +274,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, INVALID_CONTEXT_ID)
+                        .header(X_REQUEST_ID, INVALID_REQUEST_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(INVALID_CONTEXT_ID_ERROR_MESSAGE));
+                .andExpect(content().string(INVALID_REQUEST_ID_ERROR_MESSAGE));
 
-        assertThat(log.getAll().contains(INVALID_CONTEXT_ID_ERROR_MESSAGE_PREFIX), is(true));
-        assertThat(log.getAll().contains(CONTEXT_ID_PATTERN), is(true));
+        assertThat(log.getAll().contains(INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX), is(true));
+        assertThat(log.getAll().contains(REQUEST_ID_PATTERN), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
@@ -292,13 +313,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(X_REQUEST_ID, REQUEST_ID)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isUnauthorized());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("no authorised identity"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
@@ -313,13 +334,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(X_REQUEST_ID, REQUEST_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("invalid identity type [null]"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
@@ -334,13 +355,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(X_REQUEST_ID, REQUEST_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
@@ -355,14 +376,14 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(X_REQUEST_ID, REQUEST_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, NON_INTERNAL_USER_ROLES)
                         .content(getValidSendLetterRequestBody()))
                 .andExpect(status().isForbidden());
 
-        assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
         verifyNoLetterDetailsRequestsAreStored();
@@ -374,7 +395,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(senderRestApi.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
+        when(letterDispatcher.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
@@ -453,21 +474,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter successfully with template version 1.0")
-    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
-
-        // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
-
-        // When and then
-        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
-                status().isCreated());
-    }
-
-    @Test
     @DisplayName("Send letter with reference in personalisation details")
     void sendLetterWithReferenceInPersonalisationDetails(CapturedOutput log) throws Exception {
 
@@ -482,13 +488,28 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
+    @Test
+    @DisplayName("Send letter with too short an address")
+    void sendLetterWithTooShortAnAddress(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        postSendLetterRequest(getRequestWithTooShortAnAddress(),
+                status().isBadRequest())
+                .andExpect(content().string(MISSING_ADDRESS_LINES_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(MISSING_ADDRESS_LINES_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
     private ResultActions postSendLetterRequest(String requestBody,
                                                 ResultMatcher expectedResponseStatus)
             throws Exception {
         return mockMvc.perform(post("/gov-uk-notify-integration/letter")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(X_REQUEST_ID, REQUEST_ID)
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
@@ -648,6 +669,16 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getValidSendLetterRequestBody(),
                 GovUkLetterDetailsRequest.class);
         request.getLetterDetails().setTemplateId("new_letter");
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithTooShortAnAddress()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        request.getRecipientDetails().setPhysicalAddress(
+                new Address().addressLine1("Recipient Name Only"));
         return objectMapper.writeValueAsString(request);
     }
 

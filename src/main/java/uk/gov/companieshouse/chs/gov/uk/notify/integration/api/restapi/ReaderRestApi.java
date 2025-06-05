@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -154,10 +154,4 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         );
     }
 
-    private Map<String, Object> createLogMap(final String xRequestId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("xRequestId", xRequestId);
-        logMap.put("action", action);
-        return logMap;
-    }
 }

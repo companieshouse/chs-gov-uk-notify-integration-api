@@ -16,11 +16,11 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.POSTCODE_OR_COUNTRY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
@@ -37,7 +37,7 @@ class TemplateContextValidatorTest {
             "Context variable(s) [company_name, deadline_date] missing for "
                     + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
-            "Context variable(s) [address_line_1, address_line_2, postcode_or_country, "
+            "Context variable(s) [address_line_1, address_line_2, address_line_3, "
                     + "date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
                     + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
@@ -54,7 +54,7 @@ class TemplateContextValidatorTest {
         var context = new Context();
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable(POSTCODE_OR_COUNTRY, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_3, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(COMPANY_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -89,7 +89,7 @@ class TemplateContextValidatorTest {
         var context = new Context();
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable(POSTCODE_OR_COUNTRY, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(ADDRESS_LINE_3, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(PSC_FULL_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);

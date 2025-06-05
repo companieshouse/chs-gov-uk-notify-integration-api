@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.test;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.List;
@@ -9,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -21,8 +22,6 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
-
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Component
 @Primary
@@ -104,7 +103,8 @@ public class MockNotificationClient extends NotificationClient {
     }
 
     @Override
-    public LetterResponse sendPrecompiledLetterWithInputStream(String reference, InputStream precompiledPdf)
+    public LetterResponse sendPrecompiledLetterWithInputStream(String reference,
+                                                               InputStream precompiledPdf)
             throws NotificationClientException {
         if (useRealGovNotify(reference)) {
             return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
