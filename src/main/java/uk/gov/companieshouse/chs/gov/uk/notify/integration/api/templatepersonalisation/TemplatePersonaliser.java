@@ -32,15 +32,18 @@ public class TemplatePersonaliser {
     private final TemplateLookup templateLookup;
     private final AbstractConfigurableTemplateResolver templateResolver;
     private final TemplateContextValidator validator;
+    private final PathsPublisher pathsPublisher;
 
     public TemplatePersonaliser(ITemplateEngine templateEngine,
                                 TemplateLookup templateLookup,
                                 AbstractConfigurableTemplateResolver templateResolver,
-                                TemplateContextValidator validator) {
+                                TemplateContextValidator validator,
+                                PathsPublisher pathsPublisher) {
         this.templateEngine = templateEngine;
         this.templateLookup = templateLookup;
         this.templateResolver = templateResolver;
         this.validator = validator;
+        this.pathsPublisher = pathsPublisher;
     }
 
     /**
@@ -61,6 +64,8 @@ public class TemplatePersonaliser {
         validatePersonalisationDetails(personalisationDetails);
 
         var context = new Context();
+
+        pathsPublisher.publishPathsViaContext(context, templateLookupKey);
 
         // Use today's date for traceability.
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");

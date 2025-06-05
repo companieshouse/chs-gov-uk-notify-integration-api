@@ -6,8 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -26,8 +28,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfXConformanceException;
+import com.lowagie.text.pdf.internal.PdfXConformanceImp;
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +57,8 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -117,6 +126,17 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
                     + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
+    private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
+                    + "creating SVG image assets/templates/letters/common/warning.svg: "
+                    + "Thrown by test. [cause: null]";
+    private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
+                    + "assets/templates/letters/common/warning.svg [cause: null]";
+    private static final String PDFX_CONFORMANCE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
+                    + "This PdfXConformanceException could indicate that a font, style or "
+                    + "stylesheet cannot be found.";
 
     @Autowired
     private MockMvc mockMvc;
@@ -134,13 +154,19 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private NotificationClient notificationClient;
 
     @MockitoSpyBean
-    private LetterDispatcher letterDispatcher;
+    private HtmlPdfGenerator pdfGenerator;
 
     @MockitoSpyBean
     private TemplateLookup templateLookup;
 
     @Mock
     private InputStream precompiledPdfInputStream;
+
+    @Mock
+    private SAXSVGDocumentFactory svgDocumentFactory;
+
+    @MockitoSpyBean
+    private SvgReplacedElementFactory svgReplacedElementFactory;
 
     @Test
     @DisplayName("Send letter successfully")
@@ -391,12 +417,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter gracefully handles IOException loading letter PDF")
-    void sendLetterHandlesPdfIOException(CapturedOutput log) throws Exception {
+    @DisplayName("Send letter reports IOException loading letter PDF with a 500 response")
+    void sendLetterReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        when(letterDispatcher.getPrecompiledPdf()).thenReturn(precompiledPdfInputStream);
-        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
 
         // When and then
         postSendLetterRequest(getValidSendLetterRequestBody(),
@@ -407,7 +434,69 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
-        verifyLetterResponseStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports SvgImageException creating an SVG image with a 500 response")
+    void sendLetterReportsCreationSvgImageException(CapturedOutput log) throws Exception {
+
+        // Given
+        when(svgReplacedElementFactory.getDocumentFactory()).thenReturn(svgDocumentFactory);
+        when(svgDocumentFactory.createSVGDocument(anyString())).
+                thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        postSendLetterRequest(getValidSendLetterRequestBody(),
+                status().isInternalServerError())
+                .andExpect(content().string(CREATE_SVG_IMAGE_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(CREATE_SVG_IMAGE_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports PdfXConformanceException rendering PDF with a 500 response")
+    void sendLetterReportsPdfXConformanceException(CapturedOutput log) throws Exception {
+
+        // Given
+        try (final var pdfxConformanceChecker = mockStatic(PdfXConformanceImp.class)) {
+
+            pdfxConformanceChecker.when(
+                    () -> PdfXConformanceImp.checkPDFXConformance(
+                            any(PdfWriter.class), anyInt(), any()))
+                    .thenThrow(new PdfXConformanceException("Thrown by test"));
+
+            // When and then
+            postSendLetterRequest(getValidSendLetterRequestBody(),
+                    status().isInternalServerError())
+                    .andExpect(content().string(PDFX_CONFORMANCE_ERROR_MESSAGE));
+
+            assertThat(log.getAll().contains(PDFX_CONFORMANCE_ERROR_MESSAGE), is(true));
+
+            verifyLetterDetailsRequestStoredCorrectly();
+            verifyNoLetterResponsesAreStored();
+        }
+    }
+
+    @Test
+    @DisplayName("Send letter reports SvgImageException not finding an SVG image with a 500 response")
+    void sendLetterReportsMissingSvgImageException(CapturedOutput log) throws Exception {
+
+        // Given
+        when(svgReplacedElementFactory.getResourceUrl(anyString())).thenReturn(null);
+
+        // When and then
+        postSendLetterRequest(getValidSendLetterRequestBody(),
+                status().isInternalServerError())
+                .andExpect(content().string(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -546,10 +635,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst().getResponse();
         // Unfortunately SendLetter does not implement equals() and hashCode().
         assertThat(storedResponse.toString(), is(receivedResponse.toString()));
-    }
-
-    private void verifyLetterResponseStored() {
-        assertThat(notificationLetterResponseRepository.findAll().isEmpty(), is(false));
     }
 
     private void verifyNoLetterResponsesAreStored() {

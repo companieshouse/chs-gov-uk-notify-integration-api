@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
+import com.lowagie.text.pdf.PdfXConformanceException;
 import jakarta.validation.ValidationException;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.thymeleaf.exceptions.TemplateInputException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.SvgImageException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
@@ -72,13 +74,37 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(TemplateInputException.class)
     public ResponseEntity<Object> handleTemplateInputException(
             TemplateInputException tie) {
-        var message = "Error in " + APPLICATION_NAMESPACE + ": "
-                + buildMessage(tie.getMessage() + " [cause: " + tie.getCause() + "]");
-        myLogger.error("Will handle error `" + message
-                        + "` by responding with 500 Internal Server Error.",
-                getLogMap(message));
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(message);
+        return reportInternalServerError(tie);
+    }
+
+    /**
+     * Returns HTTP Status 500 Internal Server Error when there is an SvgImageException
+     * implying that an SVG resource cannot be found. It does not return a 404 Not Found
+     * response because this scenario represents a configuration error.
+     *
+     * @param sie exception thrown when an SVG resource cannot be found
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(SvgImageException.class)
+    public ResponseEntity<Object> handleSvgImageException(
+            SvgImageException sie) {
+        return reportInternalServerError(sie);
+    }
+
+    /**
+     * Returns HTTP Status 500 Internal Server Error when there is an PdfXConformanceException.
+     * Such an exception could imply a missing font or style or even a missing stylesheet,
+     * which would be a configuration error.
+     *
+     * @param pce exception thrown when there is a PDF/A conformance issue
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(PdfXConformanceException.class)
+    public ResponseEntity<Object> handlePdfXConformanceException(
+            PdfXConformanceException pce) {
+        return reportInternalServerError(pce,
+                ". This PdfXConformanceException could indicate that a font, style or "
+                        + "stylesheet cannot be found.");
     }
 
     @Override
@@ -99,6 +125,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         return super.handleMethodArgumentNotValid(manve, headers, status, request);
+    }
+
+    /**
+     * Returns HTTP Status 500 Internal Server Error for the runtime exception provided.
+     *
+     * @param re An exception suggesting a programming or configuration error has arisen
+     * @return HttpStatus.INTERNAL_SERVER_ERROR
+     */
+    private ResponseEntity<Object> reportInternalServerError(RuntimeException re) {
+        return reportInternalServerError(re, null);
+    }
+
+    /**
+     * Returns HTTP Status 500 Internal Server Error for the runtime exception provided.
+     *
+     * @param re An exception suggesting a programming or configuration error has arisen
+     * @param additionalMessage an additional message - this may be <code>null</code>
+     * @return HttpStatus.INTERNAL_SERVER_ERROR
+     */
+    private ResponseEntity<Object> reportInternalServerError(RuntimeException re,
+                                                             String additionalMessage) {
+        var message = "Error in " + APPLICATION_NAMESPACE + ": "
+                + buildMessage(re.getMessage() + " [cause: " + re.getCause() + "]"
+                + (additionalMessage != null ? additionalMessage : ""));
+        myLogger.error("Will handle error `" + message
+                        + "` by responding with 500 Internal Server Error.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(message);
     }
 
     /**
