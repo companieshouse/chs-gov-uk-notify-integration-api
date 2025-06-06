@@ -6,19 +6,17 @@ import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.batik.dom.svg.SVGDocumentFactory;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGDocument;
 import org.xhtmlrenderer.extend.ReplacedElement;
-import org.xhtmlrenderer.extend.ReplacedElementFactory;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.layout.LayoutContext;
 import org.xhtmlrenderer.render.BlockBox;
-import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
+import org.xhtmlrenderer.simple.extend.NoReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.SvgImageException;
 import uk.gov.companieshouse.logging.Logger;
 
 @Component
-public class SvgReplacedElementFactory implements ReplacedElementFactory {
+public class SvgReplacedElementFactory extends NoReplacedElementFactory {
 
     private final Logger logger;
 
@@ -69,18 +67,4 @@ public class SvgReplacedElementFactory implements ReplacedElementFactory {
         return new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
     }
 
-    @Override
-    public void reset() {
-        // No PDF rendering related state to reset here.
-    }
-
-    @Override
-    public void remove(Element element) {
-        // No PDF rendering related state to remove any element from here.
-    }
-
-    @Override
-    public void setFormSubmissionListener(FormSubmissionListener listener) {
-        // No PDF rendering related state to add any form submission listener to here.
-    }
 }
