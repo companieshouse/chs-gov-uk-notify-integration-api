@@ -15,4 +15,7 @@ public record ChLetterTemplate(String appId, String id, BigDecimal version) {
     public static final ChLetterTemplate CHIPS_DIRECTION_LETTER_1 =
             new ChLetterTemplate("chips", "direction_letter", ONE);
 
+    public static final ChLetterTemplate CHIPS_NEW_PSC_DIRECTION_LETTER_1 =
+            new ChLetterTemplate("chips", "new_psc_direction_letter", ONE);
+
 }
