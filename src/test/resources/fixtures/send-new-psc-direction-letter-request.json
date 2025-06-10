@@ -1,0 +1,26 @@
+{
+  "sender_details": {
+    "app_id": "chips",
+    "reference": "send-new-psc-direction-letter-request",
+    "name": "TODO",
+    "user_id": "TODO",
+    "email_address": "vjackson1@companieshouse.gov.uk"
+  },
+  "recipient_details": {
+    "name": "Vaughan Jackson",
+    "physical_address": {
+      "address_line_1": "Vaughan Jackson",
+      "address_line_2": "Tŷ'r Cwmnïau",
+      "address_line_3": "Ffordd y Goron",
+      "address_line_4": "Caerdydd",
+      "address_line_5": "CF14 3UZ",
+      "address_line_6": "United Kingdom"
+    }
+  },
+  "letter_details": {
+    "template_id": "new_psc_direction_letter",
+    "template_version": 1,
+    "personalisation_details": "{ \"psc_name\": \"Vaughan Jackson\", \"company_name\": \"Tŷ'r Cwmnïau\", \"deadline_date\": \"18 August 2025\",\"extension_date\": \"1 September 2025\"}"
+  },
+  "created_at": "2025-04-08T09:19:24.905+05:30"
+}
