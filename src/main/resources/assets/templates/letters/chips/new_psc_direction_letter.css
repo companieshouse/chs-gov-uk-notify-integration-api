@@ -53,7 +53,7 @@ hr {
     display: block;
     color: white;
     margin-bottom: 1.5mm;
-    padding: 5mm;
+    padding: 3mm;
     /* CHN1 black from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
     background-color: #1a1a1a;
     border-radius: 1.2mm;
@@ -65,7 +65,7 @@ hr {
     line-height: 14pt;
     color: white;
     margin-top: 2mm;
-    padding: 5mm;
+    padding: 3mm;
     /* CHN3 accent only red from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
     background-color: #cd1423;
     border-radius: 1.2mm;
