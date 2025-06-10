@@ -168,7 +168,7 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
-        assertThat(getText(letter, ".notify-letter-title"), is(LETTER_TITLE));
+        assertThat(getText(letter, ".direction-letter-title"), is(LETTER_TITLE));
         assertThat(getText(letter, ".close-packed-top .emphasis"), is("Vaughan Jackson"));
         assertThat(getText(letter, "p .subject-line"), is("Tŷ'r Cwmnïau".toUpperCase()));
         assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("the reference"));

@@ -1,3 +1,19 @@
+.direction-letter-title {
+    display: block;
+    height: 23mm;
+    width: 62mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 6.5mm;
+    line-height: 7.5mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 3mm;
+    padding-top: 3mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}
 .date-and-reference-label {
     font-family: Arial, sans-serif;
     font-weight: bold;
