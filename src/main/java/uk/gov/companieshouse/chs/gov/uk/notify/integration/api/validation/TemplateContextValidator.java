@@ -8,6 +8,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
@@ -48,7 +49,7 @@ public class TemplateContextValidator {
                                     DATE,
                                     REFERENCE,
                                     COMPANY_NAME,
-                                    PSC_FULL_NAME,
+                                    PSC_NAME,
                                     DEADLINE_DATE,
                                     EXTENSION_DATE
                             )
