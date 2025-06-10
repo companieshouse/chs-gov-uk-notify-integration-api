@@ -10,9 +10,9 @@ import java.math.BigDecimal;
  * @param id the template ID (aka name) corresponding to the type of letter to be sent
  * @param version the version of the template
  */
-public record ChLetterTemplate(String appId, String id, BigDecimal version) {
+public record LetterTemplateKey(String appId, String id, BigDecimal version) {
 
-    public static final ChLetterTemplate CHIPS_DIRECTION_LETTER_1 =
-            new ChLetterTemplate("chips", "direction_letter", ONE);
+    public static final LetterTemplateKey CHIPS_DIRECTION_LETTER_1 =
+            new LetterTemplateKey("chips", "direction_letter", ONE);
 
 }

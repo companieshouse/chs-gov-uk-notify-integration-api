@@ -44,6 +44,7 @@ public class HtmlPdfGenerator {
      * @return the {@link InputStream} for the PDF as written out to the file
      * @throws IOException should something go wrong whilst creating or saving the PDF
      */
+    @SuppressWarnings("java:S6300") // This is not a mobile application.
     public InputStream generatePdfFromHtml(String html,
                                            String reference) throws IOException {
         if (saveLetter) {
