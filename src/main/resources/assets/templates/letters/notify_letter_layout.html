@@ -1,4 +1,5 @@
-<link th:fragment="stylesheet()" href="../notify_letter_layout.css" media="all" rel="stylesheet" type="text/css" />
+<link th:fragment="stylesheet()" th:href="@{${root} + notify_letter_layout.css}" media="all"
+      rel="stylesheet" type="text/css" />
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
     <!-- Headers -->
