@@ -16,6 +16,5 @@ desired_task_count=3
 max_task_count=6
 min_task_count=2
 
-required_cpus = 512
-required_memory = 1024
+
 
