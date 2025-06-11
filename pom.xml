@@ -47,6 +47,7 @@
         <openpdf-version>2.0.3</openpdf-version>
         <batik-transcoder-version>1.18</batik-transcoder-version>
         <pdfbox-version>3.0.5</pdfbox-version>
+        <spring-security-core.version>6.5.0</spring-security-core.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -241,7 +242,8 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${spring-security-core.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
