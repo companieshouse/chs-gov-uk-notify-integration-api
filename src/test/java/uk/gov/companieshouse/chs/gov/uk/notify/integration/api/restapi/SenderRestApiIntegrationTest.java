@@ -101,7 +101,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "start field name";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
             " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
-                    + "line: 1, column: 142]";
+                    + "line: 1, column: 137]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
@@ -195,7 +195,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
-        assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
+        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
@@ -286,7 +286,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + CONTEXT_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"contextId\":\"" + CONTEXT_ID + "\""), is(true));
-        assertThat(log.getAll().contains("emailAddress: vjackson1@companieshouse.gov.uk"), is(true));
+        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterErrorResponseStored();
