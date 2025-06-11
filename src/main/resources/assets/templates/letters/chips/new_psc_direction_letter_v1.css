@@ -1,11 +1,11 @@
 .new-psc-direction-letter-title {
     display: block;
-    height: 26mm;
-    width: 62mm; /* was 70 then 64mm */
+    height: 24mm;
+    width: 58mm; /* was 70 then 64mm */
     font-family: Arial, sans-serif;
     font-weight:bold;
-    font-size: 6.5mm;
-    line-height: 7.0mm;
+    font-size: 5.5mm;
+    line-height: 6.0mm;
     color: white;
     padding-left: 4mm;
     padding-right: 3mm;
