@@ -33,6 +33,7 @@
 p {
     margin-bottom: -1mm;
     font-family: Arial, sans-serif;
+    font-size: 4.0mm;
     /* overflow-wrap: anywhere  is not recognised by the version of Flying Saucer we are using,
        but word-wrap: break-word is. */
     word-wrap: break-word;
@@ -48,6 +49,10 @@ hr {
 }
 .emphasis {
     font-weight:bold;
+}
+.small-heading {
+    font-weight:bold;
+    font-size: 5.0mm;
 }
 .emphatic-block {
     display: block;
@@ -83,7 +88,7 @@ hr {
     height:7mm;
     width: 100%;
     position:absolute;
-    top: 193mm;
+    top: 183mm;
     right: 84mm;
 }
 .subject-line-spacer {
@@ -108,8 +113,8 @@ hr {
     margin-right: 2mm;
 }
 .verification-requirements-heading {
-    font-size: 5.8mm;
-    line-height: 6.3mm;
+    font-size: 5.0mm;
+    line-height: 5.5mm;
     font-weight: bold;
     margin-top: 3mm;
     margin-left: 2mm;
