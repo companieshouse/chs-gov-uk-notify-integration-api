@@ -15,12 +15,12 @@
     <!--    <meta name="keywords" content="IDV PSC"/>-->
 
     <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
-    <link th:href="@{${letter} + direction_letter.css}" media="all" rel="stylesheet" type="text/css" />
+    <link th:href="@{${letter} + direction_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
-    ~{direction_letter_content},
-    ~{direction_letter_title},
+    ~{direction_letter_content_v1},
+    ~{direction_letter_title_v1},
     'Reference',
     ${reference})}">
     </section>
