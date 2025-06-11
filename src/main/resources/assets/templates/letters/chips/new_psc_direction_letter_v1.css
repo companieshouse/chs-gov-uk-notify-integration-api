@@ -86,10 +86,9 @@ hr {
 }
 .information-img {
     height:7mm;
-    width: 100%;
-    position:absolute;
-    top: 183mm;
-    right: 84mm;
+    width: 7mm;
+    position:relative;
+    float: left;
 }
 .subject-line-spacer {
     font-size: x-small;
