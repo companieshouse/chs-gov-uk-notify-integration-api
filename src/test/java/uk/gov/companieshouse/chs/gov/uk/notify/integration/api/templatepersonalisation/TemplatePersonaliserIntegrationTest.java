@@ -27,7 +27,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
-@SpringBootTest
+@SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
 class TemplatePersonaliserIntegrationTest {
 
     private static final String LETTER_TITLE =

@@ -14,11 +14,11 @@
     <!--    <meta name="subject" content="Verify your identity - Person with significant control"/>-->
     <!--    <meta name="keywords" content="IDV PSC"/>-->
 
-    <link th:replace="~{../notify_letter_layout :: stylesheet()}">
+    <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
     <link th:href="@{${letter} + direction_letter.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
-    <section th:replace="~{../notify_letter_layout :: notifyLetterLayout(
+    <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
     ~{direction_letter_content},
     ~{direction_letter_title},
     'Reference',
