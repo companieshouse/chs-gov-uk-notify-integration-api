@@ -56,6 +56,9 @@
      */
     height: 56.3mm;
 }
+#date-and-reference-table tr {
+        line-height: 0.95;
+}
 .column {
     float: left;
 }
