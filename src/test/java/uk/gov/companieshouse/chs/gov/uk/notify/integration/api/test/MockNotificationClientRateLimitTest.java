@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
 @ActiveProfiles("test")
 class MockNotificationClientRateLimitTest {
 
