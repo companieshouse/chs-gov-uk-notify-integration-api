@@ -21,7 +21,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
@@ -48,7 +48,7 @@ public class TemplatePersonaliser {
 
     /**
      * Populates the letter Thymeleaf template with the data for the letter.
-     * @param templateLookupKey the {@link ChLetterTemplate} identifying the template to be used
+     * @param templateLookupKey the {@link LetterTemplateKey} identifying the template to be used
      * @param reference the letter reference
      * @param personalisationDetails the {@link Map} providing the data to be substituted into the
      *                               letter template substitution variables
@@ -56,7 +56,7 @@ public class TemplatePersonaliser {
      *                letter address block template substitution variables
      * @return the HTML representation of the letter
      */
-    public String personaliseLetterTemplate(ChLetterTemplate templateLookupKey,
+    public String personaliseLetterTemplate(LetterTemplateKey templateLookupKey,
                                             String reference,
                                             Map<String, String> personalisationDetails,
                                             Address address) {

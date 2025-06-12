@@ -5,12 +5,11 @@ aws_profile = "live-eu-west-2"
 #use_set_environment_files = true
 log_level = "debug"
 
+# Scheduled scaling of tasks
+service_autoscale_enabled  = true
+
 # auto scaling
 
 desired_task_count=2
 max_task_count=2
 min_task_count=2
-
-required_cpus = 512
-required_memory = 1024
-

@@ -6,7 +6,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.ChLetterTemplate;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 
 /**
  * Responsible for making path variables available for use in the Thymeleaf templates.
@@ -18,7 +18,7 @@ public class PathsPublisher {
     private static final String COMMON_RESOURCE_PATH = ROOT_RESOURCE_PATH + "common/";
 
     public void publishPathsViaContext(final Context context,
-                                       final ChLetterTemplate templateLookupKey) {
+                                       final LetterTemplateKey templateLookupKey) {
 
         context.setVariable(ROOT_RESOURCE_PATH_VARIABLE, ROOT_RESOURCE_PATH);
         context.setVariable(LETTER_RESOURCE_PATH_VARIABLE,
