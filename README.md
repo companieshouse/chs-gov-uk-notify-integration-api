@@ -93,3 +93,25 @@ chs-gov-uk-notify-integration-api/
 │── ...                     # Other files/folders
 └── README.md               # This file
 ```
+
+## Adding a New Letter
+
+### Steps to add a new template
+
+1. Identify the client service in question, and create or reuse the letter assets directory for that client. We currently have the `assets/templates/letters/chips` directory for our CHIPS client application.
+2. Start with a letter design - probably a PDF, and evolve HTML and CSS resources to reproduce the letter as a web document. Bear in mind that some of the formatting of these letters will be print media specific, so it is not until you are producing PDFs that you will know exactly what the resulting letter will look like.
+3. Place common resources in the `assets/templates/letters/common` directory and those resources specific to the letter you are adding in the appropriate client directory (for example in `assets/templates/letters/chips`).
+4. Set up context validation to ensure that the required variable values are present to be able to create, print and send valid letters out. Extend `TemplateContextValidator.VALID_CONTEXTS` with an additional entry to do so.
+5. Test the result (of course!). 
+
+### Background
+
+Template resources for letters are to be grouped by the client service or app that originates the request to send a letter. In the first case we have developed so far, we are dealing with a "direction" letter request made by the CHIPS application. Its template resources thus reside in the `chips` letter assets directory.
+
+We have a number of HTML and CSS resources starting with a "root" HTML template file named `directionLetter_v1.html` that brings in the other files to create the final template.  The `_v1` suffix tells us that these letters are versioned and we are currently working on version 1.
+
+Resources that may be reused across various types of letter should be placed in the `common` directory.
+
+The letter template that results from the resolving of the root template and its dependencies is a Thymeleaf HTML/CSS template with a number of substitution variables in it, covering those values that must change from letter to letter.
+
+The application uses a Thymeleaf templating engine to perform the required substitutions. However, this will not validate for missing values for these substitutions. Hence, we build a validation model which essentially checks that the required values for the letter to be printed and sent have been provided. If we didn't do this validation, there would be the risk of printing and sending letters with essential information missing from them. 
