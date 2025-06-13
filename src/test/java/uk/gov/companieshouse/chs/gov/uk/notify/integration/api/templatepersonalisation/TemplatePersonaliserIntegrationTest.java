@@ -68,7 +68,7 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_DIRECTION_LETTER_1,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Vaughan Jackson",
+                Map.of(PSC_FULL_NAME, "Joe Bloggs",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
@@ -86,7 +86,7 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_DIRECTION_LETTER_1,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Vaughan Jackson",
+                Map.of(PSC_FULL_NAME, "Joe Bloggs",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
                         DEADLINE_DATE, "18 August 2025",
                         EXTENSION_DATE, "1 September 2025"),
@@ -169,7 +169,7 @@ class TemplatePersonaliserIntegrationTest {
 
     private static void verifyLetterPersonalised(final Document letter) {
         assertThat(getText(letter, ".direction-letter-title"), is(LETTER_TITLE));
-        assertThat(getText(letter, ".close-packed-top .emphasis"), is("Vaughan Jackson"));
+        assertThat(getText(letter, ".close-packed-top .emphasis"), is("Joe Bloggs"));
         assertThat(getText(letter, "p .subject-line"), is("Tŷ'r Cwmnïau".toUpperCase()));
         assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("the reference"));
         assertThat(getText(letter, "#deadline-date"), is("18 August 2025"));
