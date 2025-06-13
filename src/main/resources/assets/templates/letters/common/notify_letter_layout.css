@@ -49,22 +49,6 @@
     /* Comment out the following to hide the content block. */
     /*border: 0.1mm outset olivedrab;*/
 }
-.notify-letter-title {
-    display: block;
-    height: 23mm;
-    width: 62mm; /* was 70 then 64mm */
-    font-family: Arial, sans-serif;
-    font-weight:bold;
-    font-size: 6.5mm;
-    line-height: 7.5mm;
-    color: white;
-    padding-left: 4mm;
-    padding-right: 3mm;
-    padding-bottom: 3mm;
-    padding-top: 3mm;
-    background-color: black;
-    border-radius: 1.2mm;
-}
 .address-and-date-ref-block {
     /** 56.3mm is, to the nearest 0.1mm, the minimum block height we can have for the letter
         content to remain within the Gov Notify printable area. Otherwise the letter text starts too

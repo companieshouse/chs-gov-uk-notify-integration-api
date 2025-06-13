@@ -25,6 +25,7 @@ public class ContextVariables {
     public static final String REFERENCE = "reference";
     public static final String COMPANY_NAME = "company_name";
     public static final String PSC_FULL_NAME = "psc_full_name";
+    public static final String PSC_NAME = "psc_name";
     public static final String DEADLINE_DATE = "deadline_date";
     public static final String EXTENSION_DATE = "extension_date";
 

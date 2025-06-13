@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -61,8 +62,10 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
     private static final String SAVED_LETTER_FILEPATH =
             HtmlPdfGenerator.getPdfFilepath("send-letter-request");
-    private static final String SAVING_LETTER_LOG_MESSAGE =
-            "Saving PDF of letter to " + SAVED_LETTER_FILEPATH + ".";
+    private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
+            new File(SAVED_LETTER_FILEPATH),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request"))
+    };
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,13 +78,23 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @BeforeEach
     void setUp() {
-        var savedLetter = new File(SAVED_LETTER_FILEPATH);
-        savedLetter.delete();
+        Arrays.stream(SAVED_LETTERS_TO_DELETE).forEach(File::delete);
     }
 
     @Test
     @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendLetter("send-letter-request", log);
+        verifyLetterPdfContent();
+    }
+
+    @Test
+    @DisplayName("Send New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
+    void sendNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendLetter("send-new-psc-direction-letter-request", log);
+    }
+
+    private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
 
         // Given
         var responseReceived = new LetterResponse(
@@ -90,13 +103,12 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 anyString(), any(InputStream.class))).thenReturn(responseReceived);
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(getSendLetterRequestBody(requestName),
                 status().isCreated());
 
-        assertThat(log.getAll().contains(SAVING_LETTER_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(getExpectedSavingLetterLogMessage(requestName)), is(true));
 
-        verifyLetterPdfSaved();
-        verifyLetterPdfContent();
+        verifyLetterPdfSaved(requestName);
     }
 
     private ResultActions postSendLetterRequest(String requestBody,
@@ -113,13 +125,21 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(expectedResponseStatus);
     }
 
+    private static String getExpectedSavingLetterLogMessage(final String requestName) {
+        var savedLetterFilepath = HtmlPdfGenerator.getPdfFilepath(requestName);
+        return "Saving PDF of letter to " + savedLetterFilepath + ".";
+    }
+
     private static String getValidSendLetterRequestBody() throws IOException {
         return resourceToString("/fixtures/send-letter-request.json", UTF_8);
     }
 
+    private static String getSendLetterRequestBody(final String requestName) throws IOException {
+        return resourceToString("/fixtures/" + requestName + ".json", UTF_8);
+    }
 
-    private static void verifyLetterPdfSaved() {
-        var savedLetterFilepath = Paths.get(SAVED_LETTER_FILEPATH);
+    private static void verifyLetterPdfSaved(final String requestName) {
+        var savedLetterFilepath = Paths.get(HtmlPdfGenerator.getPdfFilepath(requestName));
         assertThat(Files.exists(savedLetterFilepath), is(true));
     }
 
