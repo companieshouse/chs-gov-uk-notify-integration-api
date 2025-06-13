@@ -70,7 +70,7 @@ hr {
     line-height: 14pt;
     color: white;
     margin-top: 2mm;
-    padding: 3mm;
+    padding: 3mm 3mm 3mm 5mm;
     /* CHN3 accent only red from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
     background-color: #cd1423;
     border-radius: 1.2mm;
@@ -82,7 +82,7 @@ hr {
     width: 100%;
     position:absolute;
     top: 16mm;
-    left: 84mm;
+    left: 85mm;
 }
 .information-img {
     height:7mm;
