@@ -1,12 +1,13 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +73,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var emailResp = govUkNotifyService.sendEmail(
                 govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
+                govUkEmailDetailsRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 
@@ -135,13 +137,6 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                     + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    private Map<String, Object> createLogMap(final String contextId, final String action) {
-        Map<String, Object> logMap = new HashMap<>();
-        logMap.put("contextId", contextId);
-        logMap.put("action", action);
-        return logMap;
     }
 
 }
