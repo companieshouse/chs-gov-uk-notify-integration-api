@@ -50,7 +50,6 @@ public class TemplateContextValidator {
                                     REFERENCE,
                                     COMPANY_NAME,
                                     PSC_NAME,
-                                    DEADLINE_DATE,
                                     EXTENSION_DATE
                             )
                     )
