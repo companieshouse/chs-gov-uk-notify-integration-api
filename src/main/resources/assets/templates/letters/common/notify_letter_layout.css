@@ -1,4 +1,4 @@
-@page :first {
+@page :right {
     size: A4;
 
     margin-left: 15mm;
@@ -22,7 +22,7 @@
         content: element(p1-footer-left);
     }
 }
-@page {
+@page :left {
     size: A4;
 
     margin-left: 15mm;

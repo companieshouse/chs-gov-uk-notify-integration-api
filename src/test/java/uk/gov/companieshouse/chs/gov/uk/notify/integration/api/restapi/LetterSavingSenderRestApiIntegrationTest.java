@@ -14,6 +14,7 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParser;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -94,6 +96,12 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         sendLetter("send-new-psc-direction-letter-request", log);
     }
 
+    @Test
+    @DisplayName("Send Welsh New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
+    void sendWelshNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendWelshLetter("send-new-psc-direction-letter-request", log);
+    }
+
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
 
         // Given
@@ -104,6 +112,24 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // When and then
         postSendLetterRequest(getSendLetterRequestBody(requestName),
+                status().isCreated());
+
+        assertThat(log.getAll().contains(getExpectedSavingLetterLogMessage(requestName)), is(true));
+
+        verifyLetterPdfSaved(requestName);
+    }
+
+    private void sendWelshLetter(final String requestName, final CapturedOutput log)
+            throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        // When and then
+        postSendLetterRequest(getWelshLetterRequest(getSendLetterRequestBody(requestName)),
                 status().isCreated());
 
         assertThat(log.getAll().contains(getExpectedSavingLetterLogMessage(requestName)), is(true));
@@ -197,6 +223,23 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         textStripper.setStartPage(pageNumber);
         textStripper.setEndPage(pageNumber);
         return textStripper.getText(document);
+    }
+
+    private String getWelshLetterRequest(final String letterBody)
+            throws IOException {
+        var request = objectMapper.readValue(
+                letterBody,
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(IS_WELSH, true);
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        return objectMapper.writeValueAsString(request);
     }
 
 }

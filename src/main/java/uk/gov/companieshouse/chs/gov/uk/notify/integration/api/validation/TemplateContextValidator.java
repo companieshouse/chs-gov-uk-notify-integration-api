@@ -12,6 +12,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_WELSH_1;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -44,6 +45,18 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+                            ImmutableSet.of(
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                                    DATE,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    PSC_NAME,
+                                    DEADLINE_DATE,
+                                    EXTENSION_DATE
+                            )
+                    ),
+                    new AbstractMap.SimpleEntry<>(
+                            CHIPS_NEW_PSC_DIRECTION_LETTER_WELSH_1,
                             ImmutableSet.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     DATE,

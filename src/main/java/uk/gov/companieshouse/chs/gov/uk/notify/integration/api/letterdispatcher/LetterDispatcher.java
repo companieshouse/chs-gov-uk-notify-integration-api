@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher;
 
+import static java.lang.Boolean.parseBoolean;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,7 +9,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
@@ -20,9 +25,13 @@ import uk.gov.companieshouse.logging.Logger;
 
 /**
  * Responsible for the creation and sending of letter PDFs through the Gov Notify service.
+ * It also decides whether the letter content should be "doubled up" with a Welsh version
+ * too.
  */
 @Component
 public class LetterDispatcher {
+
+    private static final String WELSH_SUFFIX = "_welsh";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final GovUkNotifyService govUkNotifyService;
@@ -51,14 +60,16 @@ public class LetterDispatcher {
             final Address address,
             final String personalisationDetailsString,
             final String contextId) throws IOException {
+
+        var personalisationDetails =
+                getPersonalisationDetails(personalisationDetailsString, contextId);
         var letter = personaliseLetter(
                 reference,
                 appId,
                 templateId,
                 templateVersion,
                 address,
-                personalisationDetailsString,
-                contextId);
+                personalisationDetails);
         return sendLetterPdf(reference, contextId, letter);
     }
 
@@ -68,24 +79,9 @@ public class LetterDispatcher {
             final String templateId,
             final BigDecimal templateVersion,
             final Address address,
-            final String personalisationDetailsString,
-            final String contextId) {
+            final Map<String, String> personalisationDetails) {
 
-        Map<String, String> personalisationDetails;
-        try {
-            logger.debug("Parsing personalisation details",
-                    createLogMap(contextId, "parse_details"));
-            personalisationDetails = OBJECT_MAPPER.readValue(
-                    personalisationDetailsString,
-                    new TypeReference<>() {}
-            );
-        } catch (JsonProcessingException jpe) {
-            var message = "Failed to parse personalisation details: " + jpe.getMessage();
-            logger.error(message, createLogMap(contextId, "parse_error"));
-            throw new LetterValidationException(message);
-        }
-
-        return templatePersonaliser.personaliseLetterTemplate(
+        var letter = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
                         templateId,
@@ -94,6 +90,24 @@ public class LetterDispatcher {
                         reference,
                         personalisationDetails,
                         address);
+
+        if (getIsWelsh(personalisationDetails)) {
+            var welsh = templatePersonaliser.personaliseLetterTemplate(
+                    new LetterTemplateKey(
+                            appId,
+                            templateId + WELSH_SUFFIX,
+                            // Ensure versions "1" and "1.0" are treated as being the same.
+                            templateVersion.stripTrailingZeros()),
+                    reference,
+                    personalisationDetails,
+                    address);
+
+            // We remove last line of first HTML doc and first 2 lines of second HTML doc
+            // so that there is a single HTML document formed by their union.
+            letter = removeLastLine(letter) + removeFirstTwoLines(welsh);
+        }
+
+        return letter;
     }
 
     private GovUkNotifyService.LetterResp
@@ -117,5 +131,46 @@ public class LetterDispatcher {
         }
 
     }
+
+    private Map<String, String> getPersonalisationDetails(final String personalisationDetailsString,
+                                                          final String contextId) {
+        Map<String, String> personalisationDetails;
+        try {
+            logger.debug("Parsing personalisation details",
+                    createLogMap(contextId, "parse_details"));
+            personalisationDetails = OBJECT_MAPPER.readValue(
+                    personalisationDetailsString,
+                    new TypeReference<>() {}
+            );
+        } catch (JsonProcessingException jpe) {
+            var message = "Failed to parse personalisation details: " + jpe.getMessage();
+            logger.error(message, createLogMap(contextId, "parse_error"));
+            throw new LetterValidationException(message);
+        }
+        return personalisationDetails;
+    }
+
+    private boolean getIsWelsh(final Map<String, String> personalisationDetails) {
+        return personalisationDetails.containsKey(IS_WELSH)
+                && parseBoolean(personalisationDetails.get(IS_WELSH));
+    }
+
+    private static String removeLastLine(final String html) {
+        var lines = StringUtils.split(html, "\n");
+        var tailedLines = Arrays.copyOf(lines, lines.length - 1);
+        return StringUtils.join(tailedLines, "\n");
+    }
+
+    private static String removeFirstTwoLines(final String html) {
+        var lines = StringUtils.split(html, "\n");
+        var list = Arrays.asList(lines);
+        Collections.reverse(list);
+        var tailedReversedLines = Arrays.copyOf(lines, lines.length - 2);
+        var tailedReversedLinesList = Arrays.asList(tailedReversedLines);
+        Collections.reverse(tailedReversedLinesList);
+        var toppedLines = tailedReversedLinesList.toArray();
+        return StringUtils.join(toppedLines, "\n");
+    }
+
 
 }
