@@ -309,9 +309,6 @@
                     <to>
                         <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/chs-gov-uk-notify-integration-api</image>
                     </to>
-                    <container>
-                        <expandClasspathDependencies>true</expandClasspathDependencies>
-                    </container>
                 </configuration>
             </plugin>
             <plugin>
