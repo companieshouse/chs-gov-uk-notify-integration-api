@@ -1,0 +1,26 @@
+{
+    "sender_details": {
+        "app_id": "chips",
+        "reference": "DEEP-369",
+        "name": "name",
+        "user_id": "user_id",
+        "email_address": "jbloggs@jbloggs.com"
+    },
+    "recipient_details": {
+        "name": "Joe Bloggs",
+        "physical_address": {
+            "address_line_1": "Joe Bloggs",
+            "address_line_2": "Tŷ'r Cwmnïau",
+            "address_line_3": "Ffordd y Goron",
+            "address_line_4": "Caerdydd",
+            "address_line_5": "CF14 3UZ",
+            "address_line_6": "United Kingdom"
+        } 
+    },
+    "letter_details": {
+        "template_id": "direction_letter",
+        "template_version": 1,
+        "personalisation_details": "{ \"psc_full_name\": \"Joe Bloggs\", \"company_name\": \"Tŷ'r Cwmnïau\", \"deadline_date\": \"18 August 2025\",\"extension_date\": \"1 September 2025\"}"
+    },
+    "created_at": "2025-05-09T09:02:24.905+05:30"
+}
