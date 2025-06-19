@@ -168,7 +168,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @MockitoSpyBean
     private SvgReplacedElementFactory svgReplacedElementFactory;
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter successfully")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
 
@@ -202,7 +202,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfSent(capturedFileSignature);
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter successfully with template version 1.0")
     void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
 
@@ -265,7 +265,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter with an invalid Gov Notify API key")
     void sendLetterWithInvalidApiKey(CapturedOutput log) throws Exception {
 
@@ -437,7 +437,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter reports SvgImageException creating an SVG image with a 500 response")
     void sendLetterReportsCreationSvgImageException(CapturedOutput log) throws Exception {
 
@@ -481,7 +481,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         }
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter reports SvgImageException not finding an SVG image with a 500 response")
     void sendLetterReportsMissingSvgImageException(CapturedOutput log) throws Exception {
 
