@@ -81,14 +81,14 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         Arrays.stream(SAVED_LETTERS_TO_DELETE).forEach(File::delete);
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
         sendLetter("send-letter-request", log);
         verifyLetterPdfContent();
     }
 
-    // TODO DEEP-369 Restore this @Test
+    @Test
     @DisplayName("Send New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
     void sendNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
         sendLetter("send-new-psc-direction-letter-request", log);

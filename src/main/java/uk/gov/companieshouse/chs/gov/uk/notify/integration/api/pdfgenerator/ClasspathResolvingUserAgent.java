@@ -22,6 +22,10 @@ public class ClasspathResolvingUserAgent extends ITextUserAgent {
     @Override
     protected InputStream resolveAndOpenStream(String uri) {
 
+        if (!isInJar(uri)) {
+            return super.resolveAndOpenStream(uri);
+        }
+
         InputStream is = null;
         uri = this.resolveURI(uri);
 
@@ -34,6 +38,10 @@ public class ClasspathResolvingUserAgent extends ITextUserAgent {
         }
 
         return is;
+    }
+
+    private boolean isInJar(String uri) {
+        return uri.contains("!");
     }
 
     /**
