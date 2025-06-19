@@ -18,28 +18,26 @@ public class ClasspathResolvingUserAgent extends ITextUserAgent {
         return url.isPresent() ? url.get().getPath() : super.resolveURI(fileNameOrUri);
     }
 
-    // TODO DEEP-369 Sort this out.
     @Override
     protected InputStream resolveAndOpenStream(String uri) {
-
         if (!isInJar(uri)) {
             return super.resolveAndOpenStream(uri);
+        } else {
+            // If the resource is a file in a jar file, then strip off the jar file path from the
+            // resource URI before presenting the resource's jar-root-relative path URI to
+            // getResourceAsStream.
+            uri = stripOffJarContext(uri);
+            return this.getClass().getResourceAsStream(uri);
         }
-
-        InputStream is = null;
-        uri = this.resolveURI(uri);
-
-        uri = stripOffJarContext(uri);
-
-        try {
-            is = this.getClass().getResourceAsStream(uri);
-        }  finally {
-            System.out.println("Resolving " + uri + " to " + is);
-        }
-
-        return is;
     }
 
+    /**
+     * Uses the presence of a <code>!</code> symbol in the URI to infer it is a URI referring to a
+     * file embedded within a jar file.
+     * @param uri the URI of a resource which may be held within a jar
+     * @return whether the resource referred to is in jar file (<code>true</code>), or not
+     *      (<code>false</code>).
+     */
     private boolean isInJar(String uri) {
         return uri.contains("!");
     }
@@ -53,7 +51,7 @@ public class ClasspathResolvingUserAgent extends ITextUserAgent {
      *
      * @param uri the URI which may include a JAR context
      * @return the same URI minus any jar context or prefix, leaving only the relative path of the
-     * resource sought within the jar.
+     *      resource sought within the jar.
      */
     private String stripOffJarContext(String uri) {
         return uri.substring(uri.lastIndexOf('!') + 1);
