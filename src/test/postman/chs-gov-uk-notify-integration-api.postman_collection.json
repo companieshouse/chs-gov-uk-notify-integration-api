@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c3d4f9e1-e6e8-4d80-b109-0a4789b51503",
+		"_postman_id": "a3a1f856-4077-403a-9fe0-5b25739237d5",
 		"name": "chs-gov-uk-notify-integration-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32780211"
@@ -65,7 +65,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"New PSC Direction Letter\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"new_psc_direction_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"New PSC Direction Letter\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"new_psc_direction_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"idv_start_date\\\": \\\"29 June 2025\\\", \\\"psc_appointment_date\\\": \\\"24 June 2025\\\", \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

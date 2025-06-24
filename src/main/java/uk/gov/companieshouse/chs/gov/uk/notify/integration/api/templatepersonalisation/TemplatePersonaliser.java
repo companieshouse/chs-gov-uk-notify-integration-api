@@ -9,8 +9,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -67,9 +68,7 @@ public class TemplatePersonaliser {
 
         pathsPublisher.publishPathsViaContext(context, templateLookupKey);
 
-        // Use today's date for traceability.
-        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        context.setVariable(DATE, LocalDate.now().format(format));
+        populateLetterDateForLegacyDirectionLetter(context, templateLookupKey);
 
         context.setVariable(REFERENCE, reference);
 
@@ -145,5 +144,22 @@ public class TemplatePersonaliser {
     private String uppercaseIfCompanyName(String addressLine, String uppercaseCompanyName) {
         return addressLine != null && addressLine.equalsIgnoreCase(uppercaseCompanyName)
                 ? uppercaseCompanyName : addressLine;
+    }
+
+    /**
+     * Implements behaviour unique to the legacy direction letter in which the letter date was
+     * assumed to be the current date.
+     *
+     * @param context the Thymeleaf context holding variables for template population
+     * @param templateLookupKey the key used to determine whether we are dealing with the
+     *                          legacy direction letter or not
+     */
+    private void populateLetterDateForLegacyDirectionLetter(Context context,
+                                                            LetterTemplateKey templateLookupKey) {
+        if (templateLookupKey.equals(CHIPS_DIRECTION_LETTER_1)) {
+            // Use today's date for traceability.
+            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+            context.setVariable(IDV_START_DATE, LocalDate.now().format(format));
+        }
     }
 }
