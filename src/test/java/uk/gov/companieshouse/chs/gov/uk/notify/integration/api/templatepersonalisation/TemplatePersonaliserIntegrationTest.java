@@ -4,17 +4,24 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 
 import java.util.Map;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,6 +57,8 @@ class TemplatePersonaliserIntegrationTest {
             .addressLine2("Line 2")
             .addressLine3("Line 3")
             .addressLine4("Line 4");
+
+    private static final String TOKEN_VALUE = "Token value";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -167,6 +176,45 @@ class TemplatePersonaliserIntegrationTest {
         assertThat(letter1, is("This is letter2_v1.html in app1."));
     }
 
+    @Test
+    @DisplayName("Generate English New PSC Direction Letter HTML successfully")
+    void generateEnglishNewPscLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+                "English New PSC Direction Letter",
+                Map.of(DATE, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        DEADLINE_DATE, TOKEN_VALUE,
+                        EXTENSION_DATE, TOKEN_VALUE),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsEnglishOnly(letter);
+    }
+
+    @Test
+    @DisplayName("Generate Welsh New PSC Direction Letter HTML successfully")
+    void generateWelshNewPscLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+                "Welsh New PSC Direction Letter",
+                Map.of(DATE, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        DEADLINE_DATE, TOKEN_VALUE,
+                        EXTENSION_DATE, TOKEN_VALUE,
+                        IS_WELSH, "true"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+    }
+
     private static void verifyLetterPersonalised(final Document letter) {
         assertThat(getText(letter, ".direction-letter-title"), is(LETTER_TITLE));
         assertThat(getText(letter, ".close-packed-top .emphasis"), is("Joe Bloggs"));
@@ -193,14 +241,28 @@ class TemplatePersonaliserIntegrationTest {
         assertThat(getAddressLine(letter, 4), is("Line 4"));
     }
 
+    private static void verifyLetterIsEnglishOnly(final Document letter) {
+        assertThat(getElement(letter, "#english_letter"), is(notNullValue()));
+        assertThat(getElement(letter, "#welsh_letter"), is(nullValue()));
+    }
+
+    private static void verifyLetterIsBilingualEnglishAndWelsh(final Document letter) {
+        assertThat(getElement(letter, "#english_letter"), is(notNullValue()));
+        assertThat(getElement(letter, "#welsh_letter"), is(notNullValue()));
+    }
+
     private static String getAddressLine(final Document document, final int lineNumber) {
         var selector = "#address-table tbody tr:nth-child({lineNumber})"
                 .replace("{lineNumber}", String.valueOf(lineNumber));
         return getText(document, selector);
     }
 
+    private static Element getElement(final Document document, final String selector) {
+        return document.selectFirst(selector);
+    }
+
     private static String getText(final Document document, final String selector) {
-        var element = document.select(selector).first();
+        var element = document.selectFirst(selector);
         return element != null ? element.text() : "";
     }
 

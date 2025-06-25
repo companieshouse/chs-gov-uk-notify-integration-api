@@ -18,17 +18,22 @@
     <link th:href="@{${letter} + new_psc_direction_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
-    <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
-    ~{new_psc_direction_letter_content_v1},
-    ~{new_psc_direction_letter_title_v1},
-    'Reference',
-    ${reference})}">
-    </section>
-    <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
-    ~{new_psc_direction_letter_content_v1},
-    ~{new_psc_direction_letter_title_v1},
-    'Reference',
-    ${reference})}">
-    </section>
+    <div id="english_letter">
+        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+        ~{new_psc_direction_letter_content_v1},
+        ~{new_psc_direction_letter_title_v1},
+        'Reference',
+        ${reference})}">
+        </section>
+    </div>
+    <div id="welsh_letter" th:if="${is_welsh}">
+        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+        ~{new_psc_direction_letter_content_v1},
+        ~{new_psc_direction_letter_title_v1},
+        'Reference',
+        ${reference})}">
+        </section>
+    </div>
+
 </body>
 </html>
