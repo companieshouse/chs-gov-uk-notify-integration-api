@@ -53,7 +53,9 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@SpringBootTest(properties = {"save.letter=true"})
+@SpringBootTest(properties = {
+        "save.letter=true",
+        "logging.level.org.thymeleaf=TRACE"})
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
 class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
@@ -80,6 +82,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @BeforeEach
     void setUp() {
+        System.getProperties().setProperty("xr.util-logging.loggingEnabled", "true");
         Arrays.stream(SAVED_LETTERS_TO_DELETE).forEach(File::delete);
     }
 
