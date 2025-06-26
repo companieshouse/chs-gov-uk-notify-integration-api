@@ -26,7 +26,7 @@
         ${reference})}">
         </section>
     </div>
-    <div id="welsh_letter" th:if="${is_welsh}">
+    <div id="welsh_letter" style="page-break-before: always" th:if="${is_welsh}">
         <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
         ~{new_psc_direction_letter_content_v1},
         ~{new_psc_direction_letter_title_v1},
