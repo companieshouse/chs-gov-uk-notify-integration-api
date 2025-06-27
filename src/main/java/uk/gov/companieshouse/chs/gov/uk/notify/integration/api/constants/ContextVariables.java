@@ -24,9 +24,12 @@ public class ContextVariables {
     public static final String ADDRESS_LINE_7 = "address_line_7";
 
     // Other letter template fields
-    public static final String DATE = "date";
+    public static final String PSC_APPOINTMENT_DATE = "psc_appointment_date";
+    public static final String IDV_START_DATE = "idv_start_date";
+    public static final String IDV_VERIFICATION_DUE_DATE = "idv_verification_due_date";
     public static final String REFERENCE = "reference";
     public static final String COMPANY_NAME = "company_name";
+    public static final String COMPANY_NUMBER = "company_number";
     public static final String PSC_FULL_NAME = "psc_full_name";
     public static final String PSC_NAME = "psc_name";
     public static final String DEADLINE_DATE = "deadline_date";

@@ -18,9 +18,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
@@ -38,7 +38,7 @@ class TemplateContextValidatorTest {
                     + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, address_line_3, "
-                    + "date, reference, company_name, psc_full_name, deadline_date, "
+                    + "idv_start_date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
                     + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
 
@@ -55,7 +55,7 @@ class TemplateContextValidatorTest {
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_3, TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(IDV_START_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(COMPANY_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(PSC_FULL_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
@@ -90,7 +90,7 @@ class TemplateContextValidatorTest {
         context.setVariable(ADDRESS_LINE_1, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_2, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(ADDRESS_LINE_3, TOKEN_CONTEXT_VARIABLE_VALUE);
-        context.setVariable(DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
+        context.setVariable(IDV_START_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(REFERENCE, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(PSC_FULL_NAME, TOKEN_CONTEXT_VARIABLE_VALUE);
         context.setVariable(EXTENSION_DATE, TOKEN_CONTEXT_VARIABLE_VALUE);
