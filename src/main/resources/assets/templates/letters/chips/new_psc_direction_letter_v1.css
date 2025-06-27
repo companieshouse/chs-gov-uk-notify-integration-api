@@ -83,6 +83,7 @@ hr {
     position:absolute;
     top: 16mm;
     left: 85mm;
+    z-index: 1;
 }
 .information-img {
     height:7mm;
