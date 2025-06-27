@@ -78,7 +78,7 @@ public class SvgReplacedElement extends EmptyReplacedElement {
         var p0bottom =
                 ((PageBox) renderingContext.getRootLayer().getPages().getFirst()).getBottom();
         var length = page.getBottom() - page.getTop();
-        var bottom = page.getPageNo() == 0 ? page.getBottom() : p0bottom + length;
+        var bottom = (page.getPageNo() % 2 == 0) ? p0bottom : p0bottom + length;
         var y = (bottom - (blockBox.getAbsY() + getIntrinsicHeight()))
                 + page.getMarginBorderPadding(renderingContext, BOTTOM);
         y = (int) (y / outputDevice.getDotsPerPoint());
