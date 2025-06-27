@@ -10,10 +10,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
@@ -184,11 +187,12 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "English New PSC Direction Letter",
-                Map.of(DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
+                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
+                        IDV_START_DATE, TOKEN_VALUE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        DEADLINE_DATE, TOKEN_VALUE,
-                        EXTENSION_DATE, TOKEN_VALUE),
+                        PSC_NAME, TOKEN_VALUE),
                 ADDRESS));
 
         // Then
@@ -203,11 +207,12 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "Welsh New PSC Direction Letter",
-                Map.of(DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
+                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
+                        IDV_START_DATE, TOKEN_VALUE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
                         PSC_NAME, TOKEN_VALUE,
-                        DEADLINE_DATE, TOKEN_VALUE,
-                        EXTENSION_DATE, TOKEN_VALUE,
                         IS_WELSH, "true"),
                 ADDRESS));
 
