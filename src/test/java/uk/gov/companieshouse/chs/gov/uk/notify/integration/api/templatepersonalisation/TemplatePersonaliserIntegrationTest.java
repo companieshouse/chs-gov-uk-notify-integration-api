@@ -63,6 +63,14 @@ class TemplatePersonaliserIntegrationTest {
 
     private static final String TOKEN_VALUE = "Token value";
 
+    private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
+    private static final String VALID_IDV_START_DATE = "30 June 2025";
+    private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
+
+    private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
+    private static final String EXPECTED_WELSH_IDV_START_DATE = "30 Mehefin 2025";
+    private static final String EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE = "14 Gorffennaf 2025";
+
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
 
@@ -187,9 +195,9 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "English New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
-                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
-                        IDV_START_DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
                         PSC_NAME, TOKEN_VALUE),
@@ -207,9 +215,9 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "Welsh New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
-                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
-                        IDV_START_DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
                         PSC_NAME, TOKEN_VALUE,
@@ -218,6 +226,28 @@ class TemplatePersonaliserIntegrationTest {
 
         // Then
         verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyEnglishDatesInLetter(letter);
+        verifyWelshDatesInLetter(letter);
+    }
+
+    private static void verifyEnglishDatesInLetter(final Document letter) {
+        assertThat(getText(letter, "#idv-start-date"), is(VALID_IDV_START_DATE));
+        assertThat(getText(letter, "#psc-appointment-date"), is(VALID_PSC_APPOINTMENT_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date-2"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+
+    }
+
+    private static void verifyWelshDatesInLetter(final Document letter) {
+        assertThat(getText(letter, "#welsh-idv-start-date"), is(EXPECTED_WELSH_IDV_START_DATE));
+        assertThat(getText(letter, "#welsh-psc-appointment-date"),
+                is(EXPECTED_WELSH_PSC_APPOINTMENT_DATE));
+        assertThat(getText(letter, "#welsh-idv-verification-due-date"),
+                is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
+        assertThat(getText(letter, "#welsh-idv-verification-due-date-2"),
+                is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
     }
 
     private static void verifyLetterPersonalised(final Document letter) {

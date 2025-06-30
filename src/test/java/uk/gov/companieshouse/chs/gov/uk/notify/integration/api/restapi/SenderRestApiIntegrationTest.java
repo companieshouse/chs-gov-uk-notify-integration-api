@@ -19,6 +19,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
@@ -137,6 +139,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
                     + "This PdfXConformanceException could indicate that a font, style or "
                     + "stylesheet cannot be found.";
+    private static final String INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Format of date 'idv_start_date' "
+                    + "'Monday, 30 June 2025' is incorrect.";
+    private static final String INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' found in "
+                    + "'psc_appointment_date' date '24 Jun 2025'.";
 
     @Autowired
     private MockMvc mockMvc;
@@ -592,6 +600,40 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
+    @Test
+    @DisplayName("Send letter with incorrectly formatted date")
+    void sendLetterWithIncorrectlyFormattedDate(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        postSendLetterRequest(getRequestWithIncorrectlyFormattedIdvStartDate(),
+                status().isBadRequest())
+                .andExpect(content().string(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE),
+                is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with incorrectly named month in a date")
+    void sendLetterWithIncorrectlyNamedMonth(CapturedOutput log) throws Exception {
+
+        // Given, when and then
+        postSendLetterRequest(getRequestWithIncorrectlyNamedMonthInPscAppointmentDate(),
+                status().isBadRequest())
+                .andExpect(content()
+                        .string(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE));
+
+        assertThat(log.getAll()
+                        .contains(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE),
+                is(true));
+
+        verifyLetterDetailsRequestStored();
+        verifyNoLetterResponsesAreStored();
+    }
+
     private ResultActions postSendLetterRequest(String requestBody,
                                                 ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -712,6 +754,40 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .parseString(personalisationDetailsString)
                 .getAsJsonObject();
         personalisationDetails.addProperty(REFERENCE, "Test reference");
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithIncorrectlyFormattedIdvStartDate()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(IDV_START_DATE, "Monday, 30 June 2025");
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getRequestWithIncorrectlyNamedMonthInPscAppointmentDate()
+            throws IOException {
+        var request = objectMapper.readValue(
+                getValidSendLetterRequestBody(),
+                GovUkLetterDetailsRequest.class);
+        var letterDetails = request.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(PSC_APPOINTMENT_DATE, "24 Jun 2025");
 
         letterDetails.setPersonalisationDetails(personalisationDetails.toString());
         return objectMapper.writeValueAsString(request);

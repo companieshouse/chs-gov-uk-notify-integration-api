@@ -45,7 +45,14 @@
             <div class="content">
                 <table id="date-and-reference-table">
                     <tr class="date-and-reference-label">Date:</tr>
-                    <tr>[[${idv_start_date}]]</tr>
+                    <tr>
+                        <td id="idv-start-date" th:if="${!is_welsh_letter}">
+                            [[${idv_start_date}]]
+                        </td>
+                        <td id="welsh-idv-start-date" th:if="${is_welsh_letter}">
+                            [[${welsh_idv_start_date}]]
+                        </td>
+                    </tr>
                     <tr class="date-and-reference-spacing"></tr>
                     <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
                     <tr>[[${referenceValue}]]</tr>
