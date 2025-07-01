@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -70,6 +71,11 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
     private static final String EXPECTED_WELSH_IDV_START_DATE = "30 Mehefin 2025";
     private static final String EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE = "14 Gorffennaf 2025";
+
+    private static final String EXPECTED_ENGLISH_P1_LOGO_NAME = "logo.svg";
+    private static final String EXPECTED_WELSH_P1_LOGO_NAME = "welsh_logo.svg";
+    private static final String EXPECTED_ENGLISH_P2_LOGO_NAME = "pages_2_onwards_logo.svg";
+    private static final String EXPECTED_WELSH_P2_LOGO_NAME = "welsh_pages_2_onwards_logo.svg";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -228,6 +234,22 @@ class TemplatePersonaliserIntegrationTest {
         verifyLetterIsBilingualEnglishAndWelsh(letter);
         verifyEnglishDatesInLetter(letter);
         verifyWelshDatesInLetter(letter);
+        verifyEnglishImagesInLetter(letter);
+        verifyWelshImagesInLetter(letter);
+    }
+
+    private static void verifyEnglishImagesInLetter(final Document letter) {
+        assertThat(getAttribute(letter, ".logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_LOGO_NAME));
+        assertThat(getAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_LOGO_NAME));
+    }
+
+    private static void verifyWelshImagesInLetter(final Document letter) {
+        assertThat(getLastElementAttribute(letter, ".logo-img", "src"),
+                endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+                endsWith(EXPECTED_WELSH_P2_LOGO_NAME));
     }
 
     private static void verifyEnglishDatesInLetter(final Document letter) {
@@ -299,6 +321,20 @@ class TemplatePersonaliserIntegrationTest {
     private static String getText(final Document document, final String selector) {
         var element = document.selectFirst(selector);
         return element != null ? element.text() : "";
+    }
+
+    private static String getAttribute(final Document document,
+                                       final String selector,
+                                       final String attribute) {
+        var element = document.selectFirst(selector);
+        return element != null ? element.attr(attribute) : null;
+    }
+
+    private static String getLastElementAttribute(final Document document,
+                                                  final String selector,
+                                                  final String attribute) {
+        var element = document.select(selector).getLast();
+        return element != null ? element.attr(attribute) : null;
     }
 
     private static Document parse(final String letterText) {
