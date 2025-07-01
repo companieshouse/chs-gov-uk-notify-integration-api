@@ -18,7 +18,17 @@
     <link th:href="@{${letter} + new_psc_direction_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
+    <div id="welsh_letter" th:if="${is_welsh}" th:with="is_welsh_letter=true">
+        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+            ~{welsh_new_psc_direction_letter_content_v1},
+            ~{new_psc_direction_letter_title_v1},
+            'Reference',
+            ${reference})}">
+        </section>
+    </div>
+    <div id="welsh-page-break" style="page-break-before: always" th:if="${is_welsh}"></div>
     <div id="english_letter">
+        <p class="second-letter-spacer" th:if="${is_welsh}"></p>
         <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
         ~{new_psc_direction_letter_content_v1},
         ~{new_psc_direction_letter_title_v1},
@@ -26,15 +36,5 @@
         ${reference})}">
         </section>
     </div>
-    <div id="welsh_letter" style="page-break-before: always" th:if="${is_welsh}" th:with="is_welsh_letter=true">
-        <p class="second-letter-spacer"></p>
-        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
-        ~{welsh_new_psc_direction_letter_content_v1},
-        ~{new_psc_direction_letter_title_v1},
-        'Reference',
-        ${reference})}">
-        </section>
-    </div>
-
 </body>
 </html>

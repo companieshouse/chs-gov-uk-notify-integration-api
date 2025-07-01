@@ -239,42 +239,32 @@ class TemplatePersonaliserIntegrationTest {
 
         // Then
         verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyEnglishDatesInLetter(letter);
         verifyWelshDatesInLetter(letter);
-        verifyEnglishImagesInLetter(letter);
+        verifyEnglishDatesInLetter(letter);
         verifyWelshImagesInLetter(letter);
-    }
-
-    private static void verifyEnglishImagesInLetter(final Document letter) {
-        assertThat(getAttribute(letter, ".logo-img", "src"),
-                endsWith(EXPECTED_ENGLISH_P1_LOGO_NAME));
-        assertThat(getAttribute(letter, ".pages-2-onwards-logo-img", "src"),
-                endsWith(EXPECTED_ENGLISH_P2_LOGO_NAME));
-        assertThat(getAttribute(letter, ".page-1-footer-artwork-img", "src"),
-                endsWith(EXPECTED_ENGLISH_P1_FOOTER_NAME));
-        assertThat(getAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
-                endsWith(EXPECTED_ENGLISH_P2_FOOTER_NAME));
+        verifyEnglishImagesInLetter(letter);
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
-        assertThat(getLastElementAttribute(letter, ".logo-img", "src"),
+        assertThat(getAttribute(letter, ".logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
-        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+        assertThat(getAttribute(letter, ".pages-2-onwards-logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P2_LOGO_NAME));
-        assertThat(getLastElementAttribute(letter, ".page-1-footer-artwork-img", "src"),
+        assertThat(getAttribute(letter, ".page-1-footer-artwork-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_FOOTER_NAME));
-        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+        assertThat(getAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
                 endsWith(EXPECTED_WELSH_P2_FOOTER_NAME));
     }
 
-    private static void verifyEnglishDatesInLetter(final Document letter) {
-        assertThat(getText(letter, "#idv-start-date"), is(VALID_IDV_START_DATE));
-        assertThat(getText(letter, "#psc-appointment-date"), is(VALID_PSC_APPOINTMENT_DATE));
-        assertThat(getText(letter, "#idv-verification-due-date"),
-                is(VALID_IDV_VERIFICATION_DUE_DATE));
-        assertThat(getText(letter, "#idv-verification-due-date-2"),
-                is(VALID_IDV_VERIFICATION_DUE_DATE));
-
+    private static void verifyEnglishImagesInLetter(final Document letter) {
+        assertThat(getLastElementAttribute(letter, ".logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".page-1-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_FOOTER_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_FOOTER_NAME));
     }
 
     private static void verifyWelshDatesInLetter(final Document letter) {
@@ -285,6 +275,16 @@ class TemplatePersonaliserIntegrationTest {
                 is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
         assertThat(getText(letter, "#welsh-idv-verification-due-date-2"),
                 is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
+    }
+
+    private static void verifyEnglishDatesInLetter(final Document letter) {
+        assertThat(getText(letter, "#idv-start-date"), is(VALID_IDV_START_DATE));
+        assertThat(getText(letter, "#psc-appointment-date"), is(VALID_PSC_APPOINTMENT_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date-2"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
