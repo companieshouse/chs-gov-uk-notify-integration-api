@@ -77,6 +77,13 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_ENGLISH_P2_LOGO_NAME = "pages_2_onwards_logo.svg";
     private static final String EXPECTED_WELSH_P2_LOGO_NAME = "welsh_pages_2_onwards_logo.svg";
 
+    private static final String EXPECTED_ENGLISH_P1_FOOTER_NAME = "page_1_footer_artwork.svg";
+    private static final String EXPECTED_WELSH_P1_FOOTER_NAME = "welsh_page_1_footer_artwork.svg";
+    private static final String EXPECTED_ENGLISH_P2_FOOTER_NAME =
+            "pages_2_onwards_footer_artwork.svg";
+    private static final String EXPECTED_WELSH_P2_FOOTER_NAME =
+            "welsh_pages_2_onwards_footer_artwork.svg";
+
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
 
@@ -243,6 +250,10 @@ class TemplatePersonaliserIntegrationTest {
                 endsWith(EXPECTED_ENGLISH_P1_LOGO_NAME));
         assertThat(getAttribute(letter, ".pages-2-onwards-logo-img", "src"),
                 endsWith(EXPECTED_ENGLISH_P2_LOGO_NAME));
+        assertThat(getAttribute(letter, ".page-1-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_FOOTER_NAME));
+        assertThat(getAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_FOOTER_NAME));
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
@@ -250,6 +261,10 @@ class TemplatePersonaliserIntegrationTest {
                 endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
         assertThat(getLastElementAttribute(letter, ".pages-2-onwards-logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P2_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".page-1-footer-artwork-img", "src"),
+                endsWith(EXPECTED_WELSH_P1_FOOTER_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+                endsWith(EXPECTED_WELSH_P2_FOOTER_NAME));
     }
 
     private static void verifyEnglishDatesInLetter(final Document letter) {
