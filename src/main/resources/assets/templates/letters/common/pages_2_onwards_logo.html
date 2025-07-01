@@ -1,1 +1,4 @@
-<img th:src="@{${common} + pages_2_onwards_logo.svg}" class = "pages-2-onwards-logo-img" alt="Companies House logo"/>
+<img th:with="logo_name = ${is_welsh_letter} ? 'welsh_pages_2_onwards_logo' : 'pages_2_onwards_logo'"
+     th:src="@{${common} + ${logo_name} + '.svg'}"
+     class = "pages-2-onwards-logo-img"
+     alt="Companies House logo"/>

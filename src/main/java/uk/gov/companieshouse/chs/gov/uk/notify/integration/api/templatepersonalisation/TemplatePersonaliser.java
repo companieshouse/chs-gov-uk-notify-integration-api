@@ -34,17 +34,20 @@ public class TemplatePersonaliser {
     private final AbstractConfigurableTemplateResolver templateResolver;
     private final TemplateContextValidator validator;
     private final PathsPublisher pathsPublisher;
+    private final WelshDatesPublisher welshDatesPublisher;
 
     public TemplatePersonaliser(ITemplateEngine templateEngine,
                                 TemplateLookup templateLookup,
                                 AbstractConfigurableTemplateResolver templateResolver,
                                 TemplateContextValidator validator,
-                                PathsPublisher pathsPublisher) {
+                                PathsPublisher pathsPublisher,
+                                WelshDatesPublisher welshDatesPublisher) {
         this.templateEngine = templateEngine;
         this.templateLookup = templateLookup;
         this.templateResolver = templateResolver;
         this.validator = validator;
         this.pathsPublisher = pathsPublisher;
+        this.welshDatesPublisher = welshDatesPublisher;
     }
 
     /**
@@ -67,6 +70,7 @@ public class TemplatePersonaliser {
         var context = new Context();
 
         pathsPublisher.publishPathsViaContext(context, templateLookupKey);
+        welshDatesPublisher.publishWelshDatesViaContext(context, personalisationDetails);
 
         populateLetterDateForLegacyDirectionLetter(context, templateLookupKey);
 
