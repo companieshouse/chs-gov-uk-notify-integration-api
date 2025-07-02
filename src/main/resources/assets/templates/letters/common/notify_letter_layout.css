@@ -65,7 +65,15 @@
 .logo {
     height: 25mm;
     width: 100%;
-    margin-left: 2mm;
+    margin-left: 0;
+    padding-right: 5mm;
+    padding-bottom: 9.5mm;
+    position: relative;
+}
+.welsh-logo {
+    height: 25mm;
+    width: 100%;
+    margin-left: -9mm;
     padding-right: 5mm;
     padding-bottom: 9.5mm;
     position: relative;
@@ -157,6 +165,7 @@
     font-family: Arial, sans-serif;
 }
 .p1-header-left {
+    offset: left;
     position: running(p1-header-left);
 }
 .p1-header-centre {

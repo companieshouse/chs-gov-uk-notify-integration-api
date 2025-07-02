@@ -3,8 +3,9 @@
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
     <!-- Headers -->
-    <div class="p1-header-left frame title">
-        <div class="content logo" th:insert="~{../common/logo}">
+    <div class="p1-header-left frame title"
+         th:with="classes = ${is_welsh_letter} ? 'content welsh-logo' : 'content logo'">
+        <div th:class="${classes}" th:insert="~{../common/logo}">
         </div>
     </div>
     <div class="p1-header-centre">
