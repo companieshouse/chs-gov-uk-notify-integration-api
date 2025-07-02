@@ -43,9 +43,9 @@
             </div>
         </div>
         <div class="frame column date-and-ref">
-            <div class="content">
+            <div class="content" th:with="date_label = ${is_welsh_letter} ? 'Dyddiad' : 'Date'">
                 <table id="date-and-reference-table">
-                    <tr class="date-and-reference-label">Date:</tr>
+                    <tr class="date-and-reference-label">[[${date_label}]]:</tr>
                     <tr>
                         <td id="idv-start-date" th:if="${!is_welsh_letter}">
                             [[${idv_start_date}]]
