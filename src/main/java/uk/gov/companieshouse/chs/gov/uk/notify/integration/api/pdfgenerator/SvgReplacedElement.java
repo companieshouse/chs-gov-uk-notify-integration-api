@@ -79,12 +79,9 @@ public class SvgReplacedElement extends EmptyReplacedElement {
                 ((PageBox) renderingContext.getRootLayer().getPages().getFirst()).getBottom();
         var length = page.getBottom() - page.getTop();
 
-        int bottom;
-        if (isHeaderOrFooter()) {
-            bottom = (page.getPageNo() % 2 == 0) ? p0bottom : p0bottom + length;
-        } else {
-            bottom = (page.getPageNo() % 2 == 0) ? page.getBottom() : p0bottom + length;
-        }
+        var oddPageBottom = isHeaderOrFooter() ? p0bottom : page.getBottom();
+        var evenPageBottom = p0bottom + length;
+        var bottom = (page.getPageNo() % 2 == 0) ? oddPageBottom : evenPageBottom;
 
         var y = (bottom - (blockBox.getAbsY() + getIntrinsicHeight()))
                 + page.getMarginBorderPadding(renderingContext, BOTTOM);
