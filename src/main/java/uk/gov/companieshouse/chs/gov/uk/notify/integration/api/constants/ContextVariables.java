@@ -11,6 +11,9 @@ public class ContextVariables {
     public static final String LETTER_RESOURCE_PATH_VARIABLE = "letter";
     public static final String COMMON_RESOURCE_PATH_VARIABLE = "common";
 
+    // Control variables
+    public static final String IS_WELSH = "is_welsh";
+
     // Address fields
     public static final String ADDRESS_LINE_1 = "address_line_1";
     public static final String ADDRESS_LINE_2 = "address_line_2";

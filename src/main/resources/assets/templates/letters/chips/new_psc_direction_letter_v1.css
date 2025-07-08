@@ -83,6 +83,7 @@ hr {
     position:absolute;
     top: 16mm;
     left: 85mm;
+    z-index: 1;
 }
 .information-img {
     height:7mm;
@@ -128,4 +129,7 @@ hr {
     padding-top: 0;
     margin-top: 0;
     margin-bottom: 0
+}
+.second-letter-spacer {
+    font-size: xx-small;
 }
