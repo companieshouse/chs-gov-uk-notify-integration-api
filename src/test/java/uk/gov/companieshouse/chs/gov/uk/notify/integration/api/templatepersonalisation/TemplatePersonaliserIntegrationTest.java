@@ -248,7 +248,7 @@ class TemplatePersonaliserIntegrationTest {
     private static void verifyWelshImagesInLetter(final Document letter) {
         assertThat(getAttribute(letter, ".logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
-        assertThat(getAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+        assertThat(getAttribute(letter, ".welsh-pages-2-onwards-logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P2_LOGO_NAME));
         assertThat(getAttribute(letter, ".page-1-footer-artwork-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_FOOTER_NAME));
