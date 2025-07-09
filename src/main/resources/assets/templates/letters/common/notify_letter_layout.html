@@ -3,8 +3,9 @@
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
     <!-- Headers -->
-    <div class="p1-header-left frame title">
-        <div class="content logo" th:insert="~{../common/logo}">
+    <div class="p1-header-left frame title"
+         th:with="classes = ${is_welsh_letter} ? 'content welsh-logo' : 'content logo'">
+        <div th:class="${classes}" th:insert="~{../common/logo}">
         </div>
     </div>
     <div class="p1-header-centre">
@@ -42,10 +43,17 @@
             </div>
         </div>
         <div class="frame column date-and-ref">
-            <div class="content">
+            <div class="content" th:with="date_label = ${is_welsh_letter} ? 'Dyddiad' : 'Date'">
                 <table id="date-and-reference-table">
-                    <tr class="date-and-reference-label">Date:</tr>
-                    <tr>[[${idv_start_date}]]</tr>
+                    <tr class="date-and-reference-label">[[${date_label}]]:</tr>
+                    <tr>
+                        <td id="idv-start-date" th:if="${!is_welsh_letter}">
+                            [[${idv_start_date}]]
+                        </td>
+                        <td id="welsh-idv-start-date" th:if="${is_welsh_letter}">
+                            [[${welsh_idv_start_date}]]
+                        </td>
+                    </tr>
                     <tr class="date-and-reference-spacing"></tr>
                     <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
                     <tr>[[${referenceValue}]]</tr>

@@ -78,10 +78,18 @@ public class SvgReplacedElement extends EmptyReplacedElement {
         var p0bottom =
                 ((PageBox) renderingContext.getRootLayer().getPages().getFirst()).getBottom();
         var length = page.getBottom() - page.getTop();
-        var bottom = (page.getPageNo() % 2 == 0) ? p0bottom : p0bottom + length;
+
+        var oddPageBottom = isHeaderOrFooter() ? p0bottom : page.getBottom();
+        var evenPageBottom = p0bottom + length;
+        var bottom = (page.getPageNo() % 2 == 0) ? oddPageBottom : evenPageBottom;
+
         var y = (bottom - (blockBox.getAbsY() + getIntrinsicHeight()))
                 + page.getMarginBorderPadding(renderingContext, BOTTOM);
         y = (int) (y / outputDevice.getDotsPerPoint());
         return y;
+    }
+
+    private boolean isHeaderOrFooter() {
+        return svg.getDocumentURI().contains("logo") || svg.getDocumentURI().contains("footer");
     }
 }

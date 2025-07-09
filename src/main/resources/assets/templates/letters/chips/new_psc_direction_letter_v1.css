@@ -14,6 +14,22 @@
     background-color: black;
     border-radius: 1.2mm;
 }
+.welsh-new-psc-direction-letter-title {
+    display: block;
+    height: 24mm;
+    width: 58mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 5.0mm;
+    line-height: 5.5mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 2mm;
+    padding-top: 3mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}
 .date-and-reference-label {
     font-family: Arial, sans-serif;
     font-weight: bold;
@@ -82,6 +98,14 @@ hr {
     width: 100%;
     position:absolute;
     top: 16mm;
+    left: 85mm;
+    z-index: 1;
+}
+.welsh-warning-img {
+    height:9mm;
+    width: 100%;
+    position:absolute;
+    top: 21mm;
     left: 85mm;
     z-index: 1;
 }

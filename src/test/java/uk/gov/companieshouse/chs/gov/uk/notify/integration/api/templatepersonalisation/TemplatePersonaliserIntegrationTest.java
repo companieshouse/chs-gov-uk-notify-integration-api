@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -62,6 +63,26 @@ class TemplatePersonaliserIntegrationTest {
             .addressLine4("Line 4");
 
     private static final String TOKEN_VALUE = "Token value";
+
+    private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
+    private static final String VALID_IDV_START_DATE = "30 June 2025";
+    private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
+
+    private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
+    private static final String EXPECTED_WELSH_IDV_START_DATE = "30 Mehefin 2025";
+    private static final String EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE = "14 Gorffennaf 2025";
+
+    private static final String EXPECTED_ENGLISH_P1_LOGO_NAME = "logo.svg";
+    private static final String EXPECTED_WELSH_P1_LOGO_NAME = "welsh_logo.svg";
+    private static final String EXPECTED_ENGLISH_P2_LOGO_NAME = "pages_2_onwards_logo.svg";
+    private static final String EXPECTED_WELSH_P2_LOGO_NAME = "welsh_pages_2_onwards_logo.svg";
+
+    private static final String EXPECTED_ENGLISH_P1_FOOTER_NAME = "page_1_footer_artwork.svg";
+    private static final String EXPECTED_WELSH_P1_FOOTER_NAME = "welsh_page_1_footer_artwork.svg";
+    private static final String EXPECTED_ENGLISH_P2_FOOTER_NAME =
+            "pages_2_onwards_footer_artwork.svg";
+    private static final String EXPECTED_WELSH_P2_FOOTER_NAME =
+            "welsh_pages_2_onwards_footer_artwork.svg";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -187,9 +208,9 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "English New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
-                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
-                        IDV_START_DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
                         PSC_NAME, TOKEN_VALUE),
@@ -207,9 +228,9 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_NEW_PSC_DIRECTION_LETTER_1,
                 "Welsh New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, TOKEN_VALUE,
-                        IDV_VERIFICATION_DUE_DATE, TOKEN_VALUE,
-                        IDV_START_DATE, TOKEN_VALUE,
+                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
                         PSC_NAME, TOKEN_VALUE,
@@ -218,6 +239,52 @@ class TemplatePersonaliserIntegrationTest {
 
         // Then
         verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyWelshDatesInLetter(letter);
+        verifyEnglishDatesInLetter(letter);
+        verifyWelshImagesInLetter(letter);
+        verifyEnglishImagesInLetter(letter);
+    }
+
+    private static void verifyWelshImagesInLetter(final Document letter) {
+        assertThat(getAttribute(letter, ".logo-img", "src"),
+                endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
+        assertThat(getAttribute(letter, ".welsh-pages-2-onwards-logo-img", "src"),
+                endsWith(EXPECTED_WELSH_P2_LOGO_NAME));
+        assertThat(getAttribute(letter, ".page-1-footer-artwork-img", "src"),
+                endsWith(EXPECTED_WELSH_P1_FOOTER_NAME));
+        assertThat(getAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+                endsWith(EXPECTED_WELSH_P2_FOOTER_NAME));
+    }
+
+    private static void verifyEnglishImagesInLetter(final Document letter) {
+        assertThat(getLastElementAttribute(letter, ".logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-logo-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_LOGO_NAME));
+        assertThat(getLastElementAttribute(letter, ".page-1-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P1_FOOTER_NAME));
+        assertThat(getLastElementAttribute(letter, ".pages-2-onwards-footer-artwork-img", "src"),
+                endsWith(EXPECTED_ENGLISH_P2_FOOTER_NAME));
+    }
+
+    private static void verifyWelshDatesInLetter(final Document letter) {
+        assertThat(getText(letter, "#welsh-idv-start-date"), is(EXPECTED_WELSH_IDV_START_DATE));
+        assertThat(getText(letter, "#welsh-psc-appointment-date"),
+                is(EXPECTED_WELSH_PSC_APPOINTMENT_DATE));
+        assertThat(getText(letter, "#welsh-idv-verification-due-date"),
+                is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
+        assertThat(getText(letter, "#welsh-idv-verification-due-date-2"),
+                is(EXPECTED_WELSH_IDV_VERIFICATION_DUE_DATE));
+    }
+
+    private static void verifyEnglishDatesInLetter(final Document letter) {
+        assertThat(getText(letter, "#idv-start-date"), is(VALID_IDV_START_DATE));
+        assertThat(getText(letter, "#psc-appointment-date"), is(VALID_PSC_APPOINTMENT_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+        assertThat(getText(letter, "#idv-verification-due-date-2"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE));
+
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
@@ -269,6 +336,20 @@ class TemplatePersonaliserIntegrationTest {
     private static String getText(final Document document, final String selector) {
         var element = document.selectFirst(selector);
         return element != null ? element.text() : "";
+    }
+
+    private static String getAttribute(final Document document,
+                                       final String selector,
+                                       final String attribute) {
+        var element = document.selectFirst(selector);
+        return element != null ? element.attr(attribute) : null;
+    }
+
+    private static String getLastElementAttribute(final Document document,
+                                                  final String selector,
+                                                  final String attribute) {
+        var element = document.select(selector).getLast();
+        return element != null ? element.attr(attribute) : null;
     }
 
     private static Document parse(final String letterText) {
