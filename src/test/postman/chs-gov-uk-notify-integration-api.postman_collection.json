@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "27c47142-1d94-4e8e-be20-b1075eee0590",
+		"_postman_id": "3ece27f0-1eca-4ee0-9b93-11f48c394bec",
 		"name": "chs-gov-uk-notify-integration-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32780211"
@@ -180,6 +180,44 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"Welsh New PSC Direction Letter\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"new_psc_direction_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"idv_start_date\\\": \\\"Monday, 30 June 2025\\\", \\\"psc_appointment_date\\\": \\\"24 June 2025\\\", \\\"idv_verification_due_date\\\": \\\"14 July 2025\\\", \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"company_number\\\": \\\"00006400\\\", \\\"is_welsh\\\": true }\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send Transitional Non-director PSC Information Letter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"Transitional Non-director PSC Information Letter\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Some Company\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"transitional_non_director_psc_information_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"idv_start_date\\\": \\\"9 July 2025\\\", \\\"psc_appointment_date\\\": \\\"3 July 2025\\\", \\\"idv_verification_due_date\\\": \\\"23 July 2025\\\", \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Some Company\\\", \\\"company_number\\\": \\\"00006400\\\" }\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

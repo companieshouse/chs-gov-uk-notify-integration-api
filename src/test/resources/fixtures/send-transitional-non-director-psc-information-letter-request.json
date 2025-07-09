@@ -1,0 +1,26 @@
+{
+  "sender_details": {
+    "app_id": "chips",
+    "reference": "send-transitional-non-director-psc-information-letter-request",
+    "name": "name",
+    "user_id": "user_id",
+    "email_address": "jbloggs@jbloggs.com"
+  },
+  "recipient_details": {
+    "name": "Joe Bloggs",
+    "physical_address": {
+      "address_line_1": "Joe Bloggs",
+      "address_line_2": "Some Company",
+      "address_line_3": "Ffordd y Goron",
+      "address_line_4": "Caerdydd",
+      "address_line_5": "CF14 3UZ",
+      "address_line_6": "United Kingdom"
+    }
+  },
+  "letter_details": {
+    "template_id": "transitional_non_director_psc_information_letter",
+    "template_version": 1,
+    "personalisation_details": "{ \"idv_start_date\": \"9 July 2025\", \"psc_appointment_date\": \"3 July 2025\", \"idv_verification_due_date\": \"23 July 2025\", \"psc_name\": \"Joe Bloggs\", \"company_name\": \"Some Company\", \"company_number\": \"00006400\" }"
+  },
+  "created_at": "2025-05-09T09:02:24.905+05:30"
+}
