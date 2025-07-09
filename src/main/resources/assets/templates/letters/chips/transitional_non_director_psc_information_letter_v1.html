@@ -15,7 +15,7 @@
     <!--    <meta name="keywords" content="IDV PSC"/>-->
 
     <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
-    <link th:href="@{${letter} + new_psc_direction_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
+    <link th:href="@{${letter} + transitional_non_director_psc_information_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <div id="welsh_letter" th:if="${is_welsh}" th:with="is_welsh_letter=true">
@@ -31,7 +31,7 @@
         <p class="second-letter-spacer" th:if="${is_welsh}"></p>
         <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
         ~{new_psc_direction_letter_content_v1},
-        ~{new_psc_direction_letter_title_v1},
+        ~{transitional_non_director_psc_information_letter_title_v1},
         'Reference',
         ${reference})}">
         </section>
