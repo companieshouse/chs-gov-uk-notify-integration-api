@@ -74,7 +74,7 @@ class TemplatePersonaliserIntegrationTest {
     private static final String TODAYS_DATE;
     static {
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        TODAYS_DATE=  LocalDate.now().format(format);
+        TODAYS_DATE = LocalDate.now().format(format);
     }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
