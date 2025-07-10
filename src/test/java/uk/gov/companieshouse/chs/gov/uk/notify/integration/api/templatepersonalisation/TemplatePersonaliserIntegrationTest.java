@@ -17,12 +17,16 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -67,6 +71,11 @@ class TemplatePersonaliserIntegrationTest {
     private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
     private static final String VALID_IDV_START_DATE = "30 June 2025";
     private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
+    private static final String TODAYS_DATE;
+    static {
+        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+        TODAYS_DATE=  LocalDate.now().format(format);
+    }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
     private static final String EXPECTED_WELSH_IDV_START_DATE = "30 Mehefin 2025";
@@ -110,6 +119,7 @@ class TemplatePersonaliserIntegrationTest {
         // Then
         verifyLetterPersonalised(letter);
         verifyLetterAddressed(letter);
+        verifyLetterDateIsTodaysDate(letter);
     }
 
     @Test
@@ -218,6 +228,7 @@ class TemplatePersonaliserIntegrationTest {
 
         // Then
         verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsIdvStartDate(letter);
     }
 
     @Test
@@ -245,6 +256,28 @@ class TemplatePersonaliserIntegrationTest {
         verifyEnglishImagesInLetter(letter);
     }
 
+    @Test
+    @DisplayName("Generate English Transitional Non-director PSC Information Letter HTML successfully")
+    void generateEnglishTransitionalPscLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                "English Transitional Non-director PSC Information Letter",
+                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        LETTER_SENDING_DATE, TODAYS_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsTodaysDate(letter);
+    }
+
     private static void verifyWelshImagesInLetter(final Document letter) {
         assertThat(getAttribute(letter, ".logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
@@ -268,7 +301,7 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyWelshDatesInLetter(final Document letter) {
-        assertThat(getText(letter, "#welsh-idv-start-date"), is(EXPECTED_WELSH_IDV_START_DATE));
+        assertThat(getText(letter, "#welsh-letter-date"), is(EXPECTED_WELSH_IDV_START_DATE));
         assertThat(getText(letter, "#welsh-psc-appointment-date"),
                 is(EXPECTED_WELSH_PSC_APPOINTMENT_DATE));
         assertThat(getText(letter, "#welsh-idv-verification-due-date"),
@@ -278,13 +311,21 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyEnglishDatesInLetter(final Document letter) {
-        assertThat(getText(letter, "#idv-start-date"), is(VALID_IDV_START_DATE));
+        assertThat(getText(letter, "#letter-date"), is(VALID_IDV_START_DATE));
         assertThat(getText(letter, "#psc-appointment-date"), is(VALID_PSC_APPOINTMENT_DATE));
         assertThat(getText(letter, "#idv-verification-due-date"),
                 is(VALID_IDV_VERIFICATION_DUE_DATE));
         assertThat(getText(letter, "#idv-verification-due-date-2"),
                 is(VALID_IDV_VERIFICATION_DUE_DATE));
 
+    }
+
+    private static void verifyLetterDateIsTodaysDate(final Document letter) {
+        assertThat(getText(letter, "#letter-date"), is(TODAYS_DATE));
+    }
+
+    private static void verifyLetterDateIsIdvStartDate(final Document letter) {
+        assertThat(getText(letter, "#letter-date"), is(VALID_IDV_START_DATE));
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
