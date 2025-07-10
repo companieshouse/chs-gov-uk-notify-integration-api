@@ -264,8 +264,7 @@ class TemplatePersonaliserIntegrationTest {
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
                 "English Transitional Non-director PSC Information Letter",
-                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
-                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
                         LETTER_SENDING_DATE, TODAYS_DATE,
                         IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,

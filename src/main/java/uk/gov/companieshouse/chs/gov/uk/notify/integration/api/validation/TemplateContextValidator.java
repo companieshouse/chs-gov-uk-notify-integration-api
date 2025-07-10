@@ -66,7 +66,6 @@ public class TemplateContextValidator {
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     LETTER_SENDING_DATE,
                                     IDV_START_DATE,
-                                    PSC_APPOINTMENT_DATE,
                                     IDV_VERIFICATION_DUE_DATE,
                                     REFERENCE,
                                     COMPANY_NAME,

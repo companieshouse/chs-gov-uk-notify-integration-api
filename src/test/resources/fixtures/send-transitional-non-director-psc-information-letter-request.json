@@ -20,7 +20,7 @@
   "letter_details": {
     "template_id": "transitional_non_director_psc_information_letter",
     "template_version": 1,
-    "personalisation_details": "{ \"idv_start_date\": \"9 July 2025\", \"psc_appointment_date\": \"3 July 2025\", \"idv_verification_due_date\": \"23 July 2025\", \"psc_name\": \"Joe Bloggs\", \"company_name\": \"Some Company\", \"company_number\": \"00006400\" }"
+    "personalisation_details": "{ \"idv_start_date\": \"9 July 2025\", \"idv_verification_due_date\": \"23 July 2025\", \"psc_name\": \"Joe Bloggs\", \"company_name\": \"Some Company\", \"company_number\": \"00006400\" }"
   },
   "created_at": "2025-05-09T09:02:24.905+05:30"
 }
