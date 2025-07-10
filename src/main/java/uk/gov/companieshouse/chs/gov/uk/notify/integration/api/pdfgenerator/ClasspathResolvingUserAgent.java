@@ -45,9 +45,9 @@ public class ClasspathResolvingUserAgent extends ITextUserAgent {
     /**
      * Takes a URI such as
      * <code>file:/app/classpath/chs-gov-uk-notify-integration-api-unversioned.original.jar!
-     * /assets/templates/letters/common/notify_letter_layout.css"</code>
+     * /assets/templates/letters/common/notify_letter_styles.css"</code>
      * and returns the same path without its Jar context,
-     * <code>/assets/templates/letters/common/notify_letter_layout.css</code>.
+     * <code>/assets/templates/letters/common/notify_letter_styles.css</code>.
      *
      * @param uri the URI which may include a JAR context
      * @return the same URI minus any jar context or prefix, leaving only the relative path of the
