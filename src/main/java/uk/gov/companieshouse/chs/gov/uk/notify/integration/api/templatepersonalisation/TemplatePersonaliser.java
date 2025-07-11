@@ -9,9 +9,10 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -72,7 +73,7 @@ public class TemplatePersonaliser {
         pathsPublisher.publishPathsViaContext(context, templateLookupKey);
         welshDatesPublisher.publishWelshDatesViaContext(context, personalisationDetails);
 
-        populateLetterDateForLegacyDirectionLetter(context, templateLookupKey);
+        populateLetterWithTodaysDate(context, templateLookupKey);
 
         context.setVariable(REFERENCE, reference);
 
@@ -151,19 +152,19 @@ public class TemplatePersonaliser {
     }
 
     /**
-     * Implements behaviour unique to the legacy direction letter in which the letter date was
-     * assumed to be the current date.
+     * Provides the current date as required for some letter types.
      *
      * @param context the Thymeleaf context holding variables for template population
-     * @param templateLookupKey the key used to determine whether we are dealing with the
-     *                          legacy direction letter or not
+     * @param templateLookupKey the key used to determine which letter type we are dealing with
      */
-    private void populateLetterDateForLegacyDirectionLetter(Context context,
-                                                            LetterTemplateKey templateLookupKey) {
-        if (templateLookupKey.equals(CHIPS_DIRECTION_LETTER_1)) {
+    private void populateLetterWithTodaysDate(Context context,
+                                              LetterTemplateKey templateLookupKey) {
+        if (templateLookupKey.equals(CHIPS_DIRECTION_LETTER_1)
+                || templateLookupKey.equals(
+                        CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1)) {
             // Use today's date for traceability.
             var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            context.setVariable(IDV_START_DATE, LocalDate.now().format(format));
+            context.setVariable(LETTER_SENDING_DATE, LocalDate.now().format(format));
         }
     }
 }

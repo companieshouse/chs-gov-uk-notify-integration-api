@@ -9,12 +9,14 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -37,7 +39,7 @@ public class TemplateContextValidator {
                             CHIPS_DIRECTION_LETTER_1,
                             ImmutableSet.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    IDV_START_DATE,
+                                    LETTER_SENDING_DATE,
                                     REFERENCE,
                                     COMPANY_NAME,
                                     PSC_FULL_NAME,
@@ -51,6 +53,19 @@ public class TemplateContextValidator {
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     IDV_START_DATE,
                                     PSC_APPOINTMENT_DATE,
+                                    IDV_VERIFICATION_DUE_DATE,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    COMPANY_NUMBER,
+                                    PSC_NAME
+                            )
+                    ),
+                    new AbstractMap.SimpleEntry<>(
+                            CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                            ImmutableSet.of(
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                                    LETTER_SENDING_DATE,
+                                    IDV_START_DATE,
                                     IDV_VERIFICATION_DUE_DATE,
                                     REFERENCE,
                                     COMPANY_NAME,

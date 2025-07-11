@@ -56,6 +56,18 @@
      */
     height: 56.3mm;
 }
+.date-and-ref {
+    height: 35.5mm; /* was 65mm */
+    width: 64mm; /* was 70mm */
+    font-family: Arial, sans-serif;
+}
+.date-and-reference-label {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+.date-and-reference-spacing {
+    height: 4mm;
+}
 #date-and-reference-table tr {
         line-height: 0.95;
 }
@@ -165,10 +177,79 @@
        but word-wrap: break-word is. */
     word-wrap: break-word;
 }
-.date-and-ref {
-    height: 35.5mm; /* was 65mm */
-    width: 64mm; /* was 70mm */
+li {
     font-family: Arial, sans-serif;
+}
+hr {
+    margin-top: 5mm;
+    border: none;
+    height: 0.55mm;
+    background-color: black;
+}
+.emphasis {
+    font-weight:bold;
+}
+.small-heading {
+    font-weight:bold;
+    font-size: 5.0mm;
+}
+.emphatic-block {
+    display: block;
+    color: white;
+    margin-bottom: 1.5mm;
+    padding: 3mm;
+    /* CHN1 black from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #1a1a1a;
+    border-radius: 1.2mm;
+    text-align: center;
+}
+.welsh-warning-img {
+    height:9mm;
+    width: 100%;
+    position:absolute;
+    top: 21mm;
+    left: 85mm;
+    z-index: 1;
+}
+.information-img {
+    height:7mm;
+    width: 7mm;
+    position:relative;
+    float: left;
+}
+.subject-line-spacer {
+    font-size: x-small;
+}
+.verification-requirements {
+    border-top: 1mm solid black;
+    /* CHN2 grey from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #f1f1f1;
+    width: 46%;
+    padding-left: 3mm;
+    padding-right: 3mm;
+    padding-bottom: 5mm;
+    vertical-align: top;
+}
+.verification-requirements-spacer {
+    width: 3%;
+}
+.verification-requirements-text {
+    margin-top: 3mm;
+    margin-left: 2mm;
+    margin-right: 2mm;
+}
+.close-packed-top {
+    padding-bottom: 0;
+    margin-bottom: 0
+}
+.close-packed-middle {
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 0
+}
+.second-letter-spacer {
+    font-size: xx-small;
 }
 .p1-header-left {
     offset: left;

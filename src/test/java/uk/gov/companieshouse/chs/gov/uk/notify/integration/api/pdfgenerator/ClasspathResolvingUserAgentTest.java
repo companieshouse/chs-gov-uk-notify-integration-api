@@ -25,14 +25,14 @@ import java.io.File;
 class ClasspathResolvingUserAgentTest {
 
     private static final String NON_EXISTENT_CSS_URI_OUTSIDE_OF_APP_JAR =
-            "/app/resources/assets/templates/letters/common/notify_letter_layout.css";
+            "/app/resources/assets/templates/letters/common/notify_letter_styles.css";
     private static final String CSS_URI_OUTSIDE_OF_APP_JAR =
-            "src/test/resources/mock_assets/notify_letter_layout.css";
+            "src/test/resources/mock_assets/notify_letter_styles.css";
     private static final String RESOLVED_NON_EXISTENT_CSS_URI_OUTSIDE_OF_APP_JAR =
             "file:" + NON_EXISTENT_CSS_URI_OUTSIDE_OF_APP_JAR;
     private static final String CSS_URI_INSIDE_OF_APP_JAR =
             "nested:/opt/api/target/api.jar/!BOOT-INF/classes/!"
-                    + "/assets/templates/letters/common/notify_letter_layout.css";
+                    + "/assets/templates/letters/common/notify_letter_styles.css";
 
     @InjectMocks
     private ClasspathResolvingUserAgent agentUnderTest;
