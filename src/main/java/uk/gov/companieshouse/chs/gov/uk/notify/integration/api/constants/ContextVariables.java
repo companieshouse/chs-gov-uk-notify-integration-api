@@ -28,6 +28,7 @@ public class ContextVariables {
     public static final String PSC_APPOINTMENT_DATE = "psc_appointment_date";
     public static final String IDV_START_DATE = "idv_start_date";
     public static final String IDV_VERIFICATION_DUE_DATE = "idv_verification_due_date";
+    public static final String EXTENSION_REQUEST_DATE = "extension_request_date";
     public static final String REFERENCE = "reference";
     public static final String COMPANY_NAME = "company_name";
     public static final String COMPANY_NUMBER = "company_number";

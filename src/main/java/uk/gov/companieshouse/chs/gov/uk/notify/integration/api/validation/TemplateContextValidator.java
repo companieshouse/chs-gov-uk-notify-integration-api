@@ -7,6 +7,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
@@ -78,8 +79,7 @@ public class TemplateContextValidator {
                             CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
                             ImmutableSet.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    IDV_START_DATE,
-                                    PSC_APPOINTMENT_DATE,
+                                    EXTENSION_REQUEST_DATE,
                                     IDV_VERIFICATION_DUE_DATE,
                                     REFERENCE,
                                     COMPANY_NAME,
