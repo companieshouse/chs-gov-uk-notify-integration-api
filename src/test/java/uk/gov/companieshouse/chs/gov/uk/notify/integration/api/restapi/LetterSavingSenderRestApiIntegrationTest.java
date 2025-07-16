@@ -68,7 +68,8 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
             HtmlPdfGenerator.getPdfFilepath("send-letter-request");
     private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
             new File(SAVED_LETTER_FILEPATH),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request"))
+            new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request")),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-transitional-non-director-psc-information-letter-request"))
     };
 
     @Autowired
@@ -103,6 +104,12 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send Welsh New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
     void sendWelshNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
         sendWelshLetter("send-new-psc-direction-letter-request", log);
+    }
+
+    @Test
+    @DisplayName("Send Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
+    void sendTransitionalPscInformationLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendLetter("send-transitional-non-director-psc-information-letter-request", log);
     }
 
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {

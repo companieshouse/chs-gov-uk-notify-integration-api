@@ -1,4 +1,4 @@
-<link th:fragment="stylesheet()" th:href="@{${common} + notify_letter_layout.css}" media="all"
+<link th:fragment="stylesheet()" th:href="@{${common} + notify_letter_styles.css}" media="all"
       rel="stylesheet" type="text/css" />
 
 <div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
@@ -47,11 +47,11 @@
                 <table id="date-and-reference-table">
                     <tr class="date-and-reference-label">[[${date_label}]]:</tr>
                     <tr>
-                        <td id="idv-start-date" th:if="${!is_welsh_letter}">
-                            [[${idv_start_date}]]
+                        <td id="letter-date" th:if="${!is_welsh_letter}">
+                            [[${letter_sending_date} ? ${letter_sending_date} : ${idv_start_date}]]
                         </td>
-                        <td id="welsh-idv-start-date" th:if="${is_welsh_letter}">
-                            [[${welsh_idv_start_date}]]
+                        <td id="welsh-letter-date" th:if="${is_welsh_letter}">
+                            [[${welsh_letter_sending_date} ? ${welsh_letter_sending_date} : ${welsh_idv_start_date}]]
                         </td>
                     </tr>
                     <tr class="date-and-reference-spacing"></tr>
