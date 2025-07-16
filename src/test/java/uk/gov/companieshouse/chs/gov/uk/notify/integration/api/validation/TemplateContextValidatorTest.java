@@ -23,7 +23,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_APPLICATION_ID;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.DIRECTION_LETTER;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -71,7 +73,7 @@ class TemplateContextValidatorTest {
     void errorsWhereTemplateIsUnknown() {
 
         // Given
-        var letter = new LetterTemplateKey("chips", "direction_letter", TWO);
+        var letter = new LetterTemplateKey(CHIPS_APPLICATION_ID, DIRECTION_LETTER, TWO);
         var context = new Context();
 
         // When and then
