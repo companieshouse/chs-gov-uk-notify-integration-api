@@ -51,7 +51,7 @@ public class WelshDatesPublisher {
         variables.put(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
     }
 
-    private String getWelshDate(final String englishDate, final String dateVariableName) {
+    public static String getWelshDate(final String englishDate, final String dateVariableName) {
         var dayMonthYear = englishDate.split(" ");
         if (dayMonthYear.length != 3) {
             throw new LetterValidationException("Format of date '" + dateVariableName
