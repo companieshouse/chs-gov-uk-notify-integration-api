@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static java.util.AbstractMap.SimpleEntry;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
@@ -34,20 +35,20 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("November",  "Tachwedd"),
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
-    public void publishWelshDatesViaContext(final Context context,
-                                            final Map<String, String> personalisationDetails) {
-        personalisationDetails.keySet()
-                .stream()
+    public void publishWelshDatesViaContext(final Context context) {
+        var variables = new HashMap<String, Object>();
+        context.getVariableNames().stream()
                 .filter(key -> key.endsWith(DATE_VARIABLE_NAME_SUFFIX))
-                .forEach(key -> this.publishWelshDate(context, personalisationDetails, key));
+                .forEach(key -> this.publishWelshDate(context, variables, key));
+        context.setVariables(variables);
     }
 
     private void publishWelshDate(final Context context,
-                                  final Map<String, String> personalisationDetails,
+                                  final Map<String, Object> variables,
                                   final String dateVariableName) {
         var welshDate = getWelshDate(
-                personalisationDetails.get(dateVariableName), dateVariableName);
-        context.setVariable(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
+                (String) context.getVariable(dateVariableName), dateVariableName);
+        variables.put(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
     }
 
     private String getWelshDate(final String englishDate, final String dateVariableName) {
