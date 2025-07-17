@@ -30,4 +30,7 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
                     TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER,
                     ONE);
 
+    public static final LetterTemplateKey CHIPS_EXTENSION_ACCEPTANCE_LETTER_1 =
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "extension_acceptance_letter", ONE);
+
 }

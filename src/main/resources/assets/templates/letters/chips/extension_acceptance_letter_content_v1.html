@@ -1,17 +1,18 @@
-<p class="subject-line">You need to verify your identity for Companies House.</p>
-<p class="subject-line">This is for your role as a person with significant control of:</p>
+<p class="subject-line">We’ve accepted the request to extend your identity verification deadline. This is for
+    your role as a person with significant control of:</p>
 <p class="subject-line"><span class="subject-line">[[${company_name}]] ([[${company_number}]])</span></p>
 <hr/>
 
 <p class="close-packed-top">Dear <span class="emphasis">[[${psc_name}]]</span></p>
-<p class="close-packed-middle">On <span id="psc-appointment-date">[[${psc_appointment_date}]]</span>, [[${company_name}]] notified us that you are a person with
-    significant control (PSC) of the company. A PSC is someone who has some ownership or control of
-    the company, for example because they have more than 25% of shares or voting rights.</p>
-<p>Under the power provided by section 790LM of the Companies Act 2006, the Registrar of
-    Companies now directs you to deliver a statement confirming your identity is verified, and to do so
-    within 14 days of the date of this direction letter.</p>
-<p>Instructions on how to meet these identity verification requirements are on the back of this letter.</p>
-<p class="emphatic-block">You must comply with identity verification requirements by
+<p class="close-packed-middle">On <span id="extension_request_date">[[${extension_request_date}]]</span>, you
+    (or someone filing on your behalf) submitted an extension request for more time to
+    comply with identity verification requirements. Your request has been accepted.</p>
+<p>Under the power provided by section 790LM of the Companies Act 2006, the Registrar of Companies now extends
+    the deadline by which you must deliver a statement confirming that your identity is verified.</p>
+<p>You have been given a 14 day extension. This extension only applies to your role as a PSC of this company, not to
+    any other PSC or director roles you hold.</p>
+<p>Instructions on how to meet identity verification requirements are on the back of this letter.</p>
+<p class="emphatic-block">Your new identity verification deadline is
     <span class="emphasis" id="idv-verification-due-date">[[${idv_verification_due_date}]]</span>.</p>
 <p class="warning-block">
     If you do not comply, you may be committing an offence. You may face<br/>
@@ -20,7 +21,7 @@
     <img class="warning-img" th:src="@{${common} + warning.svg}" alt="Companies House warning"/>
 </p>
 
-<p class="emphasis" style="margin-top: 8mm">
+<p class="emphasis" style="margin-top: 1cm">
     <img class="information-img" th:src="@{${common} + information.svg}" alt="Companies House information"/>
     <table style="width: 100%; margin-left: 8mm">
         <tr></tr>
@@ -64,9 +65,10 @@
     </tr>
 </table>
 
-<p class="small-heading">If you are unable to complete both steps by the deadline</p>
-<p style="margin-top: 1mm">Before <span id="idv-verification-due-date-2">[[${idv_verification_due_date}]]</span>, you should use the
-    ‘Provide identity verification details for a person with significant control’ service to request an extension:<br/>
+<p class="small-heading">If you are unable to complete both steps by your new deadline</p>
+<p style="margin-top: 1mm">Before <span id="idv-verification-due-date-2">[[${idv_verification_due_date}]]</span>, you can
+    use the ‘Provide identity verification details for a person with significant control’ service to request
+    another extension. This time, you’ll need to provide evidence to support your request:<br/>
     <span class="emphasis" style="margin-top: 1mm">provide-identity-verification-details-for-a-psc.service.gov.uk</span>
 </p>
 
@@ -76,7 +78,3 @@
 <p style="margin-top: 1mm">All company directors and PSCs must verify their identity to prove they are who
     they say they are.</p>
 <p style="margin-top: 1mm">This has been introduced to help prevent people using companies for illegal purposes.</p>
-
-<p class="small-heading">If you do not think you are a PSC of this company</p>
-<p style="margin-top: 1mm">Do not ignore this letter. If your details have been used without your permission,
-    you must report this to Companies House: <span class="emphasis">gov.uk/report-company-fraud</span></p>

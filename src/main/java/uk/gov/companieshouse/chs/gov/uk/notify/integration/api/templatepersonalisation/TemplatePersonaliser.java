@@ -12,10 +12,12 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.ITemplateEngine;
@@ -29,6 +31,14 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 
 @Component
 public class TemplatePersonaliser {
+
+    /**
+     * Those letter types for which the letter date is today's date.
+     */
+    private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
+            List.of(CHIPS_DIRECTION_LETTER_1,
+                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                    CHIPS_EXTENSION_ACCEPTANCE_LETTER_1);
 
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
@@ -159,10 +169,7 @@ public class TemplatePersonaliser {
      */
     private void populateLetterWithTodaysDate(Context context,
                                               LetterTemplateKey templateLookupKey) {
-        if (templateLookupKey.equals(CHIPS_DIRECTION_LETTER_1)
-                || templateLookupKey.equals(
-                        CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1)) {
-            // Use today's date for traceability.
+        if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
             var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
             context.setVariable(LETTER_SENDING_DATE, LocalDate.now().format(format));
         }

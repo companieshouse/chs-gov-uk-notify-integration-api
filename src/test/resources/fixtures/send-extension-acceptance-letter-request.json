@@ -1,0 +1,26 @@
+{
+  "sender_details": {
+    "app_id": "chips",
+    "reference": "send-extension-acceptance-letter-request",
+    "name": "TODO",
+    "user_id": "TODO",
+    "email_address": "jbloggs@jbloggs.com"
+  },
+  "recipient_details": {
+    "name": "Joe Bloggs",
+    "physical_address": {
+      "address_line_1": "Joe Bloggs",
+      "address_line_2": "Tŷ'r Cwmnïau",
+      "address_line_3": "Ffordd y Goron",
+      "address_line_4": "Caerdydd",
+      "address_line_5": "CF14 3UZ",
+      "address_line_6": "United Kingdom"
+    }
+  },
+  "letter_details": {
+    "template_id": "extension_acceptance_letter",
+    "template_version": 1,
+    "personalisation_details": "{ \"extension_request_date\": \"13 July 2025\", \"idv_verification_due_date\": \"28 July 2025\", \"psc_name\": \"Joe Bloggs\", \"company_name\": \"Tŷ'r Cwmnïau\", \"company_number\": \"00006400\"}"
+  },
+  "created_at": "2025-04-08T09:19:24.905+05:30"
+}

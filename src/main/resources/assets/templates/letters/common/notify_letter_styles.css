@@ -251,6 +251,52 @@ hr {
 .second-letter-spacer {
     font-size: xx-small;
 }
+.subject-line {
+    padding-top: 0;
+    margin-top: 0;
+
+    font-family: Arial, sans-serif;
+    font-size: 5.3mm;
+    line-height: 7.0mm;
+    font-weight: bold;
+}
+p {
+    margin-bottom: -1mm;
+    font-family: Arial, sans-serif;
+    font-size: 4.0mm;
+    /* overflow-wrap: anywhere  is not recognised by the version of Flying Saucer we are using,
+       but word-wrap: break-word is. */
+    word-wrap: break-word;
+}
+.warning-block {
+    display: block;
+    font-size: 13pt;
+    line-height: 14pt;
+    color: white;
+    margin-top: 2mm;
+    padding: 3mm 3mm 3mm 5mm;
+    /* CHN3 accent only red from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #cd1423;
+    border-radius: 1.2mm;
+    position: relative;
+    text-align: left;
+}
+.warning-img {
+    height:9mm;
+    width: 100%;
+    position:absolute;
+    top: 16mm;
+    left: 85mm;
+    z-index: 1;
+}
+.verification-requirements-heading {
+    font-size: 5.0mm;
+    line-height: 5.5mm;
+    font-weight: bold;
+    margin-top: 3mm;
+    margin-left: 2mm;
+    margin-right: 2mm;
+}
 .p1-header-left {
     offset: left;
     position: running(p1-header-left);

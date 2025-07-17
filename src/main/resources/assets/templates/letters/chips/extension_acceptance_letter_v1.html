@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <!--  4 metadata properties that will be populated in the PDF info.
+          Of these, for some reason Adobe Acrobat does not report the creator (author),
+          nor the keywords, in its Document properties dialog, unless the configured conformance level is
+          downgraded to PDF/A-1b (Basic).
+          However, the presence of any one of these 4 properties seems to result in the document being
+          categorised as an invalid PDF/A document, whether the configured conformance level is PDF/A-1a
+          (Accessible), or PDF/A-1b (Basic). -->
+    <!--    <title th:text="${title}"></title>-->
+    <!--    <meta name="creator" content="Companies House"/>-->
+    <!--    <meta name="subject" content="Verify your identity - Person with significant control"/>-->
+    <!--    <meta name="keywords" content="IDV PSC"/>-->
+
+    <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
+    <link th:href="@{${letter} + extension_acceptance_letter_v1.css}" media="all" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="welsh_letter" th:if="${is_welsh}" th:with="is_welsh_letter=true">
+        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+            ~{welsh_new_psc_direction_letter_content_v1},
+            ~{welsh_new_psc_direction_letter_title_v1},
+            'Cyfeirnod',
+            ${reference})}">
+        </section>
+    </div>
+    <div id="welsh-page-break" style="page-break-before: always" th:if="${is_welsh}"></div>
+    <div id="english_letter">
+        <p class="second-letter-spacer" th:if="${is_welsh}"></p>
+        <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+        ~{extension_acceptance_letter_content_v1},
+        ~{extension_acceptance_letter_title_v1},
+        'Reference',
+        ${reference})}">
+        </section>
+    </div>
+</body>
+</html>
