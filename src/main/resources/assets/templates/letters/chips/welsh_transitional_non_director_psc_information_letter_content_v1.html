@@ -1,30 +1,32 @@
-<p class="subject-line">You need to verify your identity for Companies House.</p>
-<p class="subject-line">This is for your role as a person with significant control of:</p>
+<p class="subject-line">Mae angen i chi gwblhau gwiriad hunaniaeth ar gyfer Tŷ'r Cwmnïau.</p>
+<p class="subject-line">Mae hyn ar gyfer eich rôl fel person sydd â rheolaeth arwyddocaol o:</p>
 <p class="subject-line"><span class="subject-line">[[${company_name}]] ([[${company_number}]])</span></p>
 <hr/>
 
-<p class="close-packed-top">Dear <span class="emphasis">[[${psc_name}]]</span></p>
-<p class="close-packed-middle">As a person with significant control (PSC) of a UK company, there’s a new
-    legal requirement for you to verify your identity for Companies House, and to deliver a statement
-    confirming that you have done so.</p>
-<p>As a PSC who is not also a director of this company, you must provide your statement within the first 14
-    days of your birth month. Based on the data we hold, you’ll need to do this between:<br/>
-    <span class="emphasis">[[${idv_start_date}]] – [[${idv_verification_due_date}]]</span></p>
-<p>Instructions on how to meet these identity verification requirements are on the back of this letter.</p>
-<p class="emphatic-block">You must comply with identity verification requirements by
-    <span class="emphasis" id="idv-verification-due-date">[[${idv_verification_due_date}]]</span>.</p>
+<p class="close-packed-top">Annwyl <span class="emphasis">[[${psc_name}]]</span></p>
+<p class="close-packed-middle">Fel person sydd â rheolaeth arwyddocaol (PRhA) o gwmni yn y DU,
+    mae gofyniad cyfreithiol newydd i chi gwblhau gwiriad hunaniaeth ar gyfer Tŷ'r Cwmnïau,
+    ac i gyflwyno datganiad yn cadarnhau eich bod wedi gwneud hynny.</p>
+<p>Fel PRhA nad yw hefyd yn gyfarwyddwr y cwmni hwn, mae’n rhaid i chi ddarparu eich datganiad
+    o fewn 14 diwrnod cyntaf eich mis geni. Yn seiliedig ar y data sydd gennym, bydd angen i
+    chi wneud hyn rhwng:<br/>
+    <span class="emphasis">[[${welsh_idv_start_date}]] – [[${welsh_idv_verification_due_date}]]</span></p>
+<p>Mae cyfarwyddiadau ar sut i gwrdd â gofynion gwiriad hunaniaeth hyn ar gefn y llythyr hwn.</p>
+<p class="emphatic-block">Mae’n rhaid i chi gydymffurfio â gofynion gwiriad hunaniaeth erbyn
+    <span class="emphasis" id="idv-verification-due-date">[[${welsh_idv_verification_due_date}]]</span>.</p>
 <p class="warning-block">
-    If you do not comply, you may be committing an offence. You may face<br/>
-    prosecution and a fine through the courts, or a financial penalty. In the future,<br/>
-    we’ll publish a note against your name on the Companies House public register.
-    <img class="warning-img" th:src="@{${common} + warning.svg}" alt="Companies House warning"/>
+    Os nad ydych chi’n cydymffurfio, efallai y byddwch chi’n cyflawni trosedd.<br/>
+    Efallai y byddwch yn wynebu erlyniad a dirwy drwy’r llysoedd, neu gosb<br/>
+    ariannol. Yn y dyfodol, byddwn yn cyhoeddi nodyn yn erbyn eich enw ar gofrestr<br/>
+    gyhoeddus Tŷ’r Cwmnïau.
+    <img class="welsh-warning-img" th:src="@{${common} + warning.svg}" alt="Companies House warning"/>
 </p>
 
 <p class="emphasis" style="margin-top: 8mm">
     <img class="information-img" th:src="@{${common} + information.svg}" alt="Companies House information"/>
     <table style="width: 100%; margin-left: 8mm">
         <tr></tr>
-        <tr>If you are not [[${psc_name}]], you must forward this letter to them immediately.</tr>
+        <tr>Os nad chi yw [[${psc_name}]], mae’n rhaid i chi anfon y llythyr ymlaen atynt ar unwaith.</tr>
     </table>
 </p>
 
