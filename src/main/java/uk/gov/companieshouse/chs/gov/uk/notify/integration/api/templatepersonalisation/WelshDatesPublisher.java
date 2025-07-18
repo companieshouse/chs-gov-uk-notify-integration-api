@@ -36,19 +36,19 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
     public void publishWelshDatesViaContext(final Context context) {
-        var variables = new HashMap<String, Object>();
+        var welshDateVariables = new HashMap<String, Object>();
         context.getVariableNames().stream()
                 .filter(key -> key.endsWith(DATE_VARIABLE_NAME_SUFFIX))
-                .forEach(key -> this.publishWelshDate(context, variables, key));
-        context.setVariables(variables);
+                .forEach(key -> this.publishWelshDate(context, welshDateVariables, key));
+        context.setVariables(welshDateVariables);
     }
 
     private void publishWelshDate(final Context context,
-                                  final Map<String, Object> variables,
+                                  final Map<String, Object> welshDateVariables,
                                   final String dateVariableName) {
         var welshDate = getWelshDate(
                 (String) context.getVariable(dateVariableName), dateVariableName);
-        variables.put(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
+        welshDateVariables.put(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
     }
 
     public static String getWelshDate(final String englishDate, final String dateVariableName) {
