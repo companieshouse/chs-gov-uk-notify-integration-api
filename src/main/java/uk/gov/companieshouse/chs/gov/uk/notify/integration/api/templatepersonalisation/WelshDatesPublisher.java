@@ -2,8 +2,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static java.util.AbstractMap.SimpleEntry;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
@@ -36,19 +36,13 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
     public void publishWelshDatesViaContext(final Context context) {
-        var welshDateVariables = new HashMap<String, Object>();
-        context.getVariableNames().stream()
-                .filter(key -> key.endsWith(DATE_VARIABLE_NAME_SUFFIX))
-                .forEach(key -> this.publishWelshDate(context, welshDateVariables, key));
+        var welshDateVariables = context.getVariableNames().stream()
+                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
+                .collect(Collectors.toMap(
+                        variableName -> WELSH_DATE_VARIABLE_NAME_PREFIX + variableName,
+                        variableName -> (Object) getWelshDate(
+                                (String) context.getVariable(variableName), variableName)));
         context.setVariables(welshDateVariables);
-    }
-
-    private void publishWelshDate(final Context context,
-                                  final Map<String, Object> welshDateVariables,
-                                  final String dateVariableName) {
-        var welshDate = getWelshDate(
-                (String) context.getVariable(dateVariableName), dateVariableName);
-        welshDateVariables.put(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
     }
 
     public static String getWelshDate(final String englishDate, final String dateVariableName) {
