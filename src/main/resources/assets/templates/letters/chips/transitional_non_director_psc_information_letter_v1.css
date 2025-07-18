@@ -14,3 +14,19 @@
     background-color: black;
     border-radius: 1.2mm;
 }
+.welsh-transitional-non-director-psc-information-letter-title {
+    display: block;
+    height: 22mm;
+    width: 58mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 5.0mm;
+    line-height: 5.5mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 4mm;
+    padding-top: 3mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}

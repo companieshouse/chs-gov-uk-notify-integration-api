@@ -113,6 +113,12 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("Send Welsh Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
+    void sendWelshTransitionalPscInformationLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendWelshLetter("send-transitional-non-director-psc-information-letter-request", log);
+    }
+
+    @Test
     @DisplayName("Send Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
         sendLetter("send-extension-acceptance-letter-request", log);

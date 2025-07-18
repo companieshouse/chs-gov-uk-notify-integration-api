@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 import static java.util.AbstractMap.SimpleEntry;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
@@ -34,23 +35,17 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("November",  "Tachwedd"),
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
-    public void publishWelshDatesViaContext(final Context context,
-                                            final Map<String, String> personalisationDetails) {
-        personalisationDetails.keySet()
-                .stream()
-                .filter(key -> key.endsWith(DATE_VARIABLE_NAME_SUFFIX))
-                .forEach(key -> this.publishWelshDate(context, personalisationDetails, key));
+    public void publishWelshDatesViaContext(final Context context) {
+        var welshDateVariables = context.getVariableNames().stream()
+                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
+                .collect(Collectors.toMap(
+                        variableName -> WELSH_DATE_VARIABLE_NAME_PREFIX + variableName,
+                        variableName -> (Object) getWelshDate(
+                                (String) context.getVariable(variableName), variableName)));
+        context.setVariables(welshDateVariables);
     }
 
-    private void publishWelshDate(final Context context,
-                                  final Map<String, String> personalisationDetails,
-                                  final String dateVariableName) {
-        var welshDate = getWelshDate(
-                personalisationDetails.get(dateVariableName), dateVariableName);
-        context.setVariable(WELSH_DATE_VARIABLE_NAME_PREFIX + dateVariableName, welshDate);
-    }
-
-    private String getWelshDate(final String englishDate, final String dateVariableName) {
+    public static String getWelshDate(final String englishDate, final String dateVariableName) {
         var dayMonthYear = englishDate.split(" ");
         if (dayMonthYear.length != 3) {
             throw new LetterValidationException("Format of date '" + dateVariableName

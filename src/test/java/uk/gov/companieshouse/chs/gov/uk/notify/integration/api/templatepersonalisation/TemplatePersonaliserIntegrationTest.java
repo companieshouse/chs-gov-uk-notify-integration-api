@@ -26,6 +26,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -75,9 +76,11 @@ class TemplatePersonaliserIntegrationTest {
     private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
     private static final String VALID_EXTENSION_REQUEST_DATE = "13 July 2025";
     private static final String TODAYS_DATE;
+    private static final String TODAYS_DATE_IN_WELSH;
     static {
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         TODAYS_DATE = LocalDate.now().format(format);
+        TODAYS_DATE_IN_WELSH = getWelshDate(TODAYS_DATE, "today's date");
     }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
@@ -281,6 +284,29 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
+    @DisplayName("Generate Welsh Transitional Non-director PSC Information Letter HTML successfully")
+    void generateWelshTransitionalPscLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                "Welsh Transitional Non-director PSC Information Letter",
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        LETTER_SENDING_DATE, TODAYS_DATE,
+                        IDV_START_DATE, VALID_IDV_START_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyLetterDateIsTodaysDate(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+    }
+
+    @Test
     @DisplayName("Generate English Extension Acceptance Letter HTML successfully")
     void generateEnglishExtensionAcceptanceLetterHtmlSuccessfully() {
 
@@ -345,6 +371,10 @@ class TemplatePersonaliserIntegrationTest {
 
     private static void verifyLetterDateIsTodaysDate(final Document letter) {
         assertThat(getText(letter, "#letter-date"), is(TODAYS_DATE));
+    }
+
+    private static void verifyWelshLetterDateIsTodaysDate(final Document letter) {
+        assertThat(getText(letter, "#welsh-letter-date"), is(TODAYS_DATE_IN_WELSH));
     }
 
     private static void verifyLetterDateIsIdvStartDate(final Document letter) {

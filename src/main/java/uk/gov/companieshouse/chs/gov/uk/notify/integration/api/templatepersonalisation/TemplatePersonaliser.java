@@ -79,17 +79,13 @@ public class TemplatePersonaliser {
         validatePersonalisationDetails(personalisationDetails);
 
         var context = new Context();
-
-        pathsPublisher.publishPathsViaContext(context, templateLookupKey);
-        welshDatesPublisher.publishWelshDatesViaContext(context, personalisationDetails);
-
         populateLetterWithTodaysDate(context, templateLookupKey);
-
         context.setVariable(REFERENCE, reference);
-
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);
         personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
+        pathsPublisher.publishPathsViaContext(context, templateLookupKey);
+        welshDatesPublisher.publishWelshDatesViaContext(context);
 
         validator.validateContextForTemplate(context, templateLookupKey);
 
