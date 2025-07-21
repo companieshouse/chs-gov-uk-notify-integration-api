@@ -9,10 +9,14 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import java.time.LocalDate;
@@ -37,8 +41,7 @@ public class TemplatePersonaliser {
      */
     private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
             List.of(CHIPS_DIRECTION_LETTER_1,
-                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                    CHIPS_EXTENSION_ACCEPTANCE_LETTER_1);
+                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1);
 
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
@@ -80,6 +83,7 @@ public class TemplatePersonaliser {
 
         var context = new Context();
         populateLetterWithTodaysDate(context, templateLookupKey);
+        populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);
@@ -167,7 +171,28 @@ public class TemplatePersonaliser {
                                               LetterTemplateKey templateLookupKey) {
         if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
             var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            context.setVariable(LETTER_SENDING_DATE, LocalDate.now().format(format));
+            context.setVariable(TODAYS_DATE, LocalDate.now().format(format));
+        }
+    }
+
+    /**
+     * Populates the <code>triggering_event_date</code> context variable with the value of the
+     * corresponding date context variable where appropriate.
+     * @param context the Thymeleaf context holding variables for template population
+     * @param personalisationDetails the {@link Map} providing the data to be substituted into the
+     *                               letter template substitution variables, from which the value
+     *                               to be used for the <code>triggering_event_date</code> may be
+     *                               obtained
+     * @param templateLookupKey the key used to determine which letter type we are dealing with
+     */
+    private void populateLetterWithTriggeringEventDate(Context context,
+                                                       Map<String, String> personalisationDetails,
+                                                       LetterTemplateKey templateLookupKey) {
+        if (templateLookupKey.equals(CHIPS_NEW_PSC_DIRECTION_LETTER_1)) {
+            context.setVariable(TRIGGERING_EVENT_DATE, personalisationDetails.get(IDV_START_DATE));
+        } else if (templateLookupKey.equals(CHIPS_EXTENSION_ACCEPTANCE_LETTER_1)) {
+            context.setVariable(TRIGGERING_EVENT_DATE,
+                    personalisationDetails.get(EXTENSION_REQUEST_DATE));
         }
     }
 }
