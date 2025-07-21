@@ -18,10 +18,10 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.LETTER_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
@@ -75,12 +75,13 @@ class TemplatePersonaliserIntegrationTest {
     private static final String VALID_IDV_START_DATE = "30 June 2025";
     private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
     private static final String VALID_EXTENSION_REQUEST_DATE = "13 July 2025";
-    private static final String TODAYS_DATE;
-    private static final String TODAYS_DATE_IN_WELSH;
+    private static final String WELSH_EXTENSION_REQUEST_DATE = "13 Gorffennaf 2025";
+    private static final String EXPECTED_TODAYS_DATE;
+    private static final String EXPECTED_TODAYS_DATE_IN_WELSH;
     static {
         var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        TODAYS_DATE = LocalDate.now().format(format);
-        TODAYS_DATE_IN_WELSH = getWelshDate(TODAYS_DATE, "today's date");
+        EXPECTED_TODAYS_DATE = LocalDate.now().format(format);
+        EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE, "today's date");
     }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
@@ -271,7 +272,7 @@ class TemplatePersonaliserIntegrationTest {
                 CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
                 "English Transitional Non-director PSC Information Letter",
                 Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        LETTER_SENDING_DATE, TODAYS_DATE,
+                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
                         IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
@@ -292,7 +293,7 @@ class TemplatePersonaliserIntegrationTest {
                 CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
                 "Welsh Transitional Non-director PSC Information Letter",
                 Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        LETTER_SENDING_DATE, TODAYS_DATE,
+                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
                         IDV_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
@@ -315,7 +316,6 @@ class TemplatePersonaliserIntegrationTest {
                 CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
                 "English Extension Acceptance Letter",
                 Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        LETTER_SENDING_DATE, TODAYS_DATE,
                         EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE,
@@ -324,7 +324,29 @@ class TemplatePersonaliserIntegrationTest {
 
         // Then
         verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsTodaysDate(letter);
+        verifyLetterDateIsExtensionRequestDate(letter);
+    }
+
+    @Test
+    @DisplayName("Generate Welsh Extension Acceptance Letter HTML successfully")
+    void generateWelshExtensionAcceptanceLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+                "Welsh Extension Acceptance Letter",
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyLetterDateIsExtensionRequestDate(letter);
+        verifyWelshLetterDateIsExtensionRequestDate(letter);
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
@@ -370,15 +392,23 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterDateIsTodaysDate(final Document letter) {
-        assertThat(getText(letter, "#letter-date"), is(TODAYS_DATE));
+        assertThat(getText(letter, "#letter-date"), is(EXPECTED_TODAYS_DATE));
     }
 
     private static void verifyWelshLetterDateIsTodaysDate(final Document letter) {
-        assertThat(getText(letter, "#welsh-letter-date"), is(TODAYS_DATE_IN_WELSH));
+        assertThat(getText(letter, "#welsh-letter-date"), is(EXPECTED_TODAYS_DATE_IN_WELSH));
     }
 
     private static void verifyLetterDateIsIdvStartDate(final Document letter) {
         assertThat(getText(letter, "#letter-date"), is(VALID_IDV_START_DATE));
+    }
+
+    private static void verifyLetterDateIsExtensionRequestDate(final Document letter) {
+        assertThat(getText(letter, "#letter-date"), is(VALID_EXTENSION_REQUEST_DATE));
+    }
+
+    private static void verifyWelshLetterDateIsExtensionRequestDate(final Document letter) {
+        assertThat(getText(letter, "#welsh-letter-date"), is(WELSH_EXTENSION_REQUEST_DATE));
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
