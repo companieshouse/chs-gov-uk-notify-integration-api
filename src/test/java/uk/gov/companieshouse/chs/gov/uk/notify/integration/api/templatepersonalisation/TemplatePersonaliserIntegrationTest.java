@@ -327,6 +327,29 @@ class TemplatePersonaliserIntegrationTest {
         verifyLetterDateIsTodaysDate(letter);
     }
 
+    @Test
+    @DisplayName("Generate Welsh Extension Acceptance Letter HTML successfully")
+    void generateWelshExtensionAcceptanceLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+                "English Extension Acceptance Letter",
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        LETTER_SENDING_DATE, TODAYS_DATE,
+                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyLetterDateIsTodaysDate(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+    }
+
     private static void verifyWelshImagesInLetter(final Document letter) {
         assertThat(getAttribute(letter, ".logo-img", "src"),
                 endsWith(EXPECTED_WELSH_P1_LOGO_NAME));
