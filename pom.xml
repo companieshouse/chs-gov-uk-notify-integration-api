@@ -52,6 +52,7 @@
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
         <tomcat-embed.version>10.1.42</tomcat-embed.version>
+        <grpc-context.version>1.60.2</grpc-context.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -264,6 +265,10 @@
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>grpc-context</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -327,6 +332,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-context</artifactId>
+            <version>${grpc-context.version}</version>
         </dependency>
     </dependencies>
 
