@@ -52,7 +52,8 @@
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
         <tomcat-embed.version>10.1.42</tomcat-embed.version>
-        <grpc-context.version>1.60.2</grpc-context.version>
+        <!-- CVE-2024-11407 -->
+        <grpc-context.version>1.73.0</grpc-context.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
