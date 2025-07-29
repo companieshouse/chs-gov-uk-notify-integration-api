@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
@@ -63,6 +65,10 @@ public class SentLetterFetcher {
         var personalisationDetails =
                 parsePersonalisationDetails(personalisationDetailsString, contextId);
         var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
 
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(

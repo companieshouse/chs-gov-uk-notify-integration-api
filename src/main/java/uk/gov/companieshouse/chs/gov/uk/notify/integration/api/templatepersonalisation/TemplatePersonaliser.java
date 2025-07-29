@@ -11,6 +11,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
@@ -82,7 +83,7 @@ public class TemplatePersonaliser {
         validatePersonalisationDetails(personalisationDetails);
 
         var context = new Context();
-        populateLetterWithTodaysDate(context, templateLookupKey);
+        populateLetterWithTodaysDate(context, personalisationDetails, templateLookupKey);
         populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
@@ -162,16 +163,30 @@ public class TemplatePersonaliser {
     }
 
     /**
-     * Provides the current date as required for some letter types.
+     * Provides the current or original sending date as required for some letter types as "today's
+     * date".
      *
      * @param context the Thymeleaf context holding variables for template population
+     * @param personalisationDetails the {@link Map} providing the data to be substituted into the
+     *                               letter template substitution variables, from which the value
+     *                               to be used for the <code>triggering_event_date</code> may be
+     *                               obtained
      * @param templateLookupKey the key used to determine which letter type we are dealing with
      */
     private void populateLetterWithTodaysDate(Context context,
+                                              Map<String, String> personalisationDetails,
                                               LetterTemplateKey templateLookupKey) {
         if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
-            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            context.setVariable(TODAYS_DATE, LocalDate.now().format(format));
+            String date;
+            if (personalisationDetails.containsKey(ORIGINAL_SENDING_DATE)) {
+                // Then we are regenerating a previously sent letter. Use its sending date.
+                date = personalisationDetails.get(ORIGINAL_SENDING_DATE);
+            } else {
+                // Else we are sending the letter now. Use today's date.
+                var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+                date = LocalDate.now().format(format);
+            }
+            context.setVariable(TODAYS_DATE, date);
         }
     }
 
