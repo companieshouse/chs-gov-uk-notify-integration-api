@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterN
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.logging.Logger;
@@ -28,17 +30,21 @@ public class SentLetterFetcher {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final NotificationDatabaseService notificationDatabaseService;
     private final TemplatePersonaliser templatePersonaliser;
+    private final HtmlPdfGenerator pdfGenerator;
     private final Logger logger;
 
     public SentLetterFetcher(final NotificationDatabaseService notificationDatabaseService,
                              final TemplatePersonaliser templatePersonaliser,
+                             final HtmlPdfGenerator pdfGenerator,
                              final Logger logger) {
         this.notificationDatabaseService = notificationDatabaseService;
         this.templatePersonaliser = templatePersonaliser;
+        this.pdfGenerator = pdfGenerator;
         this.logger = logger;
     }
 
-    public InputStream fetchLetter(final String reference, final String contextId) {
+    public InputStream fetchLetter(final String reference, final String contextId)
+            throws IOException {
 
         // TODO DEEP-428 Tidy this up?
         var letters = notificationDatabaseService.getLetterByReference(reference);
@@ -67,8 +73,12 @@ public class SentLetterFetcher {
                 personalisationDetails,
                 address);
 
-        // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
-        return getClass().getResourceAsStream("/letter.pdf");
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
+            logger.debug(
+                    "Responding with regenerated letter PDF to view for letter with reference "
+                            + reference, createLogMap(contextId, "view_letter"));
+            return precompiledPdf;
+        }
     }
 
     private Map<String, String> parsePersonalisationDetails(
