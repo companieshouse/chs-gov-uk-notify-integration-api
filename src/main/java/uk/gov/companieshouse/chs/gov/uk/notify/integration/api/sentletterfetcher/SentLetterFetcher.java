@@ -1,10 +1,21 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
+import uk.gov.companieshouse.logging.Logger;
+
 
 /**
  * "Fetches" letter PDF for sent letter assumed to be uniquely identified by the reference.
@@ -14,13 +25,20 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 @Component
 public class SentLetterFetcher {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final NotificationDatabaseService notificationDatabaseService;
+    private final TemplatePersonaliser templatePersonaliser;
+    private final Logger logger;
 
-    public SentLetterFetcher(final NotificationDatabaseService notificationDatabaseService) {
+    public SentLetterFetcher(final NotificationDatabaseService notificationDatabaseService,
+                             final TemplatePersonaliser templatePersonaliser,
+                             final Logger logger) {
         this.notificationDatabaseService = notificationDatabaseService;
+        this.templatePersonaliser = templatePersonaliser;
+        this.logger = logger;
     }
 
-    public InputStream fetchLetter(final String reference) {
+    public InputStream fetchLetter(final String reference, final String contextId) {
 
         // TODO DEEP-428 Tidy this up?
         var letters = notificationDatabaseService.getLetterByReference(reference);
@@ -30,9 +48,45 @@ public class SentLetterFetcher {
             throw new TooManyLettersFoundException("Multiple letters found for reference: "
                     + reference);
         }
-        var letter = letters.getFirst();
+
+        var letter = letters.getFirst().getRequest();
+        var appId = letter.getSenderDetails().getAppId();
+        var templateId = letter.getLetterDetails().getTemplateId();
+        var templateVersion = letter.getLetterDetails().getTemplateVersion();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+
+        var html = templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId,
+                        templateVersion),
+                reference,
+                personalisationDetails,
+                address);
 
         // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
         return getClass().getResourceAsStream("/letter.pdf");
+    }
+
+    private Map<String, String> parsePersonalisationDetails(
+            final String personalisationDetailsString,
+            final String contextId) {
+        Map<String, String> personalisationDetails;
+        try {
+            logger.debug("Parsing retrieved personalisation details",
+                    createLogMap(contextId, "parse_details"));
+            personalisationDetails = OBJECT_MAPPER.readValue(
+                    personalisationDetailsString,
+                    new TypeReference<>() {}
+            );
+        } catch (JsonProcessingException jpe) {
+            var message = "Failed to parse retrieved personalisation details: " + jpe.getMessage();
+            logger.error(message, createLogMap(contextId, "parse_error"));
+            throw new LetterValidationException(message);
+        }
+        return personalisationDetails;
     }
 }
