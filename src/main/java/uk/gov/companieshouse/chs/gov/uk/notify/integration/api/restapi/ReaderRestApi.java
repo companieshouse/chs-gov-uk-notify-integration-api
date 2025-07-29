@@ -23,6 +23,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher.SentLetterFetcher;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
@@ -32,9 +33,12 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     private static final String RETRIEVED = "Retrieved ";
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
+    private final SentLetterFetcher fetcher;
 
-    public ReaderRestApi(final NotificationDatabaseService notificationDatabaseService) {
+    public ReaderRestApi(final NotificationDatabaseService notificationDatabaseService,
+                         final SentLetterFetcher fetcher) {
         this.notificationDatabaseService = notificationDatabaseService;
+        this.fetcher = fetcher;
     }
 
     @Override
@@ -168,14 +172,10 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     )
     public ResponseEntity<byte[]> viewLetterPdfByReference(
             final @PathVariable("reference") String reference) throws IOException {
-
-        // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
-        var in = getClass().getResourceAsStream("/letter.pdf");
-
         return ResponseEntity
                 .ok()
                 .headers(suggestFilename(reference))
-                .body(IOUtils.toByteArray(in));
+                .body(IOUtils.toByteArray(fetcher.fetchLetter(reference)));
     }
 
     /**
