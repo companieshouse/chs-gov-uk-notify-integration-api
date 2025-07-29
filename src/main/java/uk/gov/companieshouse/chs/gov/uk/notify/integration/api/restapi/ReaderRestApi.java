@@ -9,10 +9,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -163,11 +166,29 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             value = {"/gov-uk-notify-integration/letters/view/{reference}"},
             produces = MediaType.APPLICATION_PDF_VALUE
     )
-    public byte[] viewLetterPdfByReference() throws IOException {
+    public ResponseEntity<byte[]> viewLetterPdfByReference(
+            final @PathVariable("reference") String reference) throws IOException {
+
         // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
-        var in = getClass()
-                .getResourceAsStream("/letter.pdf");
-        return IOUtils.toByteArray(in);
+        var in = getClass().getResourceAsStream("/letter.pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(suggestFilename(reference))
+                .body(IOUtils.toByteArray(in));
+    }
+
+    /**
+     * Suggests that the downloaded file be saved to the filename provided with '.pdf' as
+     * the filename suffix.
+     * @param filename the suggested filename
+     * @return headers to be set in the response
+     */
+    private HttpHeaders suggestFilename(final String filename) {
+        var contentDisposition = ContentDisposition.inline().filename(filename + ".pdf").build();
+        var headers = new HttpHeaders();
+        headers.setContentDisposition(contentDisposition);
+        return headers;
     }
 
 }
