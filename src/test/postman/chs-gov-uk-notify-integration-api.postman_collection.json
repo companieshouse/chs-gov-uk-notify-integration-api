@@ -7,10 +7,108 @@
 	},
 	"item": [
 		{
-			"name": "requests with internal API key",
+			"name": "health check",
+			"item": [
+				{
+					"name": "health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/healthcheck",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"healthcheck"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "value",
+						"value": "{{api_key}}",
+						"type": "string"
+					},
+					{
+						"key": "key",
+						"value": "Authorization",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "send letter",
 			"item": [
 				{
 					"name": "send letter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"reference\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"direction_letter\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-05-09T09:02:24.905+05:30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send letter again",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -692,24 +790,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "health check",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gov-uk-notify-integration/healthcheck",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"gov-uk-notify-integration",
-								"healthcheck"
-							]
-						}
-					},
-					"response": []
 				}
 			],
 			"auth": {
@@ -751,63 +831,84 @@
 			]
 		},
 		{
-			"name": "requests without internal API key",
+			"name": "retrieve letters",
 			"item": [
 				{
-					"name": "health check - docker only, bypass ERIC without API key",
+					"name": "retrieve letters by reference",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{docker_bypass_eric_url}}/gov-uk-notify-integration/healthcheck",
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/reference/{{reference}}",
 							"host": [
-								"{{docker_bypass_eric_url}}"
+								"{{base_url}}"
 							],
 							"path": [
 								"gov-uk-notify-integration",
-								"healthcheck"
+								"letters",
+								"reference",
+								"{{reference}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "send letter without internal API key",
+					"name": "view letter",
 					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "X-Request-ID",
-								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"TODO\",\n        \"reference\": \"TODO\",\n        \"name\": \"TODO\",\n        \"user_id\": \"TODO\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"TODO\",\n        \"template_version\": 1,\n        \"personalisation_details\": \"{ \\\"psc_full_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"reference\\\": \\\"TODO\\\", \\\"deadline_date\\\": \\\"18 August 2025\\\",\\\"extension_date\\\": \\\"1 September 2025\\\"}\"\n    },\n    \"created_at\": \"2025-04-08T09:19:24.905+05:30\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
+						"method": "GET",
+						"header": [],
 						"url": {
-							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/reference/{{reference}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"gov-uk-notify-integration",
-								"letter"
+								"letters",
+								"reference",
+								"{{reference}}"
 							]
 						}
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "value",
+						"value": "{{api_key}}",
+						"type": "string"
+					},
+					{
+						"key": "key",
+						"value": "Authorization",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		}

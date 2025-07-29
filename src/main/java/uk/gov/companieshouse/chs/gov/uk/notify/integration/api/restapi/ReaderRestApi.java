@@ -3,12 +3,18 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -152,6 +158,17 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                         .toList(),
                 HttpStatus.OK
         );
+    }
+
+    @GetMapping(
+            value = {"/gov-uk-notify-integration/letters/view/{reference}"},
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    public @ResponseBody byte[] viewLetterPdfByReference() throws IOException {
+        // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
+        var in = getClass()
+                .getResourceAsStream("/letter.pdf");
+        return IOUtils.toByteArray(in);
     }
 
 }
