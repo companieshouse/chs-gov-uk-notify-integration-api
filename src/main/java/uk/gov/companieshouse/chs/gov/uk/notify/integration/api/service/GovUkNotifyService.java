@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,6 +22,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 
 @Service
 public class GovUkNotifyService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     public static final String ERROR_MESSAGE_KEY = "error";
@@ -46,14 +46,17 @@ public class GovUkNotifyService {
             @NotBlank String reference,
             Map<String, ?> personalisation) {
         try {
-            SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
-            return new EmailResp(response != null && response.getNotificationId() != null, response);
+            SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation,
+                    reference);
+            return new EmailResp(response != null && response.getNotificationId() != null,
+                    response);
         } catch (NotificationClientException e) {
             Map<String, Object> logData = Map.of(
                     "recipient", recipient,
                     "templateId", templateId
             );
-            LOGGER.error("Failed to send email", e, new HashMap<>(logData));
+
+            LOGGER.error("Failed to send email", e, logData);
             return new EmailResp(false, null);
         }
     }
@@ -71,13 +74,13 @@ public class GovUkNotifyService {
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
-            var logData = Map.of("reference", reference);
-            LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
+            Map<String, Object> logData = Map.of("reference", reference);
+            LOGGER.error("Failed to send letter", nce, logData);
             try {
                 var response = buildLetterResponseForError(nce, reference);
                 return new LetterResp(false, response);
             } catch (JsonProcessingException jpe) {
-                LOGGER.error("Failed to build error response", jpe, new HashMap<>(logData));
+                LOGGER.error("Failed to build error response", jpe, logData);
             }
             return new LetterResp(false, null);
         }
@@ -87,16 +90,16 @@ public class GovUkNotifyService {
      * Builds a LetterResponse containing useful information about the error reported by the
      * NotificationClientException caught.
      *
-     * @param nce the exception caught
+     * @param nce       the exception caught
      * @param reference the letter (sender details) reference
      * @return a LetterResponse, which, if stored in the responses collection, may help
-     *         troubleshooting
+     * troubleshooting
      * @throws JsonProcessingException should there be a problem converting the id and reference
-     *         provided nto JSON (unlikely)
+     *                                 provided nto JSON (unlikely)
      */
     private LetterResponse buildLetterResponseForError(
             NotificationClientException nce, String reference)
-        throws JsonProcessingException {
+            throws JsonProcessingException {
         var responseData = Map.of(
                 // id is required because we are using LetterResponse to capture info (for storage).
                 // We might consider just using a different object (or a map) to avoid this,
