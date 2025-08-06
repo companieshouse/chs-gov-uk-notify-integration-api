@@ -1,0 +1,71 @@
+<p class="subject-line">The company has not filed a confirmation statement due to one or more of the company's directors not verified their identity for Companies House.</p>
+<p class="subject-line">This is for their role as a director of:</p>
+<p class="subject-line"><span class="subject-line">[[${company_name}]] ([[${company_number}]])</span></p>
+<hr/>
+
+<!--<p class="close-packed-top">Dear <span class="emphasis">[[${psc_name}]]</span></p>-->
+<!--<p class="close-packed-middle">On <span id="psc-appointment-date">[[${psc_appointment_date}]]</span>, [[${company_name}]] notified us that you are a director of the company. A director of a company is an individual appointed to manage the company's affairs and is legally responsible for its operations.</p>-->
+<p>It has come to the registrar's notice that the company has not yet filed a confirmation statement (CS01) due to one or more of their directors not being verified.</p>
+<p>Under the authority granted by section {placeholder}, the Registrar of Companies hereby directs you to ensure that all directors have verified their identity with Companies House
+    and that a confirmation statement (CS01) is submitted within 28 days from the date of this letter.</p>
+<p>Instructions on how to meet these identity verification requirements are on the back of this letter.</p>
+<p class="emphatic-block">You must comply with confirmation statement (CS01) requirements by
+<!--    <span class="emphasis" id="idv-verification-due-date">[[${idv_verification_due_date}]]</span>-->
+    {placeholder}.</p>
+<p class="warning-block">
+    If the company does not provide a valid confirmation statement (CS01) including the Companies House personal code for all directors, the Registrar may disqualify any unverified director, issue a penalty, or strike off the company.
+    <img class="warning-img" th:src="@{${common} + warning.svg}" alt="Companies House warning"/>
+</p>
+
+<p class="emphasis" style="margin-top: 8mm">
+    <img class="information-img" th:src="@{${common} + information.svg}" alt="Companies House information"/>
+    <table style="width: 100%; margin-left: 8mm">
+        <tr></tr>
+        <tr>If you are not a director of [[${company_name}]] ([[${company_number}]]), you must forward this letter to them immediately.</tr>
+    </table>
+</p>
+
+<p class="subject-line" style="page-break-before: always">There are 2 things you must do to comply with identity
+    verification requirements.</p>
+<p class="subject-line-spacer"></p>
+
+<table>
+    <tr>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">1. Verify your identity</p>
+            <p class="verification-requirements-text">For information on how to do this, search
+                online for ‘Verifying your identity for
+                Companies House’, or visit:
+                <span class="emphasis">gov.uk/guidance/verifying-your-identity-for-companies-house</span>
+            </p>
+            <p class="verification-requirements-text">After you’ve verified your identity, you’ll get a
+                unique identifier, called a Companies House personal code.</p>
+            <p class="verification-requirements-text">If you already have a personal code, you do not
+                need to verify your identity again.</p>
+        </td>
+        <td class="verification-requirements-spacer"></td>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">2. Provide your Companies
+                House personal code while filing your confirmation statement.</p>
+            <p class="verification-requirements-text">This is so we can connect your verified identity
+                to the director name on our records.</p>
+        </td>
+    </tr>
+</table>
+
+<!--<p class="small-heading">If you are unable to complete both steps by the deadline</p>-->
+<!--<p style="margin-top: 1mm">Before <span id="idv-verification-due-date-2">[[${idv_verification_due_date}]]</span>, you should use the-->
+<!--    ‘Provide identity verification details for a person with significant control’ service to request an extension:<br/>-->
+<!--    <span class="emphasis" style="margin-top: 1mm">gov.uk/provide-identity-verification-details-for-a-psc</span>-->
+<!--</p>-->
+
+<p class="small-heading">Why directors need to verify their identity</p>
+<p style="margin-top: 1mm">This is a new legal requirement under the Economic Crime and Corporate Transparency
+    Act 2023.</p>
+<p style="margin-top: 1mm">All company directors and PSCs must verify their identity to prove they are who
+    they say they are.</p>
+<p style="margin-top: 1mm">This has been introduced to help prevent people using companies for illegal purposes.</p>
+
+<p class="small-heading">If you do not think you are a director of this company</p>
+<p style="margin-top: 1mm">Do not ignore this letter. If your details have been used without your permission,
+    you must report this to Companies House: <span class="emphasis">gov.uk/report-company-fraud</span></p>

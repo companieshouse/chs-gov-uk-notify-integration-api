@@ -16,6 +16,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_IDV_NON_COMPLIANCE_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
@@ -41,7 +42,9 @@ public class TemplatePersonaliser {
      */
     private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
             List.of(CHIPS_DIRECTION_LETTER_1,
-                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1);
+                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                    CHIPS_IDV_NON_COMPLIANCE_DIRECTION_LETTER_1
+            );
 
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;

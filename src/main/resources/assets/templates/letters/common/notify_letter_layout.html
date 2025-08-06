@@ -32,7 +32,7 @@
         <div class="frame column address">
             <div class="content">
                 <table id="address-table">
-                    <tr th:text="${address_line_1}"></tr>
+                    <tr th:text="${address_line_1}" th:if="${address_line_1 != null}"></tr>
                     <tr th:text="${address_line_2}"></tr>
                     <tr th:text="${address_line_3}"></tr>
                     <tr th:text="${address_line_4}" th:if="${address_line_4 != null}"></tr>
@@ -55,8 +55,12 @@
                         </td>
                     </tr>
                     <tr class="date-and-reference-spacing"></tr>
-                    <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
-                    <tr>[[${referenceValue}]]</tr>
+                    <tr class="date-and-reference-label">
+                        <td>[[${referenceLabel}]]:</td>
+                    </tr>
+                    <tr>
+                        <td class="reference-value">[[${referenceValue}]]</td>
+                    </tr>
                 </table>
             </div>
         </div>
