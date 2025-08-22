@@ -1,10 +1,17 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -17,7 +24,20 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.SendEmailResponse;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.IOUtils.resourceToString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORISED_KEY_ROLES;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+
 public class TestUtils {
+
+    private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
+    private static final String X_REQUEST_ID = "X-Request-ID";
+    private static final String ERIC_IDENTITY = "ERIC-Identity";
+    private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
 
     public static GovUkLetterDetailsRequest createSampleLetterRequest(String addressLine1) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
@@ -124,5 +144,31 @@ public class TestUtils {
         json.put("reference", "example-reference");
         json.put("postage", "first");
         return new LetterResponse(json.toString());
+    }
+
+    public static String getPageText(PDDocument pdf, int pageNumber) throws IOException {
+        var textStripper = new PDFTextStripper();
+        textStripper.setStartPage(pageNumber);
+        textStripper.setEndPage(pageNumber);
+        return textStripper.getText(pdf);
+    }
+
+    public static String getValidSendLetterRequestBody() throws IOException {
+        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
+    }
+
+    public static ResultActions postSendLetterRequest(MockMvc mockMvc,
+                                                      String requestBody,
+                                                      ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(requestBody))
+                .andExpect(expectedResponseStatus);
     }
 }

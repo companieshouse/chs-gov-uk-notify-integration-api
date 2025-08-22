@@ -9,8 +9,6 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,13 +44,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORISED_KEY_ROLES;
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -233,10 +233,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class))).thenReturn(responseReceived);
-        postSendLetterRequest(getSendLetterRequestWithReference(
+        postSendLetterRequest(mockMvc,
+                getSendLetterRequestWithReference(
                 getValidSendLetterRequestBody(), REFERENCE_SHARED_BY_MULTIPLE_LETTERS),
                 status().isCreated());
-        postSendLetterRequest(getSendLetterRequestWithReference(
+        postSendLetterRequest(mockMvc,
+                getSendLetterRequestWithReference(
                 getValidSendLetterRequestBody(), REFERENCE_SHARED_BY_MULTIPLE_LETTERS),
                 status().isCreated());
 
@@ -269,7 +271,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(requestBody, status().isCreated());
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
 
         // When and then
         var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
@@ -321,7 +323,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendInformationLetterRequestBody(),
                 REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER);
-        postSendLetterRequest(requestBody, status().isCreated());
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
 
         // When and then
         var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER,
@@ -362,29 +364,11 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(expectedResponseStatus);
     }
 
-    private ResultActions postSendLetterRequest(String requestBody,
-                                                ResultMatcher expectedResponseStatus)
-            throws Exception {
-        return mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(requestBody))
-                .andExpect(expectedResponseStatus);
-    }
-
     private String getSendLetterRequestWithReference(String requestBody, String reference)
             throws IOException {
         var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
         request.getSenderDetails().setReference(reference);
         return objectMapper.writeValueAsString(request);
-    }
-
-    private static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
     }
 
     private static String getValidSendDirectionLetterRequestBody() throws IOException {
@@ -395,13 +379,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         return resourceToString(
                 "/fixtures/send-transitional-non-director-psc-information-letter-request.json",
                 UTF_8);
-    }
-
-    private String getPageText(PDDocument document, int pageNumber) throws IOException {
-        var textStripper = new PDFTextStripper();
-        textStripper.setStartPage(pageNumber);
-        textStripper.setEndPage(pageNumber);
-        return textStripper.getText(document);
     }
 
 }

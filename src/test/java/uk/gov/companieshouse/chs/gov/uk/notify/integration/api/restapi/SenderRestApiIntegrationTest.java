@@ -18,6 +18,8 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
@@ -52,8 +54,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
@@ -197,7 +197,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 });
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isCreated());
 
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
@@ -221,7 +222,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 anyString(), any(InputStream.class))).thenReturn(responseReceived);
 
         // When and then
-        postSendLetterRequest(getRequestWithTemplateVersion1pt0(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithTemplateVersion1pt0(),
                 status().isCreated());
     }
 
@@ -230,7 +232,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithoutCompanyName(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithoutCompanyName(),
                 status().isBadRequest())
                 .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
 
@@ -245,7 +248,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithoutPscFullName(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithoutPscFullName(),
                 status().isBadRequest())
                 .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
 
@@ -260,7 +264,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnparsablePersonalisationDetails(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithUnparsablePersonalisationDetails(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithUnparsablePersonalisationDetails(),
                 status().isBadRequest())
                 .andExpect(content().string(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE));
 
@@ -288,7 +293,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
@@ -328,7 +334,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithInvalidRequest(CapturedOutput log) throws Exception {
 
         // When and then
-        postSendLetterRequest(resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
+        postSendLetterRequest(mockMvc,
+                resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
                         UTF_8),
                 status().isBadRequest())
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
@@ -434,7 +441,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .thenThrow(new IOException("Thrown by test."));
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(
@@ -455,7 +463,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 thenThrow(new IOException("Thrown by test."));
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError())
                 .andExpect(content().string(CREATE_SVG_IMAGE_ERROR_MESSAGE));
 
@@ -478,7 +487,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     .thenThrow(new PdfXConformanceException("Thrown by test"));
 
             // When and then
-            postSendLetterRequest(getValidSendLetterRequestBody(),
+            postSendLetterRequest(mockMvc,
+                    getValidSendLetterRequestBody(),
                     status().isInternalServerError())
                     .andExpect(content().string(PDFX_CONFORMANCE_ERROR_MESSAGE));
 
@@ -497,7 +507,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(svgReplacedElementFactory.getResourceUrl(anyString())).thenReturn(null);
 
         // When and then
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError())
                 .andExpect(content().string(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -512,7 +523,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownApplicationId(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithUnknownApplicationId(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithUnknownApplicationId(),
                 status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_APPLICATION_ERROR_MESSAGE));
 
@@ -527,7 +539,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownTemplateVersion(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithUnknownTemplateVersion(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithUnknownTemplateVersion(),
                 status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE));
 
@@ -542,7 +555,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithUnknownTemplateId(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithUnknownTemplateId(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithUnknownTemplateId(),
                 status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE));
 
@@ -558,7 +572,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given, when and then
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
-        postSendLetterRequest(getValidSendLetterRequestBody(),
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -575,7 +590,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithReferenceInPersonalisationDetails(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithReferenceInPersonalisationDetails(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithReferenceInPersonalisationDetails(),
                 status().isBadRequest())
                 .andExpect(content().string(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE));
 
@@ -590,7 +606,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithTooShortAnAddress(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithTooShortAnAddress(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithTooShortAnAddress(),
                 status().isBadRequest())
                 .andExpect(content().string(MISSING_ADDRESS_LINES_ERROR_MESSAGE));
 
@@ -605,7 +622,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithIncorrectlyFormattedDate(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithIncorrectlyFormattedIdvStartDate(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithIncorrectlyFormattedIdvStartDate(),
                 status().isBadRequest())
                 .andExpect(content().string(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE));
 
@@ -621,7 +639,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithIncorrectlyNamedMonth(CapturedOutput log) throws Exception {
 
         // Given, when and then
-        postSendLetterRequest(getRequestWithIncorrectlyNamedMonthInPscAppointmentDate(),
+        postSendLetterRequest(mockMvc,
+                getRequestWithIncorrectlyNamedMonthInPscAppointmentDate(),
                 status().isBadRequest())
                 .andExpect(content()
                         .string(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE));
@@ -632,24 +651,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
-    }
-
-    private ResultActions postSendLetterRequest(String requestBody,
-                                                ResultMatcher expectedResponseStatus)
-            throws Exception {
-        return mockMvc.perform(post("/gov-uk-notify-integration/letter")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, REQUEST_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
-                        .content(requestBody))
-                .andExpect(expectedResponseStatus);
-    }
-
-    private static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
