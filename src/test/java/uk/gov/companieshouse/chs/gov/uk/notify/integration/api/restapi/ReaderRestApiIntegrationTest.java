@@ -84,6 +84,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Multiple letters found for reference: "
             + REFERENCE_SHARED_BY_MULTIPLE_LETTERS;
+    private static final String EXPECTED_SECURITY_OK_LOG_MESSAGE =
+            "authorised as api key (internal user)";
 
     @Autowired
     private MockMvc mockMvc;
@@ -183,18 +185,20 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @DisplayName("Reports unauthenticated view letter request as unauthorised")
     @Test
-    void viewLetterWithoutAuthIsUnauthorised() throws Exception {
+    void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
                 get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
                 .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
     }
 
     @DisplayName("Reports authenticated user view letter request as forbidden")
     @Test
-    void viewLetterWithUserAuthIsForbidden() throws Exception {
+    void viewLetterWithUserAuthIsForbidden(CapturedOutput log) throws Exception {
         mockMvc.perform(
                 get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -204,6 +208,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+
+        assertThat(log.getAll().contains("invalid identity type [oauth2]"), is(true));
     }
 
     @Test
@@ -213,6 +219,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isNotFound())
                 .andExpect(content().string(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE));
 
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE), is(true));
     }
 
@@ -238,6 +245,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isConflict())
                 .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE));
 
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE), is(true));
     }
 
@@ -267,6 +275,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
                         + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
@@ -318,6 +327,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER,
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
                         + REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER;
