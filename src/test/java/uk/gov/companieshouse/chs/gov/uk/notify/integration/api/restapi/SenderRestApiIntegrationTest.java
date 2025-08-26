@@ -9,7 +9,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -451,6 +453,40 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter reports IOException closing letter PDF stream with a 500 response")
+    void sendLetterReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+
+        assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
+        assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
+        assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
+        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
+
+        verifyLetterDetailsRequestStoredCorrectly();
+        verifyLetterResponseStoredCorrectly(responseReceived);
+        verify(precompiledPdfInputStream).close();
     }
 
     @Test

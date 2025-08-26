@@ -3,11 +3,11 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
+import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import jakarta.validation.constraints.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -174,11 +174,18 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     public ResponseEntity<byte[]> viewLetterPdfByReference(
             final @PathVariable("reference") String reference,
             final @RequestHeader(value = "X-Request-Id")
-                  @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) throws IOException {
-        return ResponseEntity
-                .ok()
-                .headers(suggestFilename(reference))
-                .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
+                  @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+
+        try {
+            return ResponseEntity
+                    .ok()
+                    .headers(suggestFilename(reference))
+                    .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
+        } catch (IOException ioe) {
+            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

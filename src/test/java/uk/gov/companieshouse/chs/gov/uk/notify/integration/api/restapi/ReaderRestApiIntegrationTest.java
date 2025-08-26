@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.apache.pdfbox.Loader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -42,6 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -54,6 +59,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 
@@ -104,6 +110,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @MockitoBean
     private NotificationClient notificationClient;
+
+    @MockitoSpyBean
+    private HtmlPdfGenerator pdfGenerator;
+
+    @Mock
+    private InputStream precompiledPdfInputStream;
 
     @Test
     void When_RequestingAllEmails_Expect_SuccessfulResponseWithEmailList() throws Exception {
@@ -349,6 +361,67 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var originalSendingDate = request.getCreatedAt()
                 .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
         assertThat(page1, containsString("Date:\n" + originalSendingDate));
+    }
+
+    @Test
+    @DisplayName("View letter reports IOException loading letter PDF with a 500 response")
+    void viewLetterReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+        is(true));
+    }
+
+    @Test
+    @DisplayName("View letter reports IOException closing letter PDF stream with a 500 response")
+    void viewLetterReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+       viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter with reference "
+                        + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+        assertThat(log.getAll().contains(
+                "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
     }
 
     private ResultActions viewLetterPdfByReference(String reference,
