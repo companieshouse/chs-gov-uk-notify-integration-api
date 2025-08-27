@@ -32,6 +32,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterface {
 
     private static final String RETRIEVED = "Retrieved ";
+    private static final String REFERENCE = "reference";
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
     private final SentLetterFetcher fetcher;
@@ -88,7 +89,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final String xRequestId
     ) {
         Map<String, Object> logMap = createLogMap(xRequestId, "get_email_by_reference");
-        logMap.put("reference", reference);
+        logMap.put(REFERENCE, reference);
         LOGGER.info("Retrieving email notifications by reference: " + reference, logMap);
 
         List<NotificationEmailRequest> emails = notificationDatabaseService.getEmailByReference(reference);
@@ -151,7 +152,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final String xRequestId
     ) {
         Map<String, Object> logMap = createLogMap(xRequestId, "get_letter_by_reference");
-        logMap.put("reference", reference);
+        logMap.put(REFERENCE, reference);
         LOGGER.info("Retrieving letter notifications by reference: " + reference, logMap);
 
         List<NotificationLetterRequest> letters = notificationDatabaseService.getLetterByReference(reference);
@@ -177,7 +178,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                   @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
-        logMap.put("reference", reference);
+        logMap.put(REFERENCE, reference);
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
         try {
