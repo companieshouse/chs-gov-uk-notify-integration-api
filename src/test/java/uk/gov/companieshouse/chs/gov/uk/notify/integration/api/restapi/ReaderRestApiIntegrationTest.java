@@ -83,7 +83,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER =
             "today's sending date letter";
 
-
     private static final String EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Letter not found for reference: "
             + REFERENCE_FOR_MISSING_LETTER;
@@ -232,6 +231,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(REFERENCE_FOR_MISSING_LETTER)),
+                is(true));
         assertThat(log.getAll().contains(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE), is(true));
     }
 
@@ -260,6 +262,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedViewLetterInvocationLogMessage(REFERENCE_SHARED_BY_MULTIPLE_LETTERS)),
+                is(true));
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE), is(true));
     }
 
@@ -290,6 +295,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedViewLetterInvocationLogMessage(
+                        REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
                         + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
@@ -342,6 +351,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER)),
+                is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
                         + REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER;
@@ -387,6 +400,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                is(true));
+        assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
         is(true));
     }
@@ -415,6 +432,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
                         + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
@@ -452,6 +473,13 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         return resourceToString(
                 "/fixtures/send-transitional-non-director-psc-information-letter-request.json",
                 UTF_8);
+    }
+
+    private static String getExpectedViewLetterInvocationLogMessage(String reference) {
+        return   "{\"reference\":\"" + reference + "\","
+                + "\"action\":\"view_letter_pdf\","
+                + "\"message\":\"Starting viewLetterPdfByReference process\","
+                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
 
 }

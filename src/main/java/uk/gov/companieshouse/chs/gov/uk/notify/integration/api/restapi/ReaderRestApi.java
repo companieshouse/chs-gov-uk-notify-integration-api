@@ -176,6 +176,10 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final @RequestHeader(value = "X-Request-Id")
                   @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
+        var logMap = createLogMap(contextId, "view_letter_pdf");
+        logMap.put("reference", reference);
+        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
+
         try {
             return ResponseEntity
                     .ok()
