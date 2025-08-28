@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -168,14 +163,10 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         );
     }
 
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/view/{reference}"},
-            produces = MediaType.APPLICATION_PDF_VALUE
-    )
-    public ResponseEntity<byte[]> viewLetterPdfByReference(
-            final @PathVariable("reference") String reference,
-            final @RequestHeader(value = "X-Request-Id")
-                  @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+    @Override
+    public ResponseEntity<Object> viewLetterPdfByReference(
+            final String reference,
+            final String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
         logMap.put(REFERENCE, reference);
