@@ -46,7 +46,6 @@ public class SentLetterFetcher {
     public InputStream fetchLetter(final String reference, final String contextId)
             throws IOException {
 
-        // TODO DEEP-428 Tidy this up?
         var letters = notificationDatabaseService.getLetterByReference(reference);
         if (letters.isEmpty()) {
             throw new LetterNotFoundException("Letter not found for reference: " + reference);
