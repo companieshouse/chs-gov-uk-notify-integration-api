@@ -213,6 +213,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfSent(capturedFileSignature);
     }
 
+    @SuppressWarnings("squid:S2699") // at least one assertion
     @Test
     @DisplayName("Send letter successfully with template version 1.0")
     void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
