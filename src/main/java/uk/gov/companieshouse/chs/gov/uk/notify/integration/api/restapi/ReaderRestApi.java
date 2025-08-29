@@ -7,11 +7,18 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import jakarta.validation.constraints.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -183,6 +190,52 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    // TODO DEEP-428 Javadoc this?
+    // templateId not required as an input as surely we would not send multiple versions
+    // of exactly the same letter on the same day?
+    // TODO DEEP-428 Some kind of date type checking/validation
+    @GetMapping(
+            value = {"/gov-uk-notify-integration/letters/view"},
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    public /*ResponseEntity<Object>*/ @ResponseBody Object viewLetterPdf(
+            // TODO DEEP-428 Could this type be tighter?
+            final @RequestParam("psc_name") String pscName, // personalisation
+            final @RequestParam("company_number") String companyNumber, // personalisation
+            final @RequestParam("template_id") String templateId,
+            final @RequestParam("letter_sending_date") String letterSendingDate, // createdAt
+            final @RequestHeader(value = "X-Request-Id")
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) throws IOException {
+
+        var logMap = createLogMap(contextId, "view_letter_pdf");
+        // TODO DEEP-428 logMap.put(REFERENCE, reference);
+        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
+
+        try {
+            return ResponseEntity
+                .ok()
+                .headers(suggestFilename(pscName + ":" + templateId + ":" + letterSendingDate))
+                .body(IOUtils.toByteArray(
+                        fetcher.fetchLetter(
+                                pscName,
+                                companyNumber,
+                                templateId,
+                                letterSendingDate,
+                                contextId)));
+        } catch (IOException ioe) {
+            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+//        // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
+//        var in = getClass()
+//                .getResourceAsStream("/letter.pdf");
+//        return (Object) IOUtils.toByteArray(in);
+    }
+
 
     /**
      * Suggests that the downloaded file be saved to the filename provided with '.pdf' as

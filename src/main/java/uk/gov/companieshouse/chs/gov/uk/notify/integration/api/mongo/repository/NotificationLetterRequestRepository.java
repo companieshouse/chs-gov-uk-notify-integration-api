@@ -11,4 +11,21 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 public interface NotificationLetterRequestRepository extends MongoRepository<NotificationLetterRequest, String> {
     @Query("{ 'request.senderDetails.reference' : ?0 }")
     List<NotificationLetterRequest> findByReference(String reference);
+
+    @Query(
+    """
+    {"request.letterDetails.personalisationDetails":
+    /"psc_name": "?0" /,
+     "request.letterDetails.personalisationDetails":
+    /"company_number": "?1" /,
+     "request.letterDetails.templateId": "?2",
+     "request.createdAt": { $gte: { $date: '?3'}, $lt: { $date: '?4'} }}
+    """
+    )
+    List<NotificationLetterRequest> findByNameCompanyTemplateDate(String pscName,
+                                                                  String companyNumber,
+                                                                  String templateId,
+                                                                  String letterSendingDate,
+                                                                  String letterSendingDateNextDay);
+
 }

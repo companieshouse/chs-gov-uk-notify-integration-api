@@ -83,4 +83,60 @@ public class SentLetterFetcher {
             return precompiledPdf;
         }
     }
+
+    public InputStream fetchLetter(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final String letterSendingDate,
+            final String contextId)
+            throws IOException {
+
+        // TODO DEEP-428 Remove reference?
+        var reference = "dummy reference";
+
+        var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                templateId,
+                letterSendingDate);
+        if (letters.isEmpty()) {
+            throw new LetterNotFoundException("Letter not found for psc name "
+                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId);
+        } else if (letters.size() > 1) {
+            throw new TooManyLettersFoundException("Multiple letters found for psc name "
+                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId);
+        }
+
+        var letter = letters.getFirst().getRequest();
+        var appId = letter.getSenderDetails().getAppId();
+        // TODO DEEP-428 Remove var templateId = letter.getLetterDetails().getTemplateId();
+        var templateVersion = letter.getLetterDetails().getTemplateVersion();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+
+        var html = templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId,
+                        templateVersion),
+                reference,
+                personalisationDetails,
+                address);
+
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
+            logger.debug(
+                    "Responding with regenerated letter PDF to view for letter with psc name "
+                            + pscName + ", companyNumber " + companyNumber
+                            + ", templateId " + templateId,
+                    createLogMap(contextId, "view_letter"));
+            return precompiledPdf;
+        }
+    }
 }

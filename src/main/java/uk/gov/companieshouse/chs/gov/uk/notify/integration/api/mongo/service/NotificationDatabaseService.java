@@ -69,6 +69,22 @@ public class NotificationDatabaseService {
     public List<NotificationLetterRequest> getLetterByReference(final String reference) {
         return notificationLetterRequestRepository.findByReference(reference);
     }
+
+    public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final String letterSendingDate) {
+
+
+        // TODO DEEP-428 stop hardwiring dates!
+        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                templateId,
+                "2025-08-27T00:00:00.000Z",
+                "2025-08-28T00:00:00.000Z");
+    }
     
     public List<NotificationLetterRequest> findAllLetters() {
         return notificationLetterRequestRepository.findAll();
