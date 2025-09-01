@@ -191,10 +191,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         }
     }
 
-
-    // TODO DEEP-428 Javadoc this?
-    // templateVersion not required as an input as surely we would not send multiple versions
-    // of exactly the same letter on the same day?
     @GetMapping(
             value = {"/gov-uk-notify-integration/letters/view"},
             produces = MediaType.APPLICATION_PDF_VALUE
@@ -209,7 +205,10 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
-        // TODO DEEP-428 logMap.put(REFERENCE, reference);
+        logMap.put("psc_name", pscName);
+        logMap.put("company_number", companyNumber);
+        logMap.put("template_id", templateId);
+        logMap.put("letter_sending_date", letterSendingDate);
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
         try {
@@ -225,7 +224,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                                 contextId)));
         } catch (IOException ioe) {
             LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+                    + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
