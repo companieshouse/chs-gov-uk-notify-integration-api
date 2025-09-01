@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -21,7 +22,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -183,8 +183,7 @@ public class TemplatePersonaliser {
                 date = personalisationDetails.get(ORIGINAL_SENDING_DATE);
             } else {
                 // Else we are sending the letter now. Use today's date.
-                var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-                date = LocalDate.now().format(format);
+                date = LocalDate.now().format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
         }

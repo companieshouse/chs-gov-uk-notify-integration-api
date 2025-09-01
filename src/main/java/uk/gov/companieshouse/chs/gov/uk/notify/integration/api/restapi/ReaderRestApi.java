@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMAT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import jakarta.validation.constraints.Pattern;
@@ -196,11 +197,11 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             produces = MediaType.APPLICATION_PDF_VALUE
     )
     public /*ResponseEntity<Object>*/ Object viewLetterPdf(
-            final @RequestParam("psc_name") String pscName, // personalisation
-            final @RequestParam("company_number") String companyNumber, // personalisation
+            final @RequestParam("psc_name") String pscName,
+            final @RequestParam("company_number") String companyNumber,
             final @RequestParam("template_id") String templateId,
             final @RequestParam("letter_sending_date")
-            @DateTimeFormat(pattern = "dd MMMM yyyy") LocalDate letterSendingDate,// createdAt
+            @DateTimeFormat(pattern = DATE_FORMAT) LocalDate letterSendingDate,
             final @RequestHeader(value = "X-Request-Id")
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 

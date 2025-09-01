@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +57,7 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
@@ -372,7 +372,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Check letter sending date in letter PDF is the original sending date.
         var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
         var originalSendingDate = request.getCreatedAt()
-                .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+                .format(DATE_FORMATTER);
         assertThat(page1, containsString("Date:\n" + originalSendingDate));
     }
 

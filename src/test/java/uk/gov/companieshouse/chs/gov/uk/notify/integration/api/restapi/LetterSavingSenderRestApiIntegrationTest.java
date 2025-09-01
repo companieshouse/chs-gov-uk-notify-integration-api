@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 
 import java.io.File;
@@ -20,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -181,8 +181,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     GovUkLetterDetailsRequest.class);
 
             // Date
-            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            var date = LocalDate.now().format(format);
+            var date = LocalDate.now().format(DATE_FORMATTER);
             assertThat(page1, containsString(date));
 
             // Reference

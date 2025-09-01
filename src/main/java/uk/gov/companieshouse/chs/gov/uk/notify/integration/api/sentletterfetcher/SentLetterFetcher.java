@@ -1,12 +1,12 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
@@ -67,7 +67,7 @@ public class SentLetterFetcher {
         var originalSendingDate = letter.getCreatedAt();
 
         personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+                originalSendingDate.format(DATE_FORMATTER));
 
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
@@ -106,7 +106,7 @@ public class SentLetterFetcher {
         var originalSendingDate = letter.getCreatedAt();
 
         personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+                originalSendingDate.format(DATE_FORMATTER));
 
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
