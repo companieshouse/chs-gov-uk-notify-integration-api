@@ -230,10 +230,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-//        // TODO DEEP-428 Replace this PDF with one regenerated from retrieved letter data.
-//        var in = getClass()
-//                .getResourceAsStream("/letter.pdf");
-//        return (Object) IOUtils.toByteArray(in);
     }
 
 
