@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -94,23 +95,7 @@ public class SentLetterFetcher {
 
         // TODO DEEP-428 Remove reference?
         var reference = "dummy reference";
-
-        var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
-                pscName,
-                companyNumber,
-                templateId,
-                letterSendingDate);
-        if (letters.isEmpty()) {
-            throw new LetterNotFoundException("Letter not found for psc name "
-                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId
-                    + ", letter sending date " + letterSendingDate);
-        } else if (letters.size() > 1) {
-            throw new TooManyLettersFoundException("Multiple letters found for psc name "
-                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId
-                    + ", letter sending date " + letterSendingDate);
-        }
-
-        var letter = letters.getFirst().getRequest();
+        var letter = fetchLetter(pscName, companyNumber, templateId, letterSendingDate);
         var appId = letter.getSenderDetails().getAppId();
         var templateVersion = letter.getLetterDetails().getTemplateVersion();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
@@ -133,12 +118,40 @@ public class SentLetterFetcher {
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
-                    "Responding with regenerated letter PDF to view for letter with psc name "
-                            + pscName + ", companyNumber " + companyNumber
-                            + ", templateId " + templateId
-                            + ", letter sending date " + letterSendingDate,
+                    "Responding with regenerated letter PDF to view for letter with "
+                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate),
                     createLogMap(contextId, "view_letter"));
             return precompiledPdf;
         }
+    }
+
+    private GovUkLetterDetailsRequest fetchLetter(final String pscName,
+                                                  final String companyNumber,
+                                                  final String templateId,
+                                                  final String letterSendingDate) {
+        var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                templateId,
+                letterSendingDate);
+        if (letters.isEmpty()) {
+            throw new LetterNotFoundException("Letter not found for "
+                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate));
+        } else if (letters.size() > 1) {
+            throw new TooManyLettersFoundException("Multiple letters found for "
+                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate));
+        }
+
+        return letters.getFirst().getRequest();
+    }
+
+    private String queryParameters(final String pscName,
+                                   final String companyNumber,
+                                   final String templateId,
+                                   final String letterSendingDate) {
+        return "psc name " + pscName
+                + ", companyNumber " + companyNumber
+                + ", templateId " + templateId
+                + ", letter sending date " + letterSendingDate + ".";
     }
 }
