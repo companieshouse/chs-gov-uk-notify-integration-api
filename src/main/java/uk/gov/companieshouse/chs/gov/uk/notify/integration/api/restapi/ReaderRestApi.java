@@ -3,13 +3,14 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
+import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import jakarta.validation.constraints.Pattern;
 import org.apache.commons.io.IOUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -193,21 +193,20 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
 
     // TODO DEEP-428 Javadoc this?
-    // templateId not required as an input as surely we would not send multiple versions
+    // templateVersion not required as an input as surely we would not send multiple versions
     // of exactly the same letter on the same day?
-    // TODO DEEP-428 Some kind of date type checking/validation
     @GetMapping(
             value = {"/gov-uk-notify-integration/letters/view"},
             produces = MediaType.APPLICATION_PDF_VALUE
     )
-    public /*ResponseEntity<Object>*/ @ResponseBody Object viewLetterPdf(
-            // TODO DEEP-428 Could this type be tighter?
+    public /*ResponseEntity<Object>*/ Object viewLetterPdf(
             final @RequestParam("psc_name") String pscName, // personalisation
             final @RequestParam("company_number") String companyNumber, // personalisation
             final @RequestParam("template_id") String templateId,
-            final @RequestParam("letter_sending_date") String letterSendingDate, // createdAt
+            final @RequestParam("letter_sending_date")
+            @DateTimeFormat(pattern = "dd MMMM yyyy") LocalDate letterSendingDate,// createdAt
             final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) throws IOException {
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
         // TODO DEEP-428 logMap.put(REFERENCE, reference);

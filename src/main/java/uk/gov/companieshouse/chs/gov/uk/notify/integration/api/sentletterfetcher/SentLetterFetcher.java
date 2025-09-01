@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -89,7 +90,7 @@ public class SentLetterFetcher {
             final String pscName,
             final String companyNumber,
             final String templateId,
-            final String letterSendingDate,
+            final LocalDate letterSendingDate,
             final String contextId)
             throws IOException {
 
@@ -128,7 +129,7 @@ public class SentLetterFetcher {
     private GovUkLetterDetailsRequest fetchLetter(final String pscName,
                                                   final String companyNumber,
                                                   final String templateId,
-                                                  final String letterSendingDate) {
+                                                  final LocalDate letterSendingDate) {
         var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
@@ -148,7 +149,7 @@ public class SentLetterFetcher {
     private String queryParameters(final String pscName,
                                    final String companyNumber,
                                    final String templateId,
-                                   final String letterSendingDate) {
+                                   final LocalDate letterSendingDate) {
         return "psc name " + pscName
                 + ", companyNumber " + companyNumber
                 + ", templateId " + templateId

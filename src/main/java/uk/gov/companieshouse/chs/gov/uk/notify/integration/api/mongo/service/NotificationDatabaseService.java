@@ -1,10 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -76,18 +74,13 @@ public class NotificationDatabaseService {
             final String pscName,
             final String companyNumber,
             final String templateId,
-            final String letterSendingDate) {
-
-        // TODO DEEP-428 Consider validating earlier in call chain.
-        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        var date = LocalDate.parse(letterSendingDate.strip(), format);
-        var nextDay = date.plusDays(1);
-
+            final LocalDate letterSendingDate) {
+        var nextDay = letterSendingDate.plusDays(1);
         return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
                 templateId,
-                date,
+                letterSendingDate,
                 nextDay);
     }
     
