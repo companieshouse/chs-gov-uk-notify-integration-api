@@ -102,15 +102,16 @@ public class SentLetterFetcher {
                 letterSendingDate);
         if (letters.isEmpty()) {
             throw new LetterNotFoundException("Letter not found for psc name "
-                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId);
+                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId
+                    + ", letter sending date " + letterSendingDate);
         } else if (letters.size() > 1) {
             throw new TooManyLettersFoundException("Multiple letters found for psc name "
-                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId);
+                    + pscName + ", companyNumber " + companyNumber + ", templateId " + templateId
+                    + ", letter sending date " + letterSendingDate);
         }
 
         var letter = letters.getFirst().getRequest();
         var appId = letter.getSenderDetails().getAppId();
-        // TODO DEEP-428 Remove var templateId = letter.getLetterDetails().getTemplateId();
         var templateVersion = letter.getLetterDetails().getTemplateVersion();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
@@ -134,7 +135,8 @@ public class SentLetterFetcher {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter with psc name "
                             + pscName + ", companyNumber " + companyNumber
-                            + ", templateId " + templateId,
+                            + ", templateId " + templateId
+                            + ", letter sending date " + letterSendingDate,
                     createLogMap(contextId, "view_letter"));
             return precompiledPdf;
         }

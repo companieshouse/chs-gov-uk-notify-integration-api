@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,14 +78,17 @@ public class NotificationDatabaseService {
             final String templateId,
             final String letterSendingDate) {
 
+        // TODO DEEP-428 Consider validating earlier in call chain.
+        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+        var date = LocalDate.parse(letterSendingDate.strip(), format);
+        var nextDay = date.plusDays(1);
 
-        // TODO DEEP-428 stop hardwiring dates!
         return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
                 templateId,
-                "2025-08-27T00:00:00.000Z",
-                "2025-08-28T00:00:00.000Z");
+                date,
+                nextDay);
     }
     
     public List<NotificationLetterRequest> findAllLetters() {

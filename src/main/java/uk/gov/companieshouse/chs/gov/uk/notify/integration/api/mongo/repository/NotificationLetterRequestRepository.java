@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -22,10 +23,11 @@ public interface NotificationLetterRequestRepository extends MongoRepository<Not
      "request.createdAt": { $gte: { $date: '?3'}, $lt: { $date: '?4'} }}
     """
     )
-    List<NotificationLetterRequest> findByNameCompanyTemplateDate(String pscName,
-                                                                  String companyNumber,
-                                                                  String templateId,
-                                                                  String letterSendingDate,
-                                                                  String letterSendingDateNextDay);
+    List<NotificationLetterRequest> findByNameCompanyTemplateDate(
+              String pscName,
+              String companyNumber,
+              String templateId,
+              LocalDate letterSendingDate,
+              LocalDate letterSendingDateNextDay);
 
 }
