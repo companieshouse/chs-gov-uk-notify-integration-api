@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMAT;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import jakarta.validation.constraints.Pattern;
@@ -209,8 +210,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
         logMap.put("template_id", templateId);
-        logMap.put("letter_sending_date", letterSendingDate);
-        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
+        logMap.put("letter_sending_date", letterSendingDate.format(DATE_FORMATTER));
+        LOGGER.info("Starting viewLetterPdf process", logMap);
 
         try {
             return ResponseEntity
