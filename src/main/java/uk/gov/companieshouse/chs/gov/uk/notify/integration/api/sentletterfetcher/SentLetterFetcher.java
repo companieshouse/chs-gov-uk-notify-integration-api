@@ -94,9 +94,8 @@ public class SentLetterFetcher {
             final String contextId)
             throws IOException {
 
-        // TODO DEEP-428 Remove reference?
-        var reference = "dummy reference";
         var letter = fetchLetter(pscName, companyNumber, templateId, letterSendingDate);
+        var reference = letter.getSenderDetails().getReference();
         var appId = letter.getSenderDetails().getAppId();
         var templateVersion = letter.getLetterDetails().getTemplateVersion();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
