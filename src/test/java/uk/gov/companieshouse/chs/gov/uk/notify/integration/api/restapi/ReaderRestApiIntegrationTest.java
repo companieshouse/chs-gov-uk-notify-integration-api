@@ -63,7 +63,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.Html
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 
-@SpringBootTest
+@SpringBootTest(properties =
+        {"logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG"})
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
 class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
@@ -91,6 +92,13 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             + REFERENCE_SHARED_BY_MULTIPLE_LETTERS;
     private static final String EXPECTED_SECURITY_OK_LOG_MESSAGE =
             "authorised as api key (internal user)";
+
+    private static final String PSC_NAME = "Joe Bloggs";
+    private static final String COMPANY_NUMBER = "00006400";
+    private static final String LETTER_TYPE = "new_psc_direction_letter";
+    private static final String LETTER_SENDING_DATE = "8 April 2025";
+    private static final String NOT_LETTER_SENDING_DATE = "30 December 1999";
+    private static final String UNPARSEABLE_LETTER_SENDING_DATE = "08.04.25";
 
     @Autowired
     private MockMvc mockMvc;
@@ -445,6 +453,188 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
     }
 
+    @Test
+    @DisplayName("View letter PDF identified by PSC name, company number, letter type and sending date successfully")
+    void viewLetterByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+            COMPANY_NUMBER,
+            LETTER_TYPE,
+            LETTER_SENDING_DATE,
+        status().isOk()).andReturn().getResponse().getContentAsByteArray();
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                PSC_NAME, COMPANY_NUMBER, LETTER_TYPE, LETTER_SENDING_DATE)),
+                is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter with psc name "
+                        + PSC_NAME + ", companyNumber "
+                        + COMPANY_NUMBER + ", templateId "
+                        + LETTER_TYPE + ", letter sending date "
+                        + LETTER_SENDING_DATE + ".";
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+
+        var document = Loader.loadPDF(letterPdf);
+
+        // Substitutions all occur on page 1.
+        var page1 = getPageText(document, 1);
+
+        // Check reference in letter PDF.
+        assertThat(page1, containsString(
+                "Reference:\n" + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER));
+
+        // Check letter sending date in letter PDF is the calculated date provided
+        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
+        Map<String,String> personalisationDetails =
+                objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
+                        new TypeReference<>() {});
+        var calculatedDate = personalisationDetails.get("idv_start_date");
+        assertThat(page1, containsString("Date:\n" + calculatedDate));
+    }
+
+    @Test
+    @DisplayName("Reports letter cannot be found if PSC name does not match")
+    void unableToViewLetterAsPscNameNotMatched(CapturedOutput log) throws Exception {
+        implementLetterNotFoundTest(
+                log,
+                PSC_NAME + " additional text",
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Reports letter cannot be found if company number does not match")
+    void unableToViewLetterAsCompanyNumberNotMatched(CapturedOutput log) throws Exception {
+        implementLetterNotFoundTest(
+                log,
+                PSC_NAME,
+                COMPANY_NUMBER + " additional text",
+                LETTER_TYPE,
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Reports letter cannot be found if letter type (i.e., template ID) does not match")
+    void unableToViewLetterAsTemplateIdNotMatched(CapturedOutput log) throws Exception {
+        implementLetterNotFoundTest(
+                log,
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE + " additional text",
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Reports letter cannot be found if letter sending date does not match")
+    void unableToViewLetterAsLetterSendingDateNotMatched(CapturedOutput log) throws Exception {
+        implementLetterNotFoundTest(
+                log,
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                NOT_LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Rejects view letter request if letter sending date is not parseable")
+    void unableToViewLetterAsLetterSendingDateNotParseable() throws Exception {
+
+        // When and then
+        var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                UNPARSEABLE_LETTER_SENDING_DATE,
+                status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(errorMessage.contains(
+                "Failed to convert 'letter_sending_date' with value: '"
+                        + UNPARSEABLE_LETTER_SENDING_DATE + "'"),
+                is(true));
+    }
+
+    private void implementLetterNotFoundTest(CapturedOutput log,
+                                             String pscName,
+                                             String companyNumber,
+                                             String templateId,
+                                             String letterSendingDate) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                pscName,
+                companyNumber,
+                templateId,
+                letterSendingDate,
+                status().isNotFound())
+                .andExpect(content().string(getExpectedLetterNotFoundErrorMessage(
+                        pscName,
+                        companyNumber,
+                        templateId,
+                        letterSendingDate)));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                pscName,
+                                companyNumber,
+                                templateId,
+                                letterSendingDate)),
+                is(true));
+        assertThat(log.getAll().contains(getExpectedLetterNotFoundErrorMessage(
+                        pscName,
+                        companyNumber,
+                        templateId,
+                        letterSendingDate)),
+                is(true));
+
+    }
+
+
+    private ResultActions viewLetterPdfByPscCompanyLetterTypeAndDate(String pscName,
+                                                   String companyNumber,
+                                                   String templateId,
+                                                   String letterSendingDate,
+                                                   ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view"
+                        + "?psc_name=" + pscName
+                        + "&company_number=" + companyNumber
+                        + "&template_id=" + templateId
+                        + "&letter_sending_date="+ letterSendingDate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
+                .andExpect(expectedResponseStatus);
+    }
+
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -480,6 +670,29 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"action\":\"view_letter_pdf\","
                 + "\"message\":\"Starting viewLetterPdfByReference process\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
+    }
+
+    private static String getExpectedViewLetterInvocationLogMessage(String pscName,
+                                                                    String companyNumber,
+                                                                    String templateId,
+                                                                    String letterSendingDate) {
+        return   "{\"letter_sending_date\":\"" + letterSendingDate + "\","
+                + "\"company_number\":\"" + companyNumber + "\","
+                + "\"psc_name\":\"" + pscName + "\","
+                + "\"action\":\"view_letter_pdf\","
+                + "\"template_id\":\"" + templateId + "\","
+                + "\"message\":\"Starting viewLetterPdf process\","
+                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
+    }
+
+    private static String getExpectedLetterNotFoundErrorMessage(String pscName,
+                                                                String companyNumber,
+                                                                String templateId,
+                                                                String letterSendingDate) {
+       return "Error in chs-gov-uk-notify-integration-api: Letter not found for psc name " + pscName
+               + ", companyNumber " + companyNumber
+               + ", templateId " + templateId
+               + ", letter sending date " + letterSendingDate + ".";
     }
 
 }
