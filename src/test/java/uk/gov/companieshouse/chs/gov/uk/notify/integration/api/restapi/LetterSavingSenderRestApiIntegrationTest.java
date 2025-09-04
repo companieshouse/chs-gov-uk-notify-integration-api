@@ -205,11 +205,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     getValidSendLetterRequestBody(),
                     GovUkLetterDetailsRequest.class);
 
-            // TODO DEEP-506 Tweak test or layout to make this pass consistently.
-            // Date
-//            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-//            var date = LocalDate.now().format(format);
-//            assertThat(page1, containsString(date));
+            // Date - restore date check as described in DEEP-506.
 
             // Reference
             var reference = request.getSenderDetails().getReference();
