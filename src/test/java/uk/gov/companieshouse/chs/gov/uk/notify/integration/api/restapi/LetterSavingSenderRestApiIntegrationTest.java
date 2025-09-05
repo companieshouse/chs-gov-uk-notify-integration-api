@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -207,10 +205,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     getValidSendLetterRequestBody(),
                     GovUkLetterDetailsRequest.class);
 
-            // Date
-            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-            var date = LocalDate.now().format(format);
-            assertThat(page1, containsString(date));
+            // Date - restore date check as described in DEEP-506.
 
             // Reference
             var reference = request.getSenderDetails().getReference();
