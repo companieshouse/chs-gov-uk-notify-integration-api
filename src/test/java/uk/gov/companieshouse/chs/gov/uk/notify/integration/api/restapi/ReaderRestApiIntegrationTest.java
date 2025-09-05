@@ -100,6 +100,13 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String NOT_LETTER_SENDING_DATE = "30 December 1999";
     private static final String UNPARSEABLE_LETTER_SENDING_DATE = "08.04.25";
 
+    private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2 =
+            "Error in chs-gov-uk-notify-integration-api: Multiple letters found for psc name "
+                    + PSC_NAME  + ", companyNumber "
+                    + COMPANY_NUMBER + ", templateId "
+                    + LETTER_TYPE + ", letter sending date "
+                    + LETTER_SENDING_DATE + ".";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -506,6 +513,45 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("View letter identified by PSC name, company number, letter type and sending date reports IOException loading letter PDF with a 500 response")
+    void viewLetterByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+                status().isInternalServerError());
+
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                is(true));
+        assertThat(log.getAll().contains(
+                "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
     @DisplayName("Reports letter cannot be found if PSC name does not match")
     void unableToViewLetterAsPscNameNotMatched(CapturedOutput log) throws Exception {
         implementLetterNotFoundTest(
@@ -566,6 +612,42 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Failed to convert 'letter_sending_date' with value: '"
                         + UNPARSEABLE_LETTER_SENDING_DATE + "'"),
                 is(true));
+    }
+
+    @Test
+    @DisplayName("Reports fact that there is more than 1 letter with the same PSC name, company number, letter type and sending date")
+    void unableToViewLetterAsMultipleLettersWithPscCompanyLetterTypeAndDateFound(CapturedOutput log)
+            throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                status().isConflict())
+                .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                        COMPANY_NUMBER,
+                        LETTER_TYPE,
+                        LETTER_SENDING_DATE)),
+                is(true));
+        assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2), is(true));
     }
 
     private void implementLetterNotFoundTest(CapturedOutput log,
