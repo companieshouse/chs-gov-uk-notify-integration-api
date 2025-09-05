@@ -22,6 +22,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNoti
 @Service
 public class NotificationDatabaseService {
 
+    private static final String UTC_TIMEZONE_SUFFIX = "T00:00:00.000Z";
+
     private final NotificationEmailRequestRepository notificationEmailRequestRepository;
     private final NotificationEmailResponseRepository notificationEmailResponseRepository;
     private final NotificationLetterRequestRepository notificationLetterRequestRepository;
@@ -80,8 +82,8 @@ public class NotificationDatabaseService {
                 pscName,
                 companyNumber,
                 templateId,
-                letterSendingDate,
-                nextDay);
+                letterSendingDate + UTC_TIMEZONE_SUFFIX,
+                nextDay + UTC_TIMEZONE_SUFFIX);
     }
     
     public List<NotificationLetterRequest> findAllLetters() {

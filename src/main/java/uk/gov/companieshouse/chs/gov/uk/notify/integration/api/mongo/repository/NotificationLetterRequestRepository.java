@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -29,7 +28,7 @@ public interface NotificationLetterRequestRepository extends
               String pscName,
               String companyNumber,
               String templateId,
-              LocalDate letterSendingDate,
-              LocalDate letterSendingDateNextDay);
+              String letterSendingDate,
+              String letterSendingDateNextDay);
 
 }
