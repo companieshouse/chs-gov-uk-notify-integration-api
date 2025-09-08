@@ -152,6 +152,6 @@ public class SentLetterFetcher {
         return "psc name " + pscName
                 + ", companyNumber " + companyNumber
                 + ", templateId " + templateId
-                + ", letter sending date " + letterSendingDate.format(DATE_FORMATTER) + ".";
+                + ", letter sending date " + letterSendingDate + ".";
     }
 }

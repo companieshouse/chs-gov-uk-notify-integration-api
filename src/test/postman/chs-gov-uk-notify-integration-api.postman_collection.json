@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "00f4b911-65eb-4b7b-82b1-a7cd6f758423",
+		"_postman_id": "dedbd36c-5362-447b-86d1-7b70c60980dd",
 		"name": "chs-gov-uk-notify-integration-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32780211"
@@ -879,7 +879,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view?letter_sending_date=27 August 2025 &psc_name=Yomi Welsh Bloggs&company_number=00001000&template_id=transitional_non_director_psc_information_letter",
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view?letter_sending_date=2025-08-27&psc_name=Yomi Welsh Bloggs&company_number=00001000&template_id=transitional_non_director_psc_information_letter",
 							"host": [
 								"{{base_url}}"
 							],
@@ -891,7 +891,7 @@
 							"query": [
 								{
 									"key": "letter_sending_date",
-									"value": "27 August 2025 "
+									"value": "2025-08-27"
 								},
 								{
 									"key": "psc_name",

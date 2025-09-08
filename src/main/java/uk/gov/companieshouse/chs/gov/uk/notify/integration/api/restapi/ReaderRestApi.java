@@ -1,26 +1,19 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMAT;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -193,24 +186,18 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         }
     }
 
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/view"},
-            produces = MediaType.APPLICATION_PDF_VALUE
-    )
-    public /*ResponseEntity<Object>*/ Object viewLetterPdf(
-            final @RequestParam("psc_name") String pscName,
-            final @RequestParam("company_number") String companyNumber,
-            final @RequestParam("template_id") String templateId,
-            final @RequestParam("letter_sending_date")
-            @DateTimeFormat(pattern = DATE_FORMAT) LocalDate letterSendingDate,
-            final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+    public ResponseEntity<Object> viewLetterPdf(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
         logMap.put("template_id", templateId);
-        logMap.put("letter_sending_date", letterSendingDate.format(DATE_FORMATTER));
+        logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         LOGGER.info("Starting viewLetterPdf process", logMap);
 
         try {
@@ -229,9 +216,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
-
 
     /**
      * Suggests that the downloaded file be saved to the filename provided with '.pdf' as
