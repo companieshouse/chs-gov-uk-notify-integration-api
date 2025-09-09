@@ -9,8 +9,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
@@ -28,6 +26,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
 class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
-
+    
     private static final String SAVED_LETTER_FILEPATH =
             HtmlPdfGenerator.getPdfFilepath("send-letter-request");
     private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
@@ -161,6 +161,10 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         return "Saving PDF of letter to " + savedLetterFilepath + ".";
     }
 
+    private static String getValidSendLetterRequestBody() throws IOException {
+        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
+    }
+
     private static String getSendLetterRequestBody(final String requestName) throws IOException {
         return resourceToString("/fixtures/" + requestName + ".json", UTF_8);
     }
@@ -216,6 +220,13 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
             var extensionDate = personalisationDetails.get("extension_date");
             assertThat(page1, containsString(extensionDate));
         }
+    }
+
+    private String getPageText(PDDocument document, int pageNumber) throws IOException {
+        var textStripper = new PDFTextStripper();
+        textStripper.setStartPage(pageNumber);
+        textStripper.setEndPage(pageNumber);
+        return textStripper.getText(document);
     }
 
     private String getWelshLetterRequest(final String letterBody)
