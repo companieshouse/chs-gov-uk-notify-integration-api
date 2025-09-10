@@ -186,6 +186,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         }
     }
 
+    @Override
     public ResponseEntity<Object> viewLetterPdf(
             final String pscName,
             final String companyNumber,
