@@ -37,4 +37,6 @@ public class ContextVariables {
     public static final String DEADLINE_DATE = "deadline_date";
     public static final String EXTENSION_DATE = "extension_date";
     public static final String TRIGGERING_EVENT_DATE = "triggering_event_date";
+    public static final String CS_REVIEW_PERIOD_START = "cs_review_period_start";
+    public static final String CS_REVIEW_PERIOD_END = "cs_review_period_end";
 }
