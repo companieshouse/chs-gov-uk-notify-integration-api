@@ -18,11 +18,10 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonali
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.PersonalisationDetailsParser;
 import uk.gov.companieshouse.logging.Logger;
 
-
 /**
- * "Fetches" letter PDF for sent letter assumed to be uniquely identified by the reference.
- * It does so by retrieving the data stored when the letter was sent and using it to regenerate
- * the PDF.
+ * "Fetches" letter PDF for sent letter assumed to be uniquely identified/selected by the
+ * criteria provided. It does so by retrieving the data stored when the letter was sent and using
+ * it to regenerate the PDF.
  */
 @Component
 public class SentLetterFetcher {
@@ -45,6 +44,16 @@ public class SentLetterFetcher {
         this.logger = logger;
     }
 
+    /**
+     * "Fetches" letter PDF for sent letter assumed to be uniquely identified by the reference.
+     *  It does so by retrieving the data stored when the letter was sent and using it to regenerate
+     *  the PDF.
+     *
+     * @param reference the reference assumed to uniquely identify the letter to be viewed
+     * @param contextId unique identifier for tracking the request
+     * @return the letter PDF
+     * @throws IOException should something unexpected happen
+     */
     public InputStream fetchLetter(final String reference, final String contextId)
             throws IOException {
 
@@ -86,6 +95,19 @@ public class SentLetterFetcher {
         }
     }
 
+    /**
+     * "Fetches" letter PDF for sent letter assumed to be uniquely selected by the query parameter
+     * values provided. It does so by retrieving the data stored when the letter was sent and using
+     * it to regenerate the PDF.
+     *
+     * @param pscName the name of the PSC intended to receive the letter
+     * @param companyNumber the company number
+     * @param templateId the ID of the template used to generate the letter. This corresponds
+     *                   directly to the letter type.
+     * @param letterSendingDate the date on which CHIPS triggered the sending of the letter
+     * @return the letter PDF
+     * @throws IOException should something unexpected happen
+     */
     public InputStream fetchLetter(
             final String pscName,
             final String companyNumber,
