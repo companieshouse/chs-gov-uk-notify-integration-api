@@ -71,6 +71,10 @@
 #date-and-reference-table tr {
         line-height: 0.95;
 }
+#date-and-reference-table td {
+    margin-left: 0;
+    padding-left: 0;
+}
 .column {
     float: left;
 }
