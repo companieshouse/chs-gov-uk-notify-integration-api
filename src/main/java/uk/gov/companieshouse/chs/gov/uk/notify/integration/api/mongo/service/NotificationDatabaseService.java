@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -21,6 +21,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNoti
 
 @Service
 public class NotificationDatabaseService {
+
+    private static final String UTC_TIMEZONE_SUFFIX = "T00:00:00.000Z";
 
     private final NotificationEmailRequestRepository notificationEmailRequestRepository;
     private final NotificationEmailResponseRepository notificationEmailResponseRepository;
@@ -68,6 +70,20 @@ public class NotificationDatabaseService {
 
     public List<NotificationLetterRequest> getLetterByReference(final String reference) {
         return notificationLetterRequestRepository.findByReference(reference);
+    }
+
+    public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate) {
+        var nextDay = letterSendingDate.plusDays(1);
+        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                templateId,
+                letterSendingDate + UTC_TIMEZONE_SUFFIX,
+                nextDay + UTC_TIMEZONE_SUFFIX);
     }
     
     public List<NotificationLetterRequest> findAllLetters() {

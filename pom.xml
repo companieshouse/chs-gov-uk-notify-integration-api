@@ -5,7 +5,8 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.11</version> <!-- lookup parent from repository : https://github.com/companieshouse/parent-pom -->
+        <version>2.1.12</version>
+        <relativePath/>
     </parent>
     <artifactId>chs-gov-uk-notify-integration-api</artifactId>
     <version>unversioned</version>
@@ -22,7 +23,7 @@
         <structured-logging.version>3.0.37</structured-logging.version>
         <log4j-version>2.24.2</log4j-version>
         <rest-service-common-library-version>2.0.2</rest-service-common-library-version>
-        <private-api-sdk-java.version>4.0.307</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.360</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.10</api-security-java-version>
         <web-security-java.version>3.1.6</web-security-java.version>
@@ -391,11 +392,6 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>${dependency-check-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>

@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -12,6 +13,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
@@ -22,7 +24,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -85,7 +86,7 @@ public class TemplatePersonaliser {
         validatePersonalisationDetails(personalisationDetails);
 
         var context = new Context();
-        populateLetterWithDynamicDates(context, templateLookupKey);
+        populateLetterWithDynamicDates(context, personalisationDetails, templateLookupKey);
         populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
@@ -165,20 +166,33 @@ public class TemplatePersonaliser {
     }
 
     /**
-     * Provides the current date as required for some letter types.
+     * Provides the current or original sending date as required for some letter types as "today's
+     * date".
      * Also adds other date variables as required by some letter types.
      *
      * @param context the Thymeleaf context holding variables for template population
+     * @param personalisationDetails the {@link Map} providing the data to be substituted into the
+     *                               letter template substitution variables, from which the value
+     *                               to be used for the <code>triggering_event_date</code> may be
+     *                               obtained
      * @param templateLookupKey the key used to determine which letter type we are dealing with
      */
     private void populateLetterWithDynamicDates(Context context,
+                                              Map<String, String> personalisationDetails,
                                               LetterTemplateKey templateLookupKey) {
-        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
-            context.setVariable(TODAYS_DATE, LocalDate.now().format(format));
+            String date;
+            if (personalisationDetails.containsKey(ORIGINAL_SENDING_DATE)) {
+                // Then we are regenerating a previously sent letter. Use its sending date.
+                date = personalisationDetails.get(ORIGINAL_SENDING_DATE);
+            } else {
+                // Else we are sending the letter now. Use today's date.
+                date = LocalDate.now().format(DATE_FORMATTER);
+            }
+            context.setVariable(TODAYS_DATE, date);
         }
         if(CSIDVDEFLET.equals(templateLookupKey)) {
-            context.setVariable(ACTION_DUE_DATE, LocalDate.now().plusDays(28).format(format));
+            context.setVariable(ACTION_DUE_DATE, LocalDate.now().plusDays(28).format(DATE_FORMATTER));
         }
     }
 
