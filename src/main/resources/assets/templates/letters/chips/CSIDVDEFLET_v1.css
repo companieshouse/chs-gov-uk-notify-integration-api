@@ -1,0 +1,20 @@
+.CSIDVDEFLET-title {
+    display: block;
+    height: 24mm;
+    width: 58mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 5mm;
+    line-height: 6.0mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 3mm;
+    padding-top: 2mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}
+
+ol li {
+  margin-bottom: 1em;
+}
