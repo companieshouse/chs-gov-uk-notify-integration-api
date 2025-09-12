@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
@@ -29,7 +30,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -79,8 +79,7 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_TODAYS_DATE;
     private static final String EXPECTED_TODAYS_DATE_IN_WELSH;
     static {
-        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        EXPECTED_TODAYS_DATE = LocalDate.now().format(format);
+        EXPECTED_TODAYS_DATE = LocalDate.now().format(DATE_FORMATTER);
         EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE, "today's date");
     }
 
