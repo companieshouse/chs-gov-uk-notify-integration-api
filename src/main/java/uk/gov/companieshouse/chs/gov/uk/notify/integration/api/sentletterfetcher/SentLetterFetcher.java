@@ -116,7 +116,7 @@ public class SentLetterFetcher {
             final String contextId)
             throws IOException {
 
-        var letter = fetchLetter(pscName, companyNumber, templateId, letterSendingDate);
+        var letter = fetchLetterFromDatabase(pscName, companyNumber, templateId, letterSendingDate);
         var reference = letter.getSenderDetails().getReference();
         var appId = letter.getSenderDetails().getAppId();
         var templateVersion = letter.getLetterDetails().getTemplateVersion();
@@ -147,10 +147,10 @@ public class SentLetterFetcher {
         }
     }
 
-    private GovUkLetterDetailsRequest fetchLetter(final String pscName,
-                                                  final String companyNumber,
-                                                  final String templateId,
-                                                  final LocalDate letterSendingDate) {
+    private GovUkLetterDetailsRequest fetchLetterFromDatabase(final String pscName,
+                                                              final String companyNumber,
+                                                              final String templateId,
+                                                              final LocalDate letterSendingDate) {
         var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
