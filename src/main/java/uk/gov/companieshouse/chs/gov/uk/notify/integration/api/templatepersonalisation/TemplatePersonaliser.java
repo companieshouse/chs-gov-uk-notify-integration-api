@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -18,6 +19,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -41,7 +43,8 @@ public class TemplatePersonaliser {
      */
     private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
             List.of(CHIPS_DIRECTION_LETTER_1,
-                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1);
+                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                    CSIDVDEFLET);
 
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
@@ -82,7 +85,7 @@ public class TemplatePersonaliser {
         validatePersonalisationDetails(personalisationDetails);
 
         var context = new Context();
-        populateLetterWithTodaysDate(context, templateLookupKey);
+        populateLetterWithDynamicDates(context, templateLookupKey);
         populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
@@ -163,15 +166,19 @@ public class TemplatePersonaliser {
 
     /**
      * Provides the current date as required for some letter types.
+     * Also adds other date variables as required by some letter types.
      *
      * @param context the Thymeleaf context holding variables for template population
      * @param templateLookupKey the key used to determine which letter type we are dealing with
      */
-    private void populateLetterWithTodaysDate(Context context,
+    private void populateLetterWithDynamicDates(Context context,
                                               LetterTemplateKey templateLookupKey) {
+        var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
         if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
-            var format = DateTimeFormatter.ofPattern("dd MMMM yyyy");
             context.setVariable(TODAYS_DATE, LocalDate.now().format(format));
+        }
+        if(CSIDVDEFLET.equals(templateLookupKey)) {
+            context.setVariable(ACTION_DUE_DATE, LocalDate.now().plusDays(28).format(format));
         }
     }
 
