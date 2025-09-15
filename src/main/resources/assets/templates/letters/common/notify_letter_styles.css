@@ -56,6 +56,9 @@
      */
     height: 56.3mm;
 }
+#date-and-reference-table {
+    width: 100%;
+}
 .date-and-ref {
     height: 35.5mm; /* was 65mm */
     width: 64mm; /* was 70mm */

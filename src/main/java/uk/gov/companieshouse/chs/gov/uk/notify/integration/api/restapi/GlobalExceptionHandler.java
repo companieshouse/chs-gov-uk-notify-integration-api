@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.thymeleaf.exceptions.TemplateInputException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.SvgImageException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
 
@@ -33,6 +35,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Map<String, String>
             ERROR_MESSAGE_PARAMETER_NAME_SUBSTITUTIONS =
             Map.of("sendLetter.arg1", "request ID (X-Request-ID)");
+
+    private static final String ERROR_CONTEXT = "Error in " + APPLICATION_NAMESPACE + ": ";
+    private static final String WILL_HANDLE = "Will handle error `";
 
     /** Given this name to avoid any confusion with `ResponseEntityExceptionHandler.logger`. **/
     private final Logger myLogger;
@@ -51,9 +56,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<Object> handleValidationException(
             ValidationException ve) {
-        var message = "Error in " + APPLICATION_NAMESPACE + ": "
-                + buildMessage(ve.getMessage());
-        myLogger.error("Will handle error `" + message + "` by responding with 400 Bad Request.",
+        var message = ERROR_CONTEXT + buildMessage(ve.getMessage());
+        myLogger.error(WILL_HANDLE + message + "` by responding with 400 Bad Request.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(message);
@@ -107,6 +111,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         + "stylesheet cannot be found.");
     }
 
+    /**
+     * Returns HTTP Status 404 Not Found when there is an exception implying that
+     * a letter sought cannot be found.
+     *
+     * @param lnfe exception thrown when no letter can be found
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(LetterNotFoundException.class)
+    public ResponseEntity<Object> handleLetterNotFoundException(
+            LetterNotFoundException lnfe) {
+        var message = ERROR_CONTEXT + buildMessage(lnfe.getMessage());
+        myLogger.error(WILL_HANDLE + message + "` by responding with 404 Not Found.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(message);
+    }
+
+    /**
+     * Returns HTTP Status 409 Conflict when there is an exception implying that
+     * more than a single instance of a what should be a uniquely identified letter
+     * sought have been found.
+     *
+     * @param tmlfe exception thrown when too many letters are found
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(TooManyLettersFoundException.class)
+    public ResponseEntity<Object> handleTooManyLettersFoundException(
+            TooManyLettersFoundException tmlfe) {
+        var message = ERROR_CONTEXT + buildMessage(tmlfe.getMessage());
+        myLogger.error(WILL_HANDLE + message + "` by responding with 409 Conflict.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(message);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             @NonNull MethodArgumentNotValidException manve,
@@ -146,10 +185,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     private ResponseEntity<Object> reportInternalServerError(RuntimeException re,
                                                              String additionalMessage) {
-        var message = "Error in " + APPLICATION_NAMESPACE + ": "
-                + buildMessage(re.getMessage() + " [cause: " + re.getCause() + "]"
+        var message = ERROR_CONTEXT + buildMessage(re.getMessage()
+                + " [cause: " + re.getCause() + "]"
                 + (additionalMessage != null ? additionalMessage : ""));
-        myLogger.error("Will handle error `" + message
+        myLogger.error(WILL_HANDLE + message
                         + "` by responding with 500 Internal Server Error.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
