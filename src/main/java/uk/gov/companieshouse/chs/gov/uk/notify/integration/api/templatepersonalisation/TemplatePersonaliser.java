@@ -190,10 +190,15 @@ public class TemplatePersonaliser {
                 date = LocalDate.now().format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
+            if(CSIDVDEFLET.equals(templateLookupKey)) {
+                context.setVariable(ACTION_DUE_DATE,
+                        LocalDate.parse(date, DATE_FORMATTER)
+                                .plusDays(28)
+                                .format(DATE_FORMATTER)
+                );
+            }
         }
-        if(CSIDVDEFLET.equals(templateLookupKey)) {
-            context.setVariable(ACTION_DUE_DATE, LocalDate.now().plusDays(28).format(DATE_FORMATTER));
-        }
+
     }
 
     /**
