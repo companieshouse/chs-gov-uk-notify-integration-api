@@ -1,7 +1,7 @@
 .CSIDVDEFLET-title {
     display: block;
     height: 24mm;
-    width: 58mm; /* was 70 then 64mm */
+    width: 58mm;
     font-family: Arial, sans-serif;
     font-weight:bold;
     font-size: 5mm;
