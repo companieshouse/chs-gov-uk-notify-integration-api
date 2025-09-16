@@ -6,8 +6,8 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
@@ -98,8 +98,8 @@ public class TemplateContextValidator {
                                     REFERENCE,
                                     COMPANY_NAME,
                                     COMPANY_NUMBER,
-                                    CS_REVIEW_PERIOD_START,
-                                    CS_REVIEW_PERIOD_END,
+                                    CS_REVIEW_PERIOD_START_DATE,
+                                    CS_REVIEW_PERIOD_END_DATE,
                                     TODAYS_DATE,
                                     ACTION_DUE_DATE
                             )

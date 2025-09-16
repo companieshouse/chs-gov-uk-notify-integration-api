@@ -13,8 +13,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
@@ -360,8 +360,8 @@ class TemplatePersonaliserIntegrationTest {
                 CSIDVDEFLET,
                 "CSIDVDEFLET_1234_5678",
                 Map.of(
-                        CS_REVIEW_PERIOD_END, VALID_IDV_VERIFICATION_DUE_DATE,
-                        CS_REVIEW_PERIOD_START, VALID_IDV_START_DATE,
+                        CS_REVIEW_PERIOD_END_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        CS_REVIEW_PERIOD_START_DATE, VALID_IDV_START_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
                         COMPANY_NAME, TOKEN_VALUE),
                 ADDRESS));
@@ -378,11 +378,11 @@ class TemplatePersonaliserIntegrationTest {
                 )
         );
         assertThat(
-                getText(letter, "#cs-review-period-start"),
+                getText(letter, "#cs-review-period-start-date"),
                 is(VALID_IDV_START_DATE)
         );
         assertThat(
-                getText(letter, "#cs-review-period-end"),
+                getText(letter, "#cs-review-period-end-date"),
                 is(VALID_IDV_VERIFICATION_DUE_DATE)
         );
     }
