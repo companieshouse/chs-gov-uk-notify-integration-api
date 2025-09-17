@@ -1,11 +1,11 @@
 .transitional-non-director-psc-information-letter-title {
     display: block;
-    height: 19mm;
-    width: 58mm; /* was 70 then 64mm */
+    height: 20mm;
+    width: 61mm; /* was 70 then 64mm */
     font-family: Arial, sans-serif;
     font-weight:bold;
-    font-size: 5.5mm;
-    line-height: 6.0mm;
+    font-size: 5.2mm;
+    line-height: 5.7mm;
     color: white;
     padding-left: 4mm;
     padding-right: 3mm;
@@ -16,12 +16,12 @@
 }
 .welsh-transitional-non-director-psc-information-letter-title {
     display: block;
-    height: 22mm;
-    width: 58mm; /* was 70 then 64mm */
+    height: 20mm;
+    width: 61mm; /* was 70 then 64mm */
     font-family: Arial, sans-serif;
     font-weight:bold;
-    font-size: 5.0mm;
-    line-height: 5.5mm;
+    font-size: 4.8mm;
+    line-height: 5.3mm;
     color: white;
     padding-left: 4mm;
     padding-right: 3mm;
