@@ -13,6 +13,8 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
@@ -27,6 +29,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -346,6 +349,42 @@ class TemplatePersonaliserIntegrationTest {
         verifyLetterIsBilingualEnglishAndWelsh(letter);
         verifyLetterDateIsExtensionRequestDate(letter);
         verifyWelshLetterDateIsExtensionRequestDate(letter);
+    }
+
+    @Test
+    @DisplayName("Generate English CSIDVDEFLET HTML successfully")
+    void generateCSIDVDEFLETSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CSIDVDEFLET,
+                "CSIDVDEFLET_1234_5678",
+                Map.of(
+                        CS_REVIEW_PERIOD_END_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        CS_REVIEW_PERIOD_START_DATE, VALID_IDV_START_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#action-due-date"),
+                is(
+                        LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER)
+                )
+        );
+        assertThat(
+                getText(letter, "#cs-review-period-start-date"),
+                is(VALID_IDV_START_DATE)
+        );
+        assertThat(
+                getText(letter, "#cs-review-period-end-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE)
+        );
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
