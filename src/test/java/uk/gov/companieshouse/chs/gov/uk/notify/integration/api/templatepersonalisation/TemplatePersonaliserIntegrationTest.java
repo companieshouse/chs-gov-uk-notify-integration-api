@@ -30,6 +30,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -353,7 +354,7 @@ class TemplatePersonaliserIntegrationTest {
 
     @Test
     @DisplayName("Generate English CSIDVDEFLET HTML successfully")
-    void generateCSIDVDEFLETSuccessfully() {
+    void generateEnglishCSIDVDEFLETSuccessfully() {
 
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
@@ -384,6 +385,37 @@ class TemplatePersonaliserIntegrationTest {
         assertThat(
                 getText(letter, "#cs-review-period-end-date"),
                 is(VALID_IDV_VERIFICATION_DUE_DATE)
+        );
+    }
+
+    @Test
+    @DisplayName("Generate English IDVPSCDEFAULT HTML successfully")
+    void generateEnglishIDVPSCDEFAULTSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                IDVPSCDEFAULT,
+                "123456789",
+                Map.of(
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, "Mr Worldwide"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#action-due-date"),
+                is(
+                        LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER)
+                )
+        );
+        assertThat(
+                getText(letter, "#psc-name"),
+                is("Mr Worldwide")
         );
     }
 

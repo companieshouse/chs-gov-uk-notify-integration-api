@@ -22,6 +22,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -45,7 +46,8 @@ public class TemplatePersonaliser {
     private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
             List.of(CHIPS_DIRECTION_LETTER_1,
                     CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                    CSIDVDEFLET);
+                    CSIDVDEFLET,
+                    IDVPSCDEFAULT);
 
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
@@ -190,7 +192,7 @@ public class TemplatePersonaliser {
                 date = LocalDate.now().format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
-            if(CSIDVDEFLET.equals(templateLookupKey)) {
+            if(List.of(CSIDVDEFLET, IDVPSCDEFAULT).contains(templateLookupKey)) {
                 context.setVariable(ACTION_DUE_DATE,
                         LocalDate.parse(date, DATE_FORMATTER)
                                 .plusDays(28)

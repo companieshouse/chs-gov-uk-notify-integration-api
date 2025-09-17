@@ -23,6 +23,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -100,6 +101,18 @@ public class TemplateContextValidator {
                                     COMPANY_NUMBER,
                                     CS_REVIEW_PERIOD_START_DATE,
                                     CS_REVIEW_PERIOD_END_DATE,
+                                    TODAYS_DATE,
+                                    ACTION_DUE_DATE
+                            )
+                    ),
+                    new AbstractMap.SimpleEntry<>(
+                            IDVPSCDEFAULT,
+                            ImmutableSet.of(
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    COMPANY_NUMBER,
+                                    PSC_NAME,
                                     TODAYS_DATE,
                                     ACTION_DUE_DATE
                             )
