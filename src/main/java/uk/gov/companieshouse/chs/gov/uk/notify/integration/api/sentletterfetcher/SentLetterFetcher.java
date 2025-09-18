@@ -148,6 +148,11 @@ public class SentLetterFetcher {
         }
     }
 
+    /**
+     * @deprecated template version is no longer used to identify the template to use, only the template id
+     * @param letter
+     * @return The template version (trailing zeros) if present, otherwise null.
+     */
     @Deprecated(forRemoval = true)
     private BigDecimal getTemplateVersion(final GovUkLetterDetailsRequest letter) {
         if (letter.getLetterDetails().getTemplateVersion() != null) {
