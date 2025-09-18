@@ -6,6 +6,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -68,8 +69,11 @@ public class SentLetterFetcher {
         var letter = letters.getFirst().getRequest();
         var appId = letter.getSenderDetails().getAppId();
         var templateId = letter.getLetterDetails().getTemplateId();
-        // Ensure versions "1" and "1.0" are treated as being the same.
-        var templateVersion = letter.getLetterDetails().getTemplateVersion().stripTrailingZeros();
+        BigDecimal templateVersion = null;
+        if (letter.getLetterDetails().getTemplateVersion() != null) {
+            // Ensure versions "1" and "1.0" are treated as being the same.
+            templateVersion = letter.getLetterDetails().getTemplateVersion().stripTrailingZeros();
+        }
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
                 parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
@@ -120,8 +124,11 @@ public class SentLetterFetcher {
         var letter = fetchLetterFromDatabase(pscName, companyNumber, templateId, letterSendingDate);
         var reference = letter.getSenderDetails().getReference();
         var appId = letter.getSenderDetails().getAppId();
-        // Ensure versions "1" and "1.0" are treated as being the same.
-        var templateVersion = letter.getLetterDetails().getTemplateVersion().stripTrailingZeros();
+        BigDecimal templateVersion = null;
+        if (letter.getLetterDetails().getTemplateVersion() != null) {
+            // Ensure versions "1" and "1.0" are treated as being the same.
+            templateVersion = letter.getLetterDetails().getTemplateVersion().stripTrailingZeros();
+        }
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
                 parser.parsePersonalisationDetails(personalisationDetailsString, contextId);

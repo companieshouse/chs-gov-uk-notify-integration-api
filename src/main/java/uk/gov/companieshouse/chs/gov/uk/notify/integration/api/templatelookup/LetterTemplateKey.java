@@ -36,4 +36,13 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
     public static final LetterTemplateKey CSIDVDEFLET =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET", ONE);
 
+    /**
+     * @deprecated Version should not be used and will be removed in future
+     * @return
+     */
+    @Deprecated
+    public BigDecimal version() {
+        return version;
+    }
+
 }
