@@ -40,7 +40,7 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
      * @deprecated Version should not be used and will be removed in future
      * @return
      */
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public BigDecimal version() {
         return version;
     }
