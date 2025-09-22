@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -50,7 +49,7 @@ public class TestUtils {
         RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
                 .name("Test Recipient")
                 .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", new BigDecimal("1.0"), "Dear {{name}}");
+        LetterDetails letterDetails = new LetterDetails("template-456", "Dear {{name}}");
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)
@@ -70,7 +69,7 @@ public class TestUtils {
         RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
                 .name("Test Recipient")
                 .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", new BigDecimal("1.0"), "Dear {{name}}");
+        LetterDetails letterDetails = new LetterDetails("template-456", "Dear {{name}}");
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)
@@ -82,7 +81,7 @@ public class TestUtils {
     public static GovUkEmailDetailsRequest createSampleEmailRequest(String email) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
         RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", email);
-        EmailDetails emailDetails = new EmailDetails("template-123", new BigDecimal("1.0"), "Hello {{name}}");
+        EmailDetails emailDetails = new EmailDetails("template-123", "Hello {{name}}");
 
         return new GovUkEmailDetailsRequest()
                 .senderDetails(senderDetails)
@@ -94,7 +93,7 @@ public class TestUtils {
     public static GovUkEmailDetailsRequest createSampleEmailRequestWithReference(String email, String reference) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", reference);
         RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", email);
-        EmailDetails emailDetails = new EmailDetails("template-123", new BigDecimal("1.0"), "Hello {{name}}");
+        EmailDetails emailDetails = new EmailDetails("template-123", "Hello {{name}}");
 
         return new GovUkEmailDetailsRequest()
                 .senderDetails(senderDetails)
@@ -106,7 +105,7 @@ public class TestUtils {
     public static NotificationEmailRequest createSampleNotificationRequest() {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
         RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", "test@example.com");
-        EmailDetails emailDetails = new EmailDetails("template-123", new BigDecimal("1.0"), "Hello {{name}}");
+        EmailDetails emailDetails = new EmailDetails("template-123", "Hello {{name}}");
 
         GovUkEmailDetailsRequest emailRequest = new GovUkEmailDetailsRequest()
                 .senderDetails(senderDetails)
