@@ -39,4 +39,13 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
     public static final LetterTemplateKey IDVPSCDEFAULT =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT", ONE);
 
+    /**
+     * @deprecated Version should not be used and will be removed in future
+     * @return
+     */
+    @Deprecated(forRemoval = true)
+    public BigDecimal version() {
+        return version;
+    }
+
 }

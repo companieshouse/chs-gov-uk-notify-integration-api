@@ -76,8 +76,7 @@ public class LetterDispatcher {
                 new LetterTemplateKey(
                         appId,
                         templateId,
-                        // Ensure versions "1" and "1.0" are treated as being the same.
-                        templateVersion.stripTrailingZeros()),
+                        templateVersion),
                         reference,
                         personalisationDetails,
                         address);

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -111,7 +112,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         var templateId = letterDetails.getTemplateId();
-        var templateVersion = letterDetails.getTemplateVersion();
+        BigDecimal templateVersion = null;
+        if (letterDetails.getTemplateVersion() != null) {
+            // Ensure versions "1" and "1.0" are treated as being the same.
+            templateVersion = letterDetails.getTemplateVersion().stripTrailingZeros();
+        }
+
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
