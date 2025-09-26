@@ -34,7 +34,7 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "extension_acceptance_letter", ONE);
 
     public static final LetterTemplateKey CSIDVDEFLET =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET", ONE);
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1", null);
 
     public static final LetterTemplateKey IDVPSCDEFAULT =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT", ONE);
