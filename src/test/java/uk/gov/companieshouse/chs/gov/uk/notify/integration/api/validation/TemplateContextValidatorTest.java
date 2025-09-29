@@ -13,6 +13,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
@@ -25,6 +26,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_APPLICATION_ID;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.DIRECTION_LETTER;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +49,6 @@ class TemplateContextValidatorTest {
     @InjectMocks
     private TemplateContextValidator validator;
 
-    @SuppressWarnings("squid:S2699") // at least one assertion`
     @Test
     @DisplayName("Does not raise an error where all required context variables are present")
     void noErrorWhereAllRequiredVariablesPresent() {
@@ -66,6 +67,8 @@ class TemplateContextValidatorTest {
 
         // When
         validator.validateContextForTemplate(context, CHIPS_DIRECTION_LETTER_1);
+
+        assertTrue(true); // no exception means success
     }
 
     @Test
@@ -118,4 +121,21 @@ class TemplateContextValidatorTest {
                 is(ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE));
     }
 
+    @Test
+    @DisplayName("requiresTodaysDate returns true for letter templates that need today's date")
+    void requiresTodaysDateIsTrue() {
+        assertThat(validator.requiresTodaysDate(CHIPS_DIRECTION_LETTER_1), is(true));
+    }
+
+    @Test
+    @DisplayName("requiresTodaysDate returns false for letter templates that do not need today's date")
+    void requiresTodaysDateIsFalse() {
+        assertThat(validator.requiresTodaysDate(CHIPS_EXTENSION_ACCEPTANCE_LETTER_1), is(false));
+    }
+
+    @Test
+    @DisplayName("requiresTodaysDate returns false for non-configured letter templates")
+    void requiresTodaysDateIsFalseForUnknownLetter() {
+        assertThat(validator.requiresTodaysDate(new LetterTemplateKey(CHIPS_APPLICATION_ID, "Unknown_v0", null)), is(false));
+    }
 }

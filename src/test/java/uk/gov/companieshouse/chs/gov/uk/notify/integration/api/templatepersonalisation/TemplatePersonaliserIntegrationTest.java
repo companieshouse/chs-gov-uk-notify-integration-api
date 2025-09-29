@@ -359,7 +359,7 @@ class TemplatePersonaliserIntegrationTest {
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                 CSIDVDEFLET,
-                "CSIDVDEFLET_1234_5678",
+                "123456789",
                 Map.of(
                         CS_REVIEW_PERIOD_END_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
                         CS_REVIEW_PERIOD_START_DATE, VALID_IDV_START_DATE,
