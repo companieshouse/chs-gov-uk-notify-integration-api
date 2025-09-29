@@ -17,10 +17,8 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 
@@ -39,16 +37,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 
 @Component
 public class TemplatePersonaliser {
-
-    /**
-     * Those letter types for which the letter date is today's date.
-     */
-    private static final List<LetterTemplateKey> LETTERS_WITH_TODAYS_DATE =
-            List.of(CHIPS_DIRECTION_LETTER_1,
-                    CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                    CSIDVDEFLET,
-                    IDVPSCDEFAULT);
-
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
     private final AbstractConfigurableTemplateResolver templateResolver;
@@ -182,7 +170,7 @@ public class TemplatePersonaliser {
     private void populateLetterWithDynamicDates(Context context,
                                               Map<String, String> personalisationDetails,
                                               LetterTemplateKey templateLookupKey) {
-        if (LETTERS_WITH_TODAYS_DATE.contains(templateLookupKey)) {
+        if (validator.requiresTodaysDate(templateLookupKey)) {
             String date;
             if (personalisationDetails.containsKey(ORIGINAL_SENDING_DATE)) {
                 // Then we are regenerating a previously sent letter. Use its sending date.

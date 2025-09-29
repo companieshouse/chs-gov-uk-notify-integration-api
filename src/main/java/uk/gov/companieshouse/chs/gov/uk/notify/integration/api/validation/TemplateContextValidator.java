@@ -28,6 +28,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
@@ -38,8 +39,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 @Component
 public class TemplateContextValidator {
 
-    // ImmutableSet preserves ordering of set elements, java.util.Set does not.
-    @SuppressWarnings("java:S4738")
     private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS =
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<>(
@@ -139,6 +138,16 @@ public class TemplateContextValidator {
             throw new LetterValidationException("Context variable(s) "
                     + missingVariables + " missing for " + template + ".");
         }
+    }
+
+    /**
+     * Checks if the template requires today's date to be present in the context.
+     * 
+     * @param template the letter template
+     * @return True if the letter template requires today's date, false otherwise
+     */
+    public boolean requiresTodaysDate(LetterTemplateKey template) {
+        return VALID_CONTEXTS.getOrDefault(template, Collections.emptySet()).contains(TODAYS_DATE);
     }
 
 }
