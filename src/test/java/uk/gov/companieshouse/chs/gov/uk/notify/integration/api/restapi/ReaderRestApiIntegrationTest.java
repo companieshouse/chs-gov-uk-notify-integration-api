@@ -95,7 +95,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String PSC_NAME = "Joe Bloggs";
     private static final String COMPANY_NUMBER = "00006400";
-    private static final String LETTER_TYPE = "new_psc_direction_letter";
+    private static final String LETTER_TYPE = "new_psc_direction_letter_v1";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
     private static final String NOT_LETTER_SENDING_DATE = "1999-12-30";
     private static final String UNPARSEABLE_LETTER_SENDING_DATE = "8 April 2025";
