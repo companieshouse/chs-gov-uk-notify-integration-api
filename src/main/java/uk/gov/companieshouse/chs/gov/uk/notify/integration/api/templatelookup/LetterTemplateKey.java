@@ -37,7 +37,7 @@ public record LetterTemplateKey(String appId, String id, BigDecimal version) {
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1", null);
 
     public static final LetterTemplateKey IDVPSCDEFAULT =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT", ONE);
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1", null);
 
     /**
      * @deprecated Version should not be used and will be removed in future
