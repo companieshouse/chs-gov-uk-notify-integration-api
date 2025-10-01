@@ -157,8 +157,8 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter1", ONE);
-        var templateSpec2 = new LetterTemplateKey("app2", "letter1", ONE);
+        var templateSpec1 = new LetterTemplateKey("app1", "letter1_v1");
+        var templateSpec2 = new LetterTemplateKey("app2", "letter1_v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 
@@ -179,34 +179,13 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
-    @DisplayName("Personalise template for a different template version")
-    void personaliseTemplateForDifferentTemplateVersion() {
-
-        // Given
-        when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
-
-        var templateSpec = new LetterTemplateKey("app1", "letter1", TWO);
-        doNothing().when(templateContextValidator).validateContextForTemplate(
-                any(Context.class), any(LetterTemplateKey.class));
-
-        // When
-        var letter = templatePersonalisation.personaliseLetterTemplate(
-                templateSpec,
-                "the reference",
-                PERSONALISATION_DETAILS,
-                ADDRESS);
-
-        assertThat(letter, is("This is letter1_v2.html in app1."));
-    }
-
-    @Test
     @DisplayName("Personalise template for a different template ID")
     void personaliseTemplateForDifferentTemplateId() {
 
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter2", ONE);
+        var templateSpec1 = new LetterTemplateKey("app1", "letter2_v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 

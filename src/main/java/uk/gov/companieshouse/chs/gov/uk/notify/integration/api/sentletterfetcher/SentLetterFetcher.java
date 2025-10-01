@@ -6,7 +6,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -69,7 +68,6 @@ public class SentLetterFetcher {
         var letter = letters.getFirst().getRequest();
         var appId = letter.getSenderDetails().getAppId();
         var templateId = letter.getLetterDetails().getTemplateId();
-        var templateVersion = getTemplateVersion(letter);
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
                 parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
@@ -82,8 +80,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
-                        templateId,
-                        templateVersion),
+                        templateId),
                 reference,
                 personalisationDetails,
                 address);
@@ -120,7 +117,6 @@ public class SentLetterFetcher {
         var letter = fetchLetterFromDatabase(pscName, companyNumber, templateId, letterSendingDate);
         var reference = letter.getSenderDetails().getReference();
         var appId = letter.getSenderDetails().getAppId();
-        var templateVersion = getTemplateVersion(letter);
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
                 parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
@@ -133,8 +129,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
-                        templateId,
-                        templateVersion),
+                        templateId),
                 reference,
                 personalisationDetails,
                 address);
@@ -146,20 +141,6 @@ public class SentLetterFetcher {
                     createLogMap(contextId, "view_letter"));
             return precompiledPdf;
         }
-    }
-
-    /**
-     * @deprecated template version is no longer used to identify the template to use, only the template id
-     * @param letter
-     * @return The template version (trailing zeros) if present, otherwise null.
-     */
-    @Deprecated(forRemoval = true)
-    private BigDecimal getTemplateVersion(final GovUkLetterDetailsRequest letter) {
-        if (letter.getLetterDetails().getTemplateVersion() != null) {
-            // Ensure versions "1" and "1.0" are treated as being the same.
-            return letter.getLetterDetails().getTemplateVersion().stripTrailingZeros();
-        }
-        return null;
     }
 
     private GovUkLetterDetailsRequest fetchLetterFromDatabase(final String pscName,

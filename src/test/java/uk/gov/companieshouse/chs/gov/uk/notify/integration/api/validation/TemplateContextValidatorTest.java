@@ -10,7 +10,6 @@ import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 
-import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -27,7 +26,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_APPLICATION_ID;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.DIRECTION_LETTER;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -36,15 +34,15 @@ class TemplateContextValidatorTest {
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
             "Unable to find a valid context for LetterTemplateKey"
-                    + "[appId=chips, id=direction_letter_v1, version=2]";
+                    + "[appId=chips, id=unknown_letter]";
     private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [company_name, deadline_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, address_line_3, "
                     + "todays_date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
 
     @InjectMocks
     private TemplateContextValidator validator;
@@ -76,7 +74,7 @@ class TemplateContextValidatorTest {
     void errorsWhereTemplateIsUnknown() {
 
         // Given
-        var letter = new LetterTemplateKey(CHIPS_APPLICATION_ID, DIRECTION_LETTER, TWO);
+        var letter = new LetterTemplateKey(CHIPS_APPLICATION_ID, "unknown_letter");
         var context = new Context();
 
         // When and then
@@ -136,6 +134,6 @@ class TemplateContextValidatorTest {
     @Test
     @DisplayName("requiresTodaysDate returns false for non-configured letter templates")
     void requiresTodaysDateIsFalseForUnknownLetter() {
-        assertThat(validator.requiresTodaysDate(new LetterTemplateKey(CHIPS_APPLICATION_ID, "Unknown_v0", null)), is(false));
+        assertThat(validator.requiresTodaysDate(new LetterTemplateKey(CHIPS_APPLICATION_ID, "unknown_letter")), is(false));
     }
 }
