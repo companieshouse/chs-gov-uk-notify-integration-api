@@ -18,8 +18,7 @@
     }
   },
   "letter_details": {
-    "template_id": "extension_acceptance_letter",
-    "template_version": 1,
+    "template_id": "extension_acceptance_letter_v1",
     "personalisation_details": "{ \"extension_request_date\": \"13 July 2025\", \"idv_verification_due_date\": \"28 July 2025\", \"psc_name\": \"Joe Bloggs\", \"company_name\": \"Tŷ'r Cwmnïau\", \"company_number\": \"00006400\"}"
   },
   "created_at": "2025-04-08T09:19:24.905+05:30"

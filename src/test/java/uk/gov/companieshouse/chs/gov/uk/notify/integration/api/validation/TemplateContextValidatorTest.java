@@ -36,15 +36,15 @@ class TemplateContextValidatorTest {
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
             "Unable to find a valid context for LetterTemplateKey"
-                    + "[appId=chips, id=direction_letter, version=2]";
+                    + "[appId=chips, id=direction_letter_v1, version=2]";
     private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [company_name, deadline_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, address_line_3, "
                     + "todays_date, reference, company_name, psc_full_name, deadline_date, "
                     + "extension_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
 
     @InjectMocks
     private TemplateContextValidator validator;
