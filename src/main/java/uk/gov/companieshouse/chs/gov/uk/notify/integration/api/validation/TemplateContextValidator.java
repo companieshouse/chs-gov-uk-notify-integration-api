@@ -26,7 +26,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.AbstractMap;
 import java.util.Collections;
@@ -44,7 +43,7 @@ public class TemplateContextValidator {
             Map.ofEntries(
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_DIRECTION_LETTER_1,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     TODAYS_DATE,
                                     REFERENCE,
@@ -56,7 +55,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     IDV_START_DATE,
                                     PSC_APPOINTMENT_DATE,
@@ -69,7 +68,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     TODAYS_DATE,
                                     IDV_START_DATE,
@@ -82,7 +81,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     EXTENSION_REQUEST_DATE,
                                     IDV_VERIFICATION_DUE_DATE,
@@ -94,7 +93,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     EXTENSION_REQUEST_DATE,
                                     IDV_VERIFICATION_DUE_DATE,
@@ -106,7 +105,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             CSIDVDEFLET,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     REFERENCE,
                                     COMPANY_NAME,
@@ -119,7 +118,7 @@ public class TemplateContextValidator {
                     ),
                     new AbstractMap.SimpleEntry<>(
                             IDVPSCDEFAULT,
-                            ImmutableSet.of(
+                            Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     REFERENCE,
                                     COMPANY_NAME,
@@ -146,7 +145,8 @@ public class TemplateContextValidator {
             throw new LetterValidationException(
                     "Unable to find a valid context for " + template);
         }
-        var missingVariables = Sets.difference(validContext, context.getVariableNames());
+        var missingVariables = Sets.difference(validContext, context.getVariableNames())
+                .stream().sorted().toList(); // sort names for predictable, testable messages
         if (!missingVariables.isEmpty()) {
             throw new LetterValidationException("Context variable(s) "
                     + missingVariables + " missing for " + template + ".");
