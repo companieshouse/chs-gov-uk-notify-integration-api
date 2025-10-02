@@ -28,6 +28,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
@@ -350,6 +351,26 @@ class TemplatePersonaliserIntegrationTest {
         verifyLetterIsBilingualEnglishAndWelsh(letter);
         verifyLetterDateIsExtensionRequestDate(letter);
         verifyWelshLetterDateIsExtensionRequestDate(letter);
+    }
+
+    @Test
+    @DisplayName("Generate English Second Extension Acceptance Letter HTML successfully")
+    void generateEnglishSecondExtensionAcceptanceLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
+                "English Second Extension Acceptance Letter",
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsExtensionRequestDate(letter);
     }
 
     @Test
