@@ -97,7 +97,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "letter personalisation details.";
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
+                    + "missing for LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -111,13 +111,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=unknown_application, id=direction_letter, version=1]";
+                    + "LetterTemplateKey[appId=unknown_application, id=direction_letter_v1, version=null]";
     private static final String UNKNOWN_TEMPLATE_VERSION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=2147483647]";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=2147483647]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=chips, id=new_letter, version=1]";
+                    + "LetterTemplateKey[appId=chips, id=new_letter, version=null]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
     "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
             + "(template: \"unknown_directory/chips/direction_letter_v1.html\") "
@@ -129,7 +129,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter, version=1].";
+                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1, version=null].";
     private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
                     + "creating SVG image assets/templates/letters/common/warning.svg: "
@@ -211,23 +211,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
-    }
-
-    @SuppressWarnings("squid:S2699") // at least one assertion
-    @Test
-    @DisplayName("Send letter successfully with template version 1.0")
-    void sendLetterSuccessfullyWithTemplateVersion1pt0() throws Exception {
-
-        // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
-
-        // When and then
-        postSendLetterRequest(mockMvc,
-                getRequestWithTemplateVersion1pt0(),
-                status().isCreated());
     }
 
     @Test
@@ -751,16 +734,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private String getRequestWithoutPscFullName() throws IOException {
         return getRequestWithoutPersonalisation(PSC_FULL_NAME);
-    }
-
-    private String getRequestWithTemplateVersion1pt0()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        letterDetails.setTemplateVersion(new BigDecimal("1.0"));
-        return objectMapper.writeValueAsString(request);
     }
 
     private String getRequestWithoutPersonalisation(String personalisationName)
