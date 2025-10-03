@@ -28,6 +28,11 @@ public record LetterTemplateKey(String appId, String id) {
     public static final LetterTemplateKey CHIPS_EXTENSION_ACCEPTANCE_LETTER_1 =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "extension_acceptance_letter_v1");
 
+    public static final LetterTemplateKey CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1 =
+            new LetterTemplateKey(
+                    CHIPS_APPLICATION_ID,
+                    "second_extension_acceptance_letter_v1");
+
     public static final LetterTemplateKey CSIDVDEFLET =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1");
 

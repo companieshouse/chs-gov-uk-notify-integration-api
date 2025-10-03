@@ -40,8 +40,8 @@ class TemplateContextValidatorTest {
                     + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, address_line_3, "
-                    + "todays_date, reference, company_name, psc_full_name, deadline_date, "
-                    + "extension_date] missing for "
+                    + "company_name, deadline_date, extension_date, psc_full_name, "
+                    + "reference, todays_date] missing for "
                     + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
 
     @InjectMocks
