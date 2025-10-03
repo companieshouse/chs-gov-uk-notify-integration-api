@@ -19,9 +19,6 @@ public class TemplateLookup {
      */
     public LetterTemplateLocatorSpec lookupTemplate(LetterTemplateKey templateLookupKey) {
         var filename = templateLookupKey.id();
-        if (templateLookupKey.version() != null) {
-            filename += "_v" + templateLookupKey.version();
-        }
         return new LetterTemplateLocatorSpec(
                 getLetterTemplatesRootDirectory() + templateLookupKey.appId() + "/", filename);
     }

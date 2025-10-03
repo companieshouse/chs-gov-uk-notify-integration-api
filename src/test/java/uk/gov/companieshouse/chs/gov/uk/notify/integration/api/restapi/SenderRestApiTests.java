@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -69,7 +68,6 @@ class SenderRestApiTests {
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .templateVersion(BigDecimal.valueOf(1))
                 .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
@@ -97,7 +95,6 @@ class SenderRestApiTests {
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .templateVersion(BigDecimal.valueOf(1))
                 .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
