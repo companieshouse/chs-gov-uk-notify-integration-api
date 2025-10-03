@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "dedbd36c-5362-447b-86d1-7b70c60980dd",
+		"_postman_id": "73b10a87-5b1a-4a52-859b-1ee2f7c0619b",
 		"name": "chs-gov-uk-notify-integration-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32780211"
@@ -468,6 +468,44 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"PSCEXT/00006400\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"second_extension_acceptance_letter_v1\",\n        \"personalisation_details\": \"{ \\\"extension_request_date\\\": \\\"2 October 2025\\\", \\\"idv_verification_due_date\\\": \\\"16 October 2025\\\", \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"company_number\\\": \\\"00006400\\\"}\"\n    },\n    \"created_at\": \"2025-10-02T10:47:24.905+00:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letter",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letter"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "send Welsh Second Extension Acceptance Letter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Request-ID",
+								"value": "X9uND6rXQxfbZNcMVFA7JI4h2KOh",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sender_details\": {\n        \"app_id\": \"chips\",\n        \"reference\": \"PSCEXT/00006400\",\n        \"name\": \"name\",\n        \"user_id\": \"user_id\",\n        \"email_address\": \"jbloggs@jbloggs.com\"\n    },\n    \"recipient_details\": {\n        \"name\": \"Joe Bloggs\",\n        \"physical_address\": {\n            \"address_line_1\": \"Joe Bloggs\",\n            \"address_line_2\": \"Tŷ'r Cwmnïau\",\n            \"address_line_3\": \"Ffordd y Goron\",\n            \"address_line_4\": \"Caerdydd\",\n            \"address_line_5\": \"CF14 3UZ\",\n            \"address_line_6\": \"United Kingdom\"\n        } \n    },\n    \"letter_details\": {\n        \"template_id\": \"second_extension_acceptance_letter_v1\",\n        \"personalisation_details\": \"{ \\\"extension_request_date\\\": \\\"2 October 2025\\\", \\\"idv_verification_due_date\\\": \\\"16 October 2025\\\", \\\"psc_name\\\": \\\"Joe Bloggs\\\", \\\"company_name\\\": \\\"Tŷ'r Cwmnïau\\\", \\\"company_number\\\": \\\"00006400\\\", \\\"is_welsh\\\": true }\"\n    },\n    \"created_at\": \"2025-10-02T10:47:24.905+00:00\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
