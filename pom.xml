@@ -52,7 +52,7 @@
         <spring-security-core.version>6.5.4</spring-security-core.version>
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
-        <tomcat-embed.version>10.1.42</tomcat-embed.version>
+        <tomcat-embed.version>10.1.44</tomcat-embed.version>
         <!-- CVE-2024-11407 -->
         <grpc-context.version>1.73.0</grpc-context.version>
         <!-- CVE-2025-53864 -->
