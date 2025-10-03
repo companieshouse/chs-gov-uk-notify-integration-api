@@ -125,6 +125,12 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         sendLetter("send-second-extension-acceptance-letter-request", log);
     }
 
+    @Test
+    @DisplayName("Send Welsh Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
+    void sendWelshSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
+        sendWelshLetter("send-second-extension-acceptance-letter-request", log);
+    }
+
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
 
         // Given
