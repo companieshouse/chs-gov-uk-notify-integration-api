@@ -28,6 +28,7 @@ import com.google.gson.JsonParser;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,7 +59,11 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
             new File(SAVED_LETTER_FILEPATH),
             new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request")),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-transitional-non-director-psc-information-letter-request"))
+            new File(HtmlPdfGenerator.getPdfFilepath("send-transitional-non-director-psc-information-letter-request")),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-extension-acceptance-letter-request")),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-second-extension-acceptance-letter-request")),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-csidvdeflet-request")),
+            new File(HtmlPdfGenerator.getPdfFilepath("send-idvpscdefault-request"))
     };
 
     @Autowired
@@ -73,6 +78,10 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @BeforeEach
     void setUp() {
         System.getProperties().setProperty("xr.util-logging.loggingEnabled", "true");
+    }
+
+    @AfterAll
+    static void tearDown() {
         Arrays.stream(SAVED_LETTERS_TO_DELETE).forEach(File::delete);
     }
 
@@ -129,6 +138,18 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send Welsh Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendWelshSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
         sendWelshLetter("send-second-extension-acceptance-letter-request", log);
+    }
+
+    @Test
+    @DisplayName("Send CSIDVDEFLET successfully, saving letter PDF for troubleshooting in the process")
+    void sendCSIDVDEFLETSuccessfully(CapturedOutput log) throws Exception {
+        sendLetter("send-csidvdeflet-request", log);
+    }
+
+    @Test
+    @DisplayName("Send IDVPSCDEFAULT successfully, saving letter PDF for troubleshooting in the process")
+    void sendIDVPSCDEFAULTSuccessfully(CapturedOutput log) throws Exception {
+        sendLetter("send-idvpscdefault-request", log);
     }
 
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
