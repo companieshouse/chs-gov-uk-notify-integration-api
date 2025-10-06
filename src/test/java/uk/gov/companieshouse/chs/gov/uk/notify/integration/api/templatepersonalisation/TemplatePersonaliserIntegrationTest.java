@@ -353,6 +353,28 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
+    @DisplayName("Generate Welsh Second Extension Acceptance Letter HTML successfully")
+    void generateWelshSecondExtensionAcceptanceLetterHtmlSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
+                "Welsh Second Extension Acceptance Letter",
+                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        PSC_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"),
+                ADDRESS));
+
+        // Then
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyLetterDateIsExtensionRequestDate(letter);
+        verifyWelshLetterDateIsExtensionRequestDate(letter);
+    }
+
+    @Test
     @DisplayName("Generate English CSIDVDEFLET HTML successfully")
     void generateEnglishCSIDVDEFLETSuccessfully() {
 
