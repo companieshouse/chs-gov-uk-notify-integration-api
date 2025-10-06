@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -45,7 +44,6 @@ public class LetterDispatcher {
             final String reference,
             final String appId,
             final String templateId,
-            final BigDecimal templateVersion,
             final Address address,
             final String personalisationDetailsString,
             final String contextId) throws IOException {
@@ -53,7 +51,6 @@ public class LetterDispatcher {
                 reference,
                 appId,
                 templateId,
-                templateVersion,
                 address,
                 personalisationDetailsString,
                 contextId);
@@ -64,7 +61,6 @@ public class LetterDispatcher {
             final String reference,
             final String appId,
             final String templateId,
-            final BigDecimal templateVersion,
             final Address address,
             final String personalisationDetailsString,
             final String contextId) {
@@ -75,8 +71,7 @@ public class LetterDispatcher {
         return templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
-                        templateId,
-                        templateVersion),
+                        templateId),
                         reference,
                         personalisationDetails,
                         address);
