@@ -1,8 +1,8 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -83,10 +83,11 @@ public class TemplatePersonaliser {
         var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
         populateAddress(context, address, upperCaseCompanyName);
         personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
-        pathsPublisher.publishPathsViaContext(context, templateLookupKey);
-        welshDatesPublisher.publishWelshDatesViaContext(context);
 
         validator.validateContextForTemplate(context, templateLookupKey);
+
+        pathsPublisher.publishPathsViaContext(context, templateLookupKey);
+        welshDatesPublisher.publishWelshDatesViaContext(context);
 
         var templateSpec = templateLookup.lookupTemplate(templateLookupKey);
         templateResolver.setPrefix(templateSpec.prefix());
