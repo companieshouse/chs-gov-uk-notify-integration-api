@@ -320,15 +320,17 @@ class TemplatePersonaliserIntegrationTest {
     {
 
         // Given and when
+        var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
+                VALID_IDV_VERIFICATION_DUE_DATE,
+                COMPANY_NUMBER, TOKEN_VALUE,
+                COMPANY_NAME, TOKEN_VALUE,
+                PSC_NAME, TOKEN_VALUE);
         var validationError = assertThrows(LetterValidationException.class,
-                () -> parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                "English Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS)));
+                () -> templatePersonalisation.personaliseLetterTemplate(
+                        CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+                        "English Extension Acceptance Letter",
+                        personalisationDetails,
+                        ADDRESS));
 
         assertThat(validationError.getMessage(), is(EXPECTED_VALIDATION_ERROR_MESSAGE));
     }
