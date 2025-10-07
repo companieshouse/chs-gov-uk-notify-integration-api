@@ -1,12 +1,11 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TWO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -46,6 +45,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
@@ -103,6 +103,10 @@ class TemplatePersonaliserIntegrationTest {
             "pages_2_onwards_footer_artwork.svg";
     private static final String EXPECTED_WELSH_P2_FOOTER_NAME =
             "welsh_pages_2_onwards_footer_artwork.svg";
+
+    private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
+            "Context variable(s) [extension_request_date] missing for LetterTemplateKey"
+                    + "[appId=chips, id=extension_acceptance_letter_v1].";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -308,6 +312,27 @@ class TemplatePersonaliserIntegrationTest {
         // Then
         verifyLetterIsEnglishOnly(letter);
         verifyLetterDateIsExtensionRequestDate(letter);
+    }
+
+    @Test
+    @DisplayName("Generate English Extension Acceptance Letter HTML with missing extension_request_date fails correctly")
+    void generateEnglishExtensionAcceptanceLetterHtmlWithMissingExtensionRequestDateFailsCorrectly()
+    {
+
+        // Given and when
+        var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
+                VALID_IDV_VERIFICATION_DUE_DATE,
+                COMPANY_NUMBER, TOKEN_VALUE,
+                COMPANY_NAME, TOKEN_VALUE,
+                PSC_NAME, TOKEN_VALUE);
+        var validationError = assertThrows(LetterValidationException.class,
+                () -> templatePersonalisation.personaliseLetterTemplate(
+                        CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+                        "English Extension Acceptance Letter",
+                        personalisationDetails,
+                        ADDRESS));
+
+        assertThat(validationError.getMessage(), is(EXPECTED_VALIDATION_ERROR_MESSAGE));
     }
 
     @Test
