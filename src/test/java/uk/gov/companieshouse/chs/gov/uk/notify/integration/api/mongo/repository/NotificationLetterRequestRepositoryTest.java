@@ -3,17 +3,22 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterWithReference;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
 
 @SpringBootTest
@@ -83,6 +88,41 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedRequest);
         assertEquals("Updated Address", retrievedRequest.getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
+    }
+
+    @Test
+    @DisplayName("Pagination of letter requests sought by reference works as expected")
+    void paginationOfLettersByReferenceWorksAsExpected() {
+
+        saveLetterWithReference("Reference 1");
+        saveLetterWithReference("Reference 2");
+        saveLetterWithReference("Reference 3");
+
+        var firstLetter = requestRepository.findByReference("Reference", PageRequest.of(0, 1));
+        var secondLetter = requestRepository.findByReference("Reference", PageRequest.of(1, 1));
+        var lastLetter = requestRepository.findByReference("Reference", PageRequest.of(2, 1));
+        var noLetter = requestRepository.findByReference("Reference", PageRequest.of(3, 1));
+
+        assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(firstLetter.stream().
+                findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 1"));
+        assertThat(secondLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(secondLetter.stream().
+                findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 2"));
+        assertThat(lastLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(lastLetter.stream().
+                findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 3"));
+
+        assertThat(noLetter.stream().findFirst().isPresent(), is(false));
+
+    }
+
+    private void saveLetterWithReference(String reference) {
+        var letter = createLetterWithReference(reference);
+        requestRepository.save(new NotificationLetterRequest(null, null, letter, null));
     }
     
 }

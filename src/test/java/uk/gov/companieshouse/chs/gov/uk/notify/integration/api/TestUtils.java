@@ -78,6 +78,10 @@ public class TestUtils {
                 .createdAt(OffsetDateTime.now());
     }
 
+    public static GovUkLetterDetailsRequest createLetterWithReference(String reference) {
+        return createSampleLetterRequestWithReference("Address line 1", reference);
+    }
+
     public static GovUkEmailDetailsRequest createSampleEmailRequest(String email) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
         RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", email);
