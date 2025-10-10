@@ -18,3 +18,36 @@
 ol li {
   margin-bottom: 1em;
 }
+
+.grey-bg-block {
+    border-top: 1mm solid black;
+    /* CHN2 grey from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #f1f1f1;
+    vertical-align: top;
+}
+
+.black-warning-block {
+    display: block;
+    font-size: 13pt;
+    line-height: 14pt;
+    color: white;
+    margin-top: 2mm;
+    padding: 3mm 3mm 3mm 5mm;
+    /* CHN3 accent only red from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #1a1a1a;
+    border-radius: 1.2mm;
+    position: relative;
+    text-align: left;
+}
+
+.black-warning-img {
+    height: 9mm;
+    width: 100%;
+    z-index: 1;
+}
+
+.white-warning-img {
+    height: 9mm;
+    width: 100%;
+    z-index: 1;
+}
