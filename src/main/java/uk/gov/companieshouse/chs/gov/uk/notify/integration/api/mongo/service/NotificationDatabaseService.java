@@ -3,6 +3,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -70,6 +72,14 @@ public class NotificationDatabaseService {
 
     public List<NotificationLetterRequest> getLetterByReference(final String reference) {
         return notificationLetterRequestRepository.findByReference(reference);
+    }
+
+    public Page<NotificationLetterRequest> getLetterByReference(final String reference,
+                                                                final int letterNumber)
+    {
+        // TODO DEEP-546 Sorting sorted?
+        return notificationLetterRequestRepository.findByReference(reference,
+                PageRequest.of(letterNumber - 1, 1));
     }
 
     public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(

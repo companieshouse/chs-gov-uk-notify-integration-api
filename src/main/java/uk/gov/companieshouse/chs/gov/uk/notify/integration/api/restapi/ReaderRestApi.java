@@ -4,6 +4,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
+import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +14,11 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -179,6 +184,36 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     .ok()
                     .headers(suggestFilename(reference))
                     .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
+        } catch (IOException ioe) {
+            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // TODO DEEP-546 Declare in interface and @Override
+    @GetMapping(
+            value = {"/gov-uk-notify-integration/letters/view/{reference}/{letter}"},
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    public ResponseEntity<Object> viewLetterPdfByReference(
+            final @PathVariable("reference") String reference,
+            final @PathVariable("letter") int letterNumber,
+            final @RequestHeader(value = "X-Request-Id")
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+
+        var logMap = createLogMap(contextId, "view_letter_pdf");
+        logMap.put(REFERENCE, reference);
+        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
+
+        try {
+            var fetchedLetter = fetcher.fetchLetter(reference, contextId, letterNumber);
+            var fileName =
+                    reference + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
+            return ResponseEntity
+                    .ok()
+                    .headers(suggestFilename(fileName))
+                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
         } catch (IOException ioe) {
             LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
                     + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));

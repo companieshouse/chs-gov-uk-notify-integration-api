@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "73b10a87-5b1a-4a52-859b-1ee2f7c0619b",
+		"_postman_id": "c2b2ad0a-0e0d-4c50-8d80-5abd85a36506",
 		"name": "chs-gov-uk-notify-integration-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "32780211"
@@ -982,6 +982,27 @@
 								"letters",
 								"view",
 								"{{reference}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "view letters",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view/{{reference}}/{{letter}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letters",
+								"view",
+								"{{reference}}",
+								"{{letter}}"
 							]
 						}
 					},

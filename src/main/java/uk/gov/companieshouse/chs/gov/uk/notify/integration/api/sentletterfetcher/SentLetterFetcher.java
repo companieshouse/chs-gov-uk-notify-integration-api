@@ -32,6 +32,8 @@ public class SentLetterFetcher {
     private final PersonalisationDetailsParser parser;
     private final Logger logger;
 
+    public record FetchedLetter(InputStream letter, int numberOfLetters) {}
+
     public SentLetterFetcher(final NotificationDatabaseService notificationDatabaseService,
                              final TemplatePersonaliser templatePersonaliser,
                              final HtmlPdfGenerator pdfGenerator,
@@ -42,6 +44,47 @@ public class SentLetterFetcher {
         this.pdfGenerator = pdfGenerator;
         this.parser = parser;
         this.logger = logger;
+    }
+
+    public FetchedLetter fetchLetter(final String reference,
+                                   final String contextId,
+                                   final int letterNumber)
+            throws IOException {
+        var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
+        var request = page.stream().findFirst();
+        if (request.isEmpty()) {
+            return new FetchedLetter(InputStream.nullInputStream(), 0);
+        }
+        var letter = request.get().getRequest();
+
+        var appId = letter.getSenderDetails().getAppId();
+        var templateId = letter.getLetterDetails().getTemplateId();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DATE_FORMATTER));
+
+        var html = templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId),
+                reference,
+                personalisationDetails,
+                address);
+
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
+            logger.debug(
+                    "Responding with regenerated letter PDF to view for letter number "
+                            + letterNumber + " with reference "
+                            + reference, createLogMap(contextId, "view_letter"));
+            var numberOfLetters = page.getTotalPages();
+            return new FetchedLetter(precompiledPdf, numberOfLetters);
+        }
+
     }
 
     /**
