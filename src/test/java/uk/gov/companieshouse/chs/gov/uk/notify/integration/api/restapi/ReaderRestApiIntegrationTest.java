@@ -284,9 +284,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     /**
-     * Sends and views a <code>new_psc_direction_letter</code> letter. Letters of this type populate
-     * the letter sending date from the calculated <code>idv_start_date</code> personalisation
-     * detail provided.
+     * Sends and views a <code>new_psc_direction_letter_v1</code> letter. Letters of this type
+     * populate the letter sending date from the calculated <code>idv_start_date</code>
+     * personalisation detail provided.
      *
      * @param log the captured log output to be checked for relevant log messages
      * @throws Exception should something unexpected happen in the test
@@ -339,7 +339,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     /**
-     * Sends and views a <code>transitional_non_director_psc_information_letter</code> letter.
+     * Sends and views a <code>transitional_non_director_psc_information_letter_v1</code> letter.
      * Letters of this type populate the letter sending date from today's date at the time of
      * sending. However, when the letter PDF is recreated for viewing, the original sending
      * date must be used instead of today's date.
