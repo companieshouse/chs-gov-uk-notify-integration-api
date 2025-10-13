@@ -207,7 +207,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
         try {
-            var fetchedLetter = fetcher.fetchLetter(reference, contextId, letterNumber);
+            var fetchedLetter = fetcher.fetchLetter(reference, letterNumber, contextId);
             var fileName =
                     reference + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
             return ResponseEntity

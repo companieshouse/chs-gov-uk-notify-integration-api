@@ -47,8 +47,8 @@ public class SentLetterFetcher {
     }
 
     public FetchedLetter fetchLetter(final String reference,
-                                   final String contextId,
-                                   final int letterNumber)
+                                     final int letterNumber,
+                                     final String contextId)
             throws IOException {
         var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
         var request = page.stream().findFirst();
@@ -80,7 +80,7 @@ public class SentLetterFetcher {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter number "
                             + letterNumber + " with reference "
-                            + reference, createLogMap(contextId, "view_letter"));
+                            + reference, createLogMap(contextId, "view_letters"));
             var numberOfLetters = page.getTotalPages();
             return new FetchedLetter(precompiledPdf, numberOfLetters);
         }
