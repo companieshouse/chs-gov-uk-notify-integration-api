@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,7 +8,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
@@ -23,6 +26,11 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
+
+    private static final Pageable LETTER_1 = PageRequest.of(0, 1);
+    private static final Pageable LETTER_2 = PageRequest.of(1, 1);
+    private static final Pageable LETTER_3 = PageRequest.of(2, 1);
+    private static final Pageable LETTER_4 = PageRequest.of(3, 1);
     
     @Autowired
     private NotificationLetterRequestRepository requestRepository;
@@ -91,17 +99,17 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Pagination of letter requests sought by reference works as expected")
-    void paginationOfLettersByReferenceWorksAsExpected() {
+    @DisplayName("Able to paginate through letter requests sought by reference")
+    void ableToPaginateThroughLettersSoughtByReference() {
 
         saveLetterWithReference("Reference 1");
         saveLetterWithReference("Reference 2");
         saveLetterWithReference("Reference 3");
 
-        var firstLetter = requestRepository.findByReference("Reference", PageRequest.of(0, 1));
-        var secondLetter = requestRepository.findByReference("Reference", PageRequest.of(1, 1));
-        var lastLetter = requestRepository.findByReference("Reference", PageRequest.of(2, 1));
-        var noLetter = requestRepository.findByReference("Reference", PageRequest.of(3, 1));
+        var firstLetter = requestRepository.findByReference("Reference", LETTER_1);
+        var secondLetter = requestRepository.findByReference("Reference", LETTER_2);
+        var lastLetter = requestRepository.findByReference("Reference", LETTER_3);
+        var noLetter = requestRepository.findByReference("Reference", LETTER_4);
 
         assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
         assertThat(firstLetter.stream().
@@ -117,7 +125,79 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
                 is("Reference 3"));
 
         assertThat(noLetter.stream().findFirst().isPresent(), is(false));
+    }
 
+    @Test
+    @DisplayName("Not able to paginate through letter requests sought by reference when none found")
+    void notAbleToPaginateThroughLettersWhenNoneFoundByReference() {
+
+        saveThreeLettersWithReferences();
+
+        var firstLetter = requestRepository.findByReference("Not The Reference", LETTER_1);
+        assertThat(firstLetter.isEmpty(), is(true));
+    }
+
+    @Test
+    @DisplayName("Able to paginate through letter requests sought by selection criteria")
+    void ableToPaginateThroughLettersSoughtBySelectionCriteria() {
+
+        saveThreeLettersWithReferences();
+
+        var firstLetter = findByNameCompanyTemplateDate(LETTER_1);
+        var secondLetter = findByNameCompanyTemplateDate(LETTER_2);
+        var lastLetter = findByNameCompanyTemplateDate(LETTER_3);
+        var noLetter = findByNameCompanyTemplateDate(LETTER_4);
+
+        assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(firstLetter.stream().
+                        findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 1"));
+        assertThat(secondLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(secondLetter.stream().
+                        findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 2"));
+        assertThat(lastLetter.stream().findFirst().isPresent(), is(true));
+        assertThat(lastLetter.stream().
+                        findFirst().get().getRequest().getSenderDetails().getReference(),
+                is("Reference 3"));
+
+        assertThat(noLetter.stream().findFirst().isPresent(), is(false));
+    }
+
+    @Test
+    @DisplayName("Not able to paginate through letter requests sought by selection criteria when none found")
+    void notAbleToPaginateThroughLettersWhenNoneFoundBySelectionCriteria() {
+
+        saveThreeLettersWithReferences();
+
+        var firstLetter = findByNameCompanyTemplateDateWithWrongTemplateId(PageRequest.of(0, 1));
+        assertThat(firstLetter.isEmpty(), is(true));
+    }
+
+    private Page<NotificationLetterRequest> findByNameCompanyTemplateDate(Pageable letter) {
+        return requestRepository.findByNameCompanyTemplateDate(
+                "Joe Bloggs",
+                "00006400",
+                "template-456",
+                LocalDate.now().toString(),
+                LocalDate.now().plusDays(1).toString(),
+                letter);
+    }
+
+    private Page<NotificationLetterRequest> findByNameCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
+        return requestRepository.findByNameCompanyTemplateDate(
+                "Joe Bloggs",
+                "00006400",
+                "unknown_template",
+                LocalDate.now().toString(),
+                LocalDate.now().plusDays(1).toString(),
+                letter);
+    }
+
+    private void saveThreeLettersWithReferences() {
+        saveLetterWithReference("Reference 1");
+        saveLetterWithReference("Reference 2");
+        saveLetterWithReference("Reference 3");
     }
 
     private void saveLetterWithReference(String reference) {
