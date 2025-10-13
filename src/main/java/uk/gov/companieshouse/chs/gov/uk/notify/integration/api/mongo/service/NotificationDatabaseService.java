@@ -95,6 +95,23 @@ public class NotificationDatabaseService {
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX);
     }
+
+    public Page<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final int letterNumber) {
+        var nextDay = letterSendingDate.plusDays(1);
+        // TODO DEEP-546 Sorting sorted?
+        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                templateId,
+                letterSendingDate + UTC_TIMEZONE_SUFFIX,
+                nextDay + UTC_TIMEZONE_SUFFIX,
+                PageRequest.of(letterNumber - 1, 1));
+    }
     
     public List<NotificationLetterRequest> findAllLetters() {
         return notificationLetterRequestRepository.findAll();

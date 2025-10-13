@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMAT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -247,6 +250,51 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                                 templateId,
                                 letterSendingDate,
                                 contextId)));
+        } catch (IOException ioe) {
+            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage(), logMap);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // TODO DEEP-546 Declare in interface and @Override
+    // TODO DEEP-546 Rationalise URLs and method names
+    @GetMapping(
+            value = {"/gov-uk-notify-integration/letters/paginated_view/{letter}"},
+            produces = MediaType.APPLICATION_PDF_VALUE
+    )
+    public ResponseEntity<Object> viewLetterPdfs(
+            final @RequestParam("psc_name") String pscName,
+            final @RequestParam("company_number") String companyNumber,
+            final @RequestParam("template_id") String templateId,
+            final @RequestParam("letter_sending_date")
+            @DateTimeFormat(pattern = DATE_FORMAT) LocalDate letterSendingDate,
+            final @PathVariable("letter") int letterNumber,
+            final @RequestHeader(value = "X-Request-Id")
+            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+
+        var logMap = createLogMap(contextId, "view_letter_pdfs");
+        logMap.put("psc_name", pscName);
+        logMap.put("company_number", companyNumber);
+        logMap.put("template_id", templateId);
+        logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
+        logMap.put("letter", letterNumber);
+        LOGGER.info("Starting viewLetterPdfs process", logMap);
+
+        try {
+            var fetchedLetter = fetcher.fetchLetter(
+                    pscName,
+                    companyNumber,
+                    templateId,
+                    letterSendingDate,
+                    letterNumber,
+                    contextId);
+            var fileName = pscName + ":" + templateId + ":" + letterSendingDate
+                    + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
+            return ResponseEntity
+                    .ok()
+                    .headers(suggestFilename(fileName))
+                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
         } catch (IOException ioe) {
             LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
                     + ioe.getMessage(), logMap);

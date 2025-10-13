@@ -46,47 +46,6 @@ public class SentLetterFetcher {
         this.logger = logger;
     }
 
-    public FetchedLetter fetchLetter(final String reference,
-                                     final int letterNumber,
-                                     final String contextId)
-            throws IOException {
-        var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
-        var request = page.stream().findFirst();
-        if (request.isEmpty()) {
-            return new FetchedLetter(InputStream.nullInputStream(), 0);
-        }
-        var letter = request.get().getRequest();
-
-        var appId = letter.getSenderDetails().getAppId();
-        var templateId = letter.getLetterDetails().getTemplateId();
-        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
-        var personalisationDetails =
-                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
-        var address = letter.getRecipientDetails().getPhysicalAddress();
-        var originalSendingDate = letter.getCreatedAt();
-
-        personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DATE_FORMATTER));
-
-        var html = templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(
-                        appId,
-                        templateId),
-                reference,
-                personalisationDetails,
-                address);
-
-        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
-            logger.debug(
-                    "Responding with regenerated letter PDF to view for letter number "
-                            + letterNumber + " with reference "
-                            + reference, createLogMap(contextId, "view_letters"));
-            var numberOfLetters = page.getTotalPages();
-            return new FetchedLetter(precompiledPdf, numberOfLetters);
-        }
-
-    }
-
     /**
      * "Fetches" letter PDF for sent letter assumed to be uniquely identified by the reference.
      *  It does so by retrieving the data stored when the letter was sent and using it to regenerate
@@ -136,6 +95,47 @@ public class SentLetterFetcher {
         }
     }
 
+    public FetchedLetter fetchLetter(final String reference,
+                                     final int letterNumber,
+                                     final String contextId)
+            throws IOException {
+        var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
+        var request = page.stream().findFirst();
+        if (request.isEmpty()) {
+            return new FetchedLetter(InputStream.nullInputStream(), 0);
+        }
+        var letter = request.get().getRequest();
+
+        var appId = letter.getSenderDetails().getAppId();
+        var templateId = letter.getLetterDetails().getTemplateId();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DATE_FORMATTER));
+
+        var html = templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId),
+                reference,
+                personalisationDetails,
+                address);
+
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
+            logger.debug(
+                    "Responding with regenerated letter PDF to view for letter number "
+                            + letterNumber + " with reference "
+                            + reference, createLogMap(contextId, "view_letters"));
+            var numberOfLetters = page.getTotalPages();
+            return new FetchedLetter(precompiledPdf, numberOfLetters);
+        }
+
+    }
+
     /**
      * "Fetches" letter PDF for sent letter assumed to be uniquely selected by the query parameter
      * values provided. It does so by retrieving the data stored when the letter was sent and using
@@ -183,6 +183,54 @@ public class SentLetterFetcher {
                     + queryParameters(pscName, companyNumber, templateId, letterSendingDate),
                     createLogMap(contextId, "view_letter"));
             return precompiledPdf;
+        }
+    }
+
+    public FetchedLetter fetchLetter(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final int letterNumber,
+            final String contextId)
+            throws IOException {
+
+        var page = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
+                pscName, companyNumber, templateId, letterSendingDate, letterNumber);
+
+        var request = page.stream().findFirst();
+        if (request.isEmpty()) {
+            return new FetchedLetter(InputStream.nullInputStream(), 0);
+        }
+        var letter = request.get().getRequest();
+
+        var reference = letter.getSenderDetails().getReference();
+        var appId = letter.getSenderDetails().getAppId();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DATE_FORMATTER));
+
+        var html = templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId),
+                reference,
+                personalisationDetails,
+                address);
+
+        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
+            logger.debug(
+                    "Responding with regenerated letter PDF to view for letter with "
+                            + queryParameters(
+                                    pscName, companyNumber, templateId, letterSendingDate),
+                    createLogMap(contextId, "view_letter"));
+            var numberOfLetters = page.getTotalPages();
+            return new FetchedLetter(precompiledPdf, numberOfLetters);
         }
     }
 

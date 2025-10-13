@@ -1044,6 +1044,44 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "view letters without reference",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/paginated_view/{{letter}}?letter_sending_date=2025-05-09&psc_name=Joe Bloggs&company_number=00006400&template_id=new_psc_direction_letter_v1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letters",
+								"paginated_view",
+								"{{letter}}"
+							],
+							"query": [
+								{
+									"key": "letter_sending_date",
+									"value": "2025-05-09"
+								},
+								{
+									"key": "psc_name",
+									"value": "Joe Bloggs"
+								},
+								{
+									"key": "company_number",
+									"value": "00006400"
+								},
+								{
+									"key": "template_id",
+									"value": "new_psc_direction_letter_v1"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
