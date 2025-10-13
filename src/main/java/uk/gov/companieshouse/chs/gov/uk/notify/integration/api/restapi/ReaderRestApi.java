@@ -40,6 +40,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     private static final String REFERENCE = "reference";
     private static final String VIEW_LETTER_PDF = "view_letter_pdf";
     private static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
+    private static final String LETTER_PDF_IO_ERROR_MESSAGE =
+            "Failed to load precompiled letter PDF. Caught IOException: ";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
@@ -191,8 +193,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     .headers(suggestFilename(reference))
                     .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
+                    createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -221,8 +223,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     .headers(suggestFilename(fileName))
                     .body(IOUtils.toByteArray(fetchedLetter.letter()));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
+                    createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -254,8 +256,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                                 letterSendingDate,
                                 contextId)));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), logMap);
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -298,8 +299,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     .headers(suggestFilename(fileName))
                     .body(IOUtils.toByteArray(fetchedLetter.letter()));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), logMap);
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
