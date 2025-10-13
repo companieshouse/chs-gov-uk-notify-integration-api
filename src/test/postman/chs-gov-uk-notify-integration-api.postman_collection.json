@@ -993,14 +993,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view/{{reference}}/{{letter}}",
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/paginated_view/{{reference}}/{{letter}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"gov-uk-notify-integration",
 								"letters",
-								"view",
+								"paginated_view",
 								"{{reference}}",
 								"{{letter}}"
 							]

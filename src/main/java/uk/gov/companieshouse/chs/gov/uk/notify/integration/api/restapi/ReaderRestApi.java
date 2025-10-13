@@ -38,6 +38,9 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     private static final String RETRIEVED = "Retrieved ";
     private static final String REFERENCE = "reference";
+    private static final String VIEW_LETTER_PDF = "view_letter_pdf";
+    private static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
     private final SentLetterFetcher fetcher;
@@ -178,7 +181,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final String reference,
             final String contextId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdf");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put(REFERENCE, reference);
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
@@ -196,18 +199,18 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     // TODO DEEP-546 Declare in interface and @Override
     @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/view/{reference}/{letter}"},
+            value = {"/gov-uk-notify-integration/letters/paginated_view/{reference}/{letter}"},
             produces = MediaType.APPLICATION_PDF_VALUE
     )
-    public ResponseEntity<Object> viewLetterPdfByReference(
+    public ResponseEntity<Object> viewLetterPdfsByReference(
             final @PathVariable("reference") String reference,
             final @PathVariable("letter") int letterNumber,
             final @RequestHeader(value = "X-Request-Id")
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdf");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put(REFERENCE, reference);
-        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
+        LOGGER.info("Starting viewLetterPdfsByReference process", logMap);
 
         try {
             var fetchedLetter = fetcher.fetchLetter(reference, letterNumber, contextId);
@@ -232,7 +235,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final LocalDate letterSendingDate,
             final String contextId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdf");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
         logMap.put("template_id", templateId);
@@ -258,7 +261,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     }
 
     // TODO DEEP-546 Declare in interface and @Override
-    // TODO DEEP-546 Rationalise URLs and method names
     @GetMapping(
             value = {"/gov-uk-notify-integration/letters/paginated_view/{letter}"},
             produces = MediaType.APPLICATION_PDF_VALUE
@@ -273,7 +275,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final @RequestHeader(value = "X-Request-Id")
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdfs");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
         logMap.put("template_id", templateId);
