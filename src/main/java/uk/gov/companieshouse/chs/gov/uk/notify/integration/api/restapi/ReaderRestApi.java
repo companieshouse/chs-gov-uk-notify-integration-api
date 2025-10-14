@@ -212,6 +212,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put(REFERENCE, reference);
+        logMap.put("letter", letterNumber);
         LOGGER.info("Starting viewLetterPdfsByReference process", logMap);
 
         try {

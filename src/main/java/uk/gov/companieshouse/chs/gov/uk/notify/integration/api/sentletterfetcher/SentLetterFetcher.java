@@ -233,8 +233,11 @@ public class SentLetterFetcher {
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter with "
-                            + queryParameters(
-                                    pscName, companyNumber, templateId, letterSendingDate),
+                            + queryParameters(pscName,
+                                              companyNumber,
+                                              templateId,
+                                              letterSendingDate,
+                                              letterNumber),
                     createLogMap(contextId, "view_letter"));
             var numberOfLetters = page.getTotalPages();
             return new FetchedLetter(precompiledPdf, numberOfLetters);
@@ -269,6 +272,18 @@ public class SentLetterFetcher {
                 + ", companyNumber " + companyNumber
                 + ", templateId " + templateId
                 + ", letter sending date " + letterSendingDate + ".";
+    }
+
+    private String queryParameters(final String pscName,
+                                   final String companyNumber,
+                                   final String templateId,
+                                   final LocalDate letterSendingDate,
+                                   final int letterNumber) {
+        return "psc name " + pscName
+                + ", companyNumber " + companyNumber
+                + ", templateId " + templateId
+                + ", letter sending date " + letterSendingDate
+                + ", letter number " + letterNumber + ".";
     }
 
     private void validateLetterNumber(final int letterNumber) {
