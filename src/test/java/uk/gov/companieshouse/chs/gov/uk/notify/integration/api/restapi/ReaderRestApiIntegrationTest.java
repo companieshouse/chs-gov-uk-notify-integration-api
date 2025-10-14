@@ -112,6 +112,23 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final int LETTER_1 = 1;
     private static final int LETTER_2 = 2;
 
+    private static final String VIEW_LETTER_BY_REFERENCE_URI =
+            "/gov-uk-notify-integration/letters/view/reference";
+    private static final String VIEW_LETTERS_BY_REFERENCE_URI =
+            "/gov-uk-notify-integration/letters/paginated_view/reference/1";
+    private static final String VIEW_LETTER_BY_SELECTION_CRITERIA_URI =
+            "/gov-uk-notify-integration/letters/view?"
+            + "letter_sending_date=2025-10-14"
+            + "&psc_name=Joe Bloggs"
+            + "&company_number=00006400"
+            + "&template_id=new_psc_direction_letter_v1";
+    private static final String VIEW_LETTERS_BY_SELECTION_CRITERIA_URI =
+            "/gov-uk-notify-integration/letters/paginated_view/1?"
+                    + "letter_sending_date=2025-10-14"
+                    + "&psc_name=Joe Bloggs"
+                    + "&company_number=00006400"
+                    + "&template_id=new_psc_direction_letter_v1";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -218,10 +235,49 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
+                get(VIEW_LETTER_BY_REFERENCE_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letters request as unauthorised")
+    @Test
+    void viewLettersWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                get(VIEW_LETTERS_BY_REFERENCE_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letter request with selection criteria as unauthorised")
+    @Test
+    void viewLetterByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                get(VIEW_LETTER_BY_SELECTION_CRITERIA_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letters request with selection criteria as unauthorised")
+    @Test
+    void viewLettersByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                        get(VIEW_LETTERS_BY_SELECTION_CRITERIA_URI)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_PDF_VALUE)
+                                .header(X_REQUEST_ID, CONTEXT_ID))
                 .andExpect(status().isUnauthorized());
 
         assertThat(log.getAll().contains("no authorised identity"), is(true));
@@ -762,7 +818,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                     "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
     }
-
 
     @Test
     @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date successfully")
