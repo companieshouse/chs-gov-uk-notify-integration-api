@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
@@ -99,10 +100,13 @@ public class SentLetterFetcher {
                                      final int letterNumber,
                                      final String contextId)
             throws IOException {
+        validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
         var request = page.stream().findFirst();
         if (request.isEmpty()) {
-            return new FetchedLetter(InputStream.nullInputStream(), 0);
+            throw new LetterNotFoundException(
+                    "Letter number " + letterNumber + " not found. "
+                            + "Total number of matching letters was " + page.getTotalPages() + ".");
         }
         var letter = request.get().getRequest();
 
@@ -195,12 +199,15 @@ public class SentLetterFetcher {
             final String contextId)
             throws IOException {
 
+        validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
                 pscName, companyNumber, templateId, letterSendingDate, letterNumber);
 
         var request = page.stream().findFirst();
         if (request.isEmpty()) {
-            return new FetchedLetter(InputStream.nullInputStream(), 0);
+            throw new LetterNotFoundException(
+                    "Letter number " + letterNumber + " not found. "
+                    + "Total number of matching letters was " + page.getTotalPages() + ".");
         }
         var letter = request.get().getRequest();
 
@@ -262,5 +269,12 @@ public class SentLetterFetcher {
                 + ", companyNumber " + companyNumber
                 + ", templateId " + templateId
                 + ", letter sending date " + letterSendingDate + ".";
+    }
+
+    private void validateLetterNumber(final int letterNumber) {
+        if (letterNumber < 1) {
+            throw new LetterValidationException(
+                    "Letter number (" + letterNumber + ") cannot be less than 1.");
+        }
     }
 }
