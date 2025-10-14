@@ -88,6 +88,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Letter not found for reference: "
             + REFERENCE_FOR_MISSING_LETTER;
+    private static final String EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Letter number 1 not found. "
+                    + "Total number of matching letters was 0.";
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Multiple letters found for reference: "
             + REFERENCE_SHARED_BY_MULTIPLE_LETTERS;
@@ -771,6 +774,20 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("Reports fact letters cannot be found by reference")
+    void unableToViewLettersAsNoLettersWithReferenceFound(CapturedOutput log) throws Exception {
+        viewLetterPdfByReference(REFERENCE_FOR_MISSING_LETTER, LETTER_1,
+                status().isNotFound())
+                .andExpect(content().string(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(REFERENCE_FOR_MISSING_LETTER, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE), is(true));
+    }
+
+    @Test
     @DisplayName("View letters reports IOException loading letter PDF with a 500 response")
     void viewLettersReportsPdfIOException(CapturedOutput log) throws Exception {
 
@@ -894,6 +911,33 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Error in chs-gov-uk-notify-integration-api: Letter number " + LETTER_2
                         + " not found. Total number of matching letters was 1."),
                 is(true));
+    }
+
+    @Test
+    @DisplayName("Reports fact letters cannot be found by PSC name, company number, letter type and sending date")
+    void unableToViewLettersAsNoLettersWithPscCompanyLetterTypeAndDateFound(CapturedOutput log)
+            throws Exception {
+
+        // Given, when and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isNotFound())
+                .andExpect(content().string(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedViewLetterInvocationLogMessage(
+                        PSC_NAME,
+                        COMPANY_NUMBER,
+                        LETTER_TYPE,
+                        LETTER_SENDING_DATE,
+                        LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE), is(true));
     }
 
     @Test
