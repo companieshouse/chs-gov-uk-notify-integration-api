@@ -536,9 +536,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .thenThrow(new IOException("Thrown by test."));
 
         // When and then
-        viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
-                status().isInternalServerError());
-
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
@@ -548,8 +545,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
-                        getExpectedViewLetterInvocationLogMessage(
-                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE)),
                 is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
@@ -716,6 +715,56 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("View letters reports IOException loading letter PDF with a 500 response")
+    void viewLettersReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1, status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                TOKEN_REFERENCE, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letters reports IOException closing letter PDF stream with a 500 response")
+    void viewLettersReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1, status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                TOKEN_REFERENCE, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                    "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+
+    @Test
     @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date successfully")
     void viewLettersByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
 
@@ -789,6 +838,73 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(errorMessage.contains(
                 "Error in chs-gov-uk-notify-integration-api: Letter number " + LETTER_2
                         + " not found. Total number of matching letters was 1."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letters identified by PSC name, company number, letter type and sending date reports IOException loading letter PDF with a 500 response")
+    void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetter();
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE,
+                                LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letters identified by PSC name, company number, letter type and sending date reports IOException closing letter PDF stream with a 500 response")
+    void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetter();
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE,
+                                LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
     }
 
