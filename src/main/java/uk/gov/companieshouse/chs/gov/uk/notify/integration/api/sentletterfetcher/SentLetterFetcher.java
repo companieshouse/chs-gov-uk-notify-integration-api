@@ -7,11 +7,13 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
@@ -69,24 +71,7 @@ public class SentLetterFetcher {
         }
 
         var letter = letters.getFirst().getRequest();
-        var appId = letter.getSenderDetails().getAppId();
-        var templateId = letter.getLetterDetails().getTemplateId();
-        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
-        var personalisationDetails =
-                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
-        var address = letter.getRecipientDetails().getPhysicalAddress();
-        var originalSendingDate = letter.getCreatedAt();
-
-        personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DATE_FORMATTER));
-
-        var html = templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(
-                        appId,
-                        templateId),
-                reference,
-                personalisationDetails,
-                address);
+        var html = getHtml(letter, reference, contextId);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
@@ -102,32 +87,8 @@ public class SentLetterFetcher {
             throws IOException {
         validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
-        var request = page.stream().findFirst();
-        if (request.isEmpty()) {
-            throw new LetterNotFoundException(
-                    "Letter number " + letterNumber + " not found. "
-                            + "Total number of matching letters was " + page.getTotalPages() + ".");
-        }
-        var letter = request.get().getRequest();
-
-        var appId = letter.getSenderDetails().getAppId();
-        var templateId = letter.getLetterDetails().getTemplateId();
-        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
-        var personalisationDetails =
-                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
-        var address = letter.getRecipientDetails().getPhysicalAddress();
-        var originalSendingDate = letter.getCreatedAt();
-
-        personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DATE_FORMATTER));
-
-        var html = templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(
-                        appId,
-                        templateId),
-                reference,
-                personalisationDetails,
-                address);
+        var letter = getLetter(page, letterNumber);
+        var html = getHtml(letter, reference, contextId);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
@@ -163,23 +124,7 @@ public class SentLetterFetcher {
 
         var letter = fetchLetterFromDatabase(pscName, companyNumber, templateId, letterSendingDate);
         var reference = letter.getSenderDetails().getReference();
-        var appId = letter.getSenderDetails().getAppId();
-        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
-        var personalisationDetails =
-                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
-        var address = letter.getRecipientDetails().getPhysicalAddress();
-        var originalSendingDate = letter.getCreatedAt();
-
-        personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DATE_FORMATTER));
-
-        var html = templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(
-                        appId,
-                        templateId),
-                reference,
-                personalisationDetails,
-                address);
+        var html = getHtml(letter, reference, contextId);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
@@ -202,33 +147,9 @@ public class SentLetterFetcher {
         validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
                 pscName, companyNumber, templateId, letterSendingDate, letterNumber);
-
-        var request = page.stream().findFirst();
-        if (request.isEmpty()) {
-            throw new LetterNotFoundException(
-                    "Letter number " + letterNumber + " not found. "
-                    + "Total number of matching letters was " + page.getTotalPages() + ".");
-        }
-        var letter = request.get().getRequest();
-
+        var letter = getLetter(page, letterNumber);
         var reference = letter.getSenderDetails().getReference();
-        var appId = letter.getSenderDetails().getAppId();
-        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
-        var personalisationDetails =
-                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
-        var address = letter.getRecipientDetails().getPhysicalAddress();
-        var originalSendingDate = letter.getCreatedAt();
-
-        personalisationDetails.put(ORIGINAL_SENDING_DATE,
-                originalSendingDate.format(DATE_FORMATTER));
-
-        var html = templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(
-                        appId,
-                        templateId),
-                reference,
-                personalisationDetails,
-                address);
+        var html = getHtml(letter, reference, contextId);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
@@ -242,6 +163,40 @@ public class SentLetterFetcher {
             var numberOfLetters = page.getTotalPages();
             return new FetchedLetter(precompiledPdf, numberOfLetters);
         }
+    }
+
+    private String getHtml(final GovUkLetterDetailsRequest letter,
+                           final String reference,
+                           final String contextId) {
+        var appId = letter.getSenderDetails().getAppId();
+        var templateId = letter.getLetterDetails().getTemplateId();
+        var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
+        var personalisationDetails =
+                parser.parsePersonalisationDetails(personalisationDetailsString, contextId);
+        var address = letter.getRecipientDetails().getPhysicalAddress();
+        var originalSendingDate = letter.getCreatedAt();
+
+        personalisationDetails.put(ORIGINAL_SENDING_DATE,
+                originalSendingDate.format(DATE_FORMATTER));
+
+        return templatePersonaliser.personaliseLetterTemplate(
+                new LetterTemplateKey(
+                        appId,
+                        templateId),
+                reference,
+                personalisationDetails,
+                address);
+    }
+
+    private GovUkLetterDetailsRequest getLetter(final Page<NotificationLetterRequest> page,
+                                                final int letterNumber) {
+        var request = page.stream().findFirst();
+        if (request.isEmpty()) {
+            throw new LetterNotFoundException(
+                    "Letter number " + letterNumber + " not found. "
+                            + "Total number of matching letters was " + page.getTotalPages() + ".");
+        }
+        return request.get().getRequest();
     }
 
     private GovUkLetterDetailsRequest fetchLetterFromDatabase(final String pscName,
