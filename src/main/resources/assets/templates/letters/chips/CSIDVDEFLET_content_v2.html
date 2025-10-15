@@ -25,10 +25,12 @@
 
 <div class="black-warning-block">
     <img class="white-warning-img" th:src="@{${common} + warning_white.svg}" alt="Warning"/>
-    <span>
-        <strong>The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> may be committing an offence for failing to file a confirmation statement.</strong>
-        Any <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> who continues to act as a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> without verifying their identity is also committing an offence. The <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is committing an offence for failing to rectify this.
-    </span>
+    <div class="black-warning-block-text">
+        <span>
+            <strong>The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> may be committing an offence for failing to file a confirmation statement.</strong>
+            Any <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> who continues to act as a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> without verifying their identity is also committing an offence. The <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is committing an offence for failing to rectify this.
+        </span>
+    </div>
 </div>
 
 <p>For guidance on your duties <span th:if="${is_llp == 'yes'}">in running an LLP, visit: <span class="emphasis">gov.uk/guidance/set-up-and-run-a-limited-liability-partnership-llp</span></span><span th:if="${is_llp == 'no'}">as a director, visit: <span class="emphasis">gov.uk/guidance/being-a-company-director</span></span></p>
