@@ -2,26 +2,18 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMAT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.IOUtils;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -199,16 +191,11 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         }
     }
 
-    // TODO DEEP-546 Declare in interface and @Override
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/paginated_view/{reference}/{letter}"},
-            produces = MediaType.APPLICATION_PDF_VALUE
-    )
+    @Override
     public ResponseEntity<Object> viewLetterPdfsByReference(
-            final @PathVariable("reference") String reference,
-            final @PathVariable("letter") int letterNumber,
-            final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+            final String reference,
+            final Integer letterNumber,
+            final String contextId) {
 
         var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put(REFERENCE, reference);
@@ -262,20 +249,14 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         }
     }
 
-    // TODO DEEP-546 Declare in interface and @Override
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/paginated_view/{letter}"},
-            produces = MediaType.APPLICATION_PDF_VALUE
-    )
+    @Override
     public ResponseEntity<Object> viewLetterPdfs(
-            final @RequestParam("psc_name") String pscName,
-            final @RequestParam("company_number") String companyNumber,
-            final @RequestParam("template_id") String templateId,
-            final @RequestParam("letter_sending_date")
-            @DateTimeFormat(pattern = DATE_FORMAT) LocalDate letterSendingDate,
-            final @PathVariable("letter") int letterNumber,
-            final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final Integer letterNumber,
+            final String contextId) {
 
         var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put("psc_name", pscName);
