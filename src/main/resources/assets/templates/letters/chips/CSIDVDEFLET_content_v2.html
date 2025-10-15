@@ -1,22 +1,35 @@
 <p class="subject-line">Overdue confirmation statement and <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> identity verification statements for <span class="subject-line">[[${company_name}]]</span></p>
+<br/>
+<br/>
+<div class="grey-bg-block">
+    <div class="grey-title">
+        You have not delivered the following statements to Companies House:
+    </div>
+    <ul class="grey-list">
+        <li>confirmation statement due by <span id="cs-review-period-end-date">[[${cs_review_period_end_date}]]</span></li>
+        <li>identity verification statements for all registered <span th:if="${is_llp == 'yes'}">limited liability partnership (LLP) members</span><span th:if="${is_llp == 'no'}">company directors</span></li>
+    </ul>
+    <div class="grey-warning-block">
+        <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
+        <span>
+      <strong>You must file your overdue confirmation and identity verification statements or make a representation.</strong> There are instructions on the back of this letter.
+    </span>
+    </div>
+</div>
 
-<p class="grey-bg-block">
-    <span class="emphasis">You have not delivered the following statements to Companies House:</span>
-<ul>
-    <li>confirmation statement due by <span id="cs-review-period-end-date">[[${cs_review_period_end_date}]]</span></li>
-    <li>identity verification statements for all registered <span th:if="${is_llp == 'yes'}">limited liability partnership (LLP) members</span><span th:if="${is_llp == 'no'}">company directors</span></li>
-</ul>
-<!--Add warning icon here-->
-<img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Companies House warning"/><span class="emphasis">You must file your overdue confirmation and identity verification statements or make a representation.</span> There are instructions on the back of this letter.
-</p>
 
 <!--Check font size-->
 <p class="small-heading">If you do not file the statements we may take enforcement action without further notice</p>
 
 <p>This may include prosecution or financial penalties for the <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span>.</p>
 
-<!--Similar to warning block in other letters-->
-<p class="black-warning-block"><img class="white-warning-img" th:src="@{${common} + warning_white.svg}" alt="Companies House warning"/>The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> may be committing an offence for failing to file a confirmation statement. Any <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> who continues to act as a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> without verifying their identity is also committing an offence. The <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is committing an offence for failing to rectify this.</p>
+<div class="black-warning-block">
+    <img class="white-warning-img" th:src="@{${common} + warning_white.svg}" alt="Warning"/>
+    <span>
+        <strong>The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> may be committing an offence for failing to file a confirmation statement.</strong>
+        Any <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> who continues to act as a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> without verifying their identity is also committing an offence. The <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is committing an offence for failing to rectify this.
+    </span>
+</div>
 
 <p>For guidance on your duties <span th:if="${is_llp == 'yes'}">in running an LLP, visit: <span class="emphasis">gov.uk/guidance/set-up-and-run-a-limited-liability-partnership-llp</span></span><span th:if="${is_llp == 'no'}">as a director, visit: <span class="emphasis">gov.uk/guidance/being-a-company-director</span></span></p>
 
