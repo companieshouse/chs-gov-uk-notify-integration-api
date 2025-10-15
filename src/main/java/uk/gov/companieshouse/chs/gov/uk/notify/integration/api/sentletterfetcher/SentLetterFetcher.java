@@ -88,7 +88,8 @@ public class SentLetterFetcher {
         validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLetterByReference(reference, letterNumber);
         var letter = getLetter(page, letterNumber);
-        var html = getHtml(letter, reference, contextId);
+        var letterReference = letter.getSenderDetails().getReference();
+        var html = getHtml(letter, letterReference, contextId);
 
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
@@ -190,6 +191,7 @@ public class SentLetterFetcher {
 
     private GovUkLetterDetailsRequest getLetter(final Page<NotificationLetterRequest> page,
                                                 final int letterNumber) {
+        page.stream().skip(letterNumber - 1L);
         var request = page.stream().findFirst();
         if (request.isEmpty()) {
             throw new LetterNotFoundException(

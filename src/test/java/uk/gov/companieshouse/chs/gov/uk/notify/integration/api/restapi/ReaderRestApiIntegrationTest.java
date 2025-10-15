@@ -114,6 +114,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final int INVALID_LETTER_0 = 0;
     private static final int LETTER_1 = 1;
     private static final int LETTER_2 = 2;
+    private static final int LETTER_3 = 3;
+    private static final int LETTER_4 = 4;
 
     private static final String VIEW_LETTER_BY_REFERENCE_URI =
             "/gov-uk-notify-integration/letters/view/reference";
@@ -837,6 +839,23 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("View letter PDFs identified by reference paginates correctly")
+    void viewLettersByReferencePaginatesCorrectly() throws Exception {
+
+        // Given
+        sendLetterWithReference("Reference");
+        sendLetterWithReference("Reference 1");
+        sendLetterWithReference("Reference 11");
+        sendLetterWithReference("Reference 111");
+
+        // When and then
+        checkCorrectLetterIsReturned("Reference", "Reference", LETTER_1);
+        checkCorrectLetterIsReturned("Reference", "Reference 1", LETTER_2);
+        checkCorrectLetterIsReturned("Reference", "Reference 11", LETTER_3);
+        checkCorrectLetterIsReturned("Reference", "Reference 111", LETTER_4);
+    }
+
+    @Test
     @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date successfully")
     void viewLettersByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
 
@@ -1005,6 +1024,57 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
+    }
+
+    @Test
+    @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date paginates correctly")
+    void viewLettersByByPscCompanyLetterTypeAndDatePaginatesCorrectly() throws Exception {
+
+        // Given
+        sendLetterWithReference("Reference 1");
+        sendLetterWithReference("Reference 2");
+        sendLetterWithReference("Reference 3");
+        sendLetterWithReference("Reference 4");
+
+        // When and then
+        checkCorrectLetterIsReturned("Reference 1", LETTER_1);
+        checkCorrectLetterIsReturned("Reference 2", LETTER_2);
+        checkCorrectLetterIsReturned("Reference 3", LETTER_3);
+        checkCorrectLetterIsReturned("Reference 4", LETTER_4);
+    }
+
+    private void checkCorrectLetterIsReturned(String referenceExpected,
+                                              int letterNumber) throws Exception {
+        var letter =  viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                letterNumber,
+                status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        checkReference(letter, referenceExpected);
+    }
+
+    private void checkCorrectLetterIsReturned(String referenceSought,
+                                              String referenceExpected,
+                                              int letterNumber) throws Exception {
+        var letter = viewLetterPdfByReference(referenceSought, letterNumber,
+                status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        checkReference(letter, referenceExpected);
+    }
+
+    private void checkReference(byte[] letter, String referenceExpected) throws
+            IOException {
+        var document = Loader.loadPDF(letter);
+
+        // Reference is on page 1.
+        var page1 = getPageText(document, 1);
+
+        // Check reference in letter PDF.
+        assertThat(page1, containsString(
+                "Reference:\n" + referenceExpected));
     }
 
     private void sendLetterWithReference(String reference) throws Exception {
