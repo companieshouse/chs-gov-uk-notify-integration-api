@@ -15,8 +15,7 @@ public interface NotificationLetterRequestRepository extends
     @Query("{ 'request.senderDetails.reference' : ?0 }")
     List<NotificationLetterRequest> findByReference(String reference);
 
-    // TODO DEEP-546 Can we stop the use of regexp syntax below being reported as a syntax error?
-    @Query("{ 'request.senderDetails.reference' : /?0/ }")
+    @Query("{ 'request.senderDetails.reference' : { $regex: ?0 }}")
     Page<NotificationLetterRequest> findByReference(String reference, Pageable pageable);
 
     @Query("""
