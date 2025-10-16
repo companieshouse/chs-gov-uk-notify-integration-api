@@ -13,34 +13,26 @@
     padding-top: 2mm;
     background-color: black;
     border-radius: 1.2mm;
-    /* border-radius removed for CSS1 compatibility */
 }
-
-/* .grey-bg-block { ... } */
 
 .black-warning-block {
     background-color: #1a1a1a;
     color: white;
     border-radius: 1.2mm;
-    /* border-radius removed */
     margin-top: 3mm;
-    padding: 4mm 4mm 4mm 8px;
+    padding: 4mm 4mm 4mm 2.12mm;
     text-align: left;
     font-size: 13pt;
     line-height: 1.15;
-    /* overflow: hidden removed */
 }
 
 .black-warning-block span {
-    /* display: block removed for CSS1 compatibility */
     font-family: Arial, sans-serif;
-    /* overflow: hidden removed */
     color: white;
 }
 
 .black-warning-block strong {
     font-weight: bold;
-    /* margin-bottom: 2mm; */
 }
 
 .black-warning-block-text {
@@ -51,56 +43,49 @@
     float: left;
     height: 7mm;
     width: 7mm;
-    /*margin-right: 2mm;*/
     margin-top: -1mm;
     display: block;
 }
 
 .grey-bg-block {
-    border-top: 3px solid #111;
+    border-top: 0.8mm solid #111;
     background-color: #f1f1f1;
     border-radius: 1.2mm;
-    /* border-radius removed */
-    padding: 4mm 4mm 4mm 8px;
-    margin: 32px 0px;
-    /* max-width removed */
+    padding: 4mm 4mm 4mm 2.12mm;
+    margin: 8.46mm 0mm;
     font-family: Arial, sans-serif;
     font-size: 13pt;
 }
 
 .grey-title {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 1.32mm;
 }
 
 .grey-list {
     margin-top: 0;
-    margin-bottom: 4px;
-    padding-left: 32px;
+    margin-bottom: 1.06mm;
+    padding-left: 8.46mm;
 }
 
 .grey-list li {
-    margin-bottom: 6px;
+    margin-bottom: 1.59mm;
 }
 
 .grey-warning-block strong {
     font-weight: bold;
-    /* margin-bottom: 2px; */
 }
 
 .grey-warning-block {
     background: none;
-    margin-top: 8px;
+    margin-top: 2.12mm;
     width: 100%;
     display: block;
-    /* overflow: hidden removed */
 }
 
 .grey-warning-block span {
-    /* display: block removed */
     color: #111;
     line-height: 1.15;
-    /* overflow: hidden removed */
 }
 
 .grey-warning-block-text {
@@ -111,7 +96,6 @@
     float: left;
     height: 7mm;
     width: 7mm;
-    /*margin-right: 2mm;*/
-    margin-top: -5px;
+    margin-top: -1.32mm;
     display: block;
 }
