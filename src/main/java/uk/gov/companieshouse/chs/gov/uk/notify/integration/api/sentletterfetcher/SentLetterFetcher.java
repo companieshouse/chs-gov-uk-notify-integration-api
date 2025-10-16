@@ -24,8 +24,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Personalisa
 import uk.gov.companieshouse.logging.Logger;
 
 /**
- * "Fetches" letter PDF for sent letter assumed to be uniquely identified/selected by the
- * criteria provided. It does so by retrieving the data stored when the letter was sent and using
+ * "Fetches" letter PDFs for sent letters identified/selected by the criteria provided, one
+ * at a time. It does so by retrieving the data stored when the letter was sent and using
  * it to regenerate the PDF.
  */
 @Component
@@ -83,6 +83,19 @@ public class SentLetterFetcher {
         }
     }
 
+    /**
+     * "Fetches" letter PDFs for sent letters matched by the reference, one at a time.
+     *  It does so by retrieving the data stored when the letter was sent and using it to regenerate
+     *  the PDF.
+     *
+     * @param reference the reference matched against the references on the letters to be viewed
+     * @param letterNumber the number of the specific letter to be fetched, from the collection of
+     *                     matching letters, ordered by the createdAt date. The first such letter
+     *                     is letter number 1.
+     * @param contextId unique identifier for tracking the request
+     * @return the letter PDF
+     * @throws IOException should something unexpected happen
+     */
     public FetchedLetter fetchLetter(final String reference,
                                      final int letterNumber,
                                      final String contextId)
@@ -138,6 +151,22 @@ public class SentLetterFetcher {
         }
     }
 
+    /**
+     * "Fetches" letter PDFs for sent letters selected by the query parameter values provided,
+     * one at a time. It does so by retrieving the data stored when the letter was sent and using
+     * it to regenerate the PDF.
+     *
+     * @param pscName the name of the PSC intended to receive the letter
+     * @param companyNumber the company number
+     * @param templateId the ID of the template used to generate the letter. This corresponds
+     *                   directly to the letter type.
+     * @param letterSendingDate the date on which CHIPS triggered the sending of the letter
+     * @param letterNumber the number of the specific letter to be fetched, from the collection of
+     *                     selected letters, ordered by the createdAt date. The first such letter
+     *                     is letter number 1.
+     * @return the letter PDF
+     * @throws IOException should something unexpected happen
+     */
     public FetchedLetter fetchLetter(
             final String pscName,
             final String companyNumber,
