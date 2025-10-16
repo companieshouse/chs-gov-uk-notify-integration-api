@@ -3,6 +3,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -83,10 +85,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             "calculated sending date letter";
     private static final String REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER =
             "today's sending date letter";
+    private static final String TOKEN_REFERENCE = "token reference";
 
     private static final String EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Letter not found for reference: "
             + REFERENCE_FOR_MISSING_LETTER;
+    private static final String EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Letter number 1 not found. "
+                    + "Total number of matching letters was 0.";
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Multiple letters found for reference: "
             + REFERENCE_SHARED_BY_MULTIPLE_LETTERS;
@@ -106,6 +112,29 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + COMPANY_NUMBER + ", templateId "
                     + LETTER_TYPE + ", letter sending date "
                     + LETTER_SENDING_DATE + ".";
+
+    private static final int INVALID_LETTER_0 = 0;
+    private static final int LETTER_1 = 1;
+    private static final int LETTER_2 = 2;
+    private static final int LETTER_3 = 3;
+    private static final int LETTER_4 = 4;
+
+    private static final String VIEW_LETTER_BY_REFERENCE_URI =
+            "/gov-uk-notify-integration/letters/view/reference";
+    private static final String VIEW_LETTERS_BY_REFERENCE_URI =
+            "/gov-uk-notify-integration/letters/paginated_view/reference/1";
+    private static final String VIEW_LETTER_BY_SELECTION_CRITERIA_URI =
+            "/gov-uk-notify-integration/letters/view?"
+            + "letter_sending_date=2025-10-14"
+            + "&psc_name=Joe Bloggs"
+            + "&company_number=00006400"
+            + "&template_id=new_psc_direction_letter_v1";
+    private static final String VIEW_LETTERS_BY_SELECTION_CRITERIA_URI =
+            "/gov-uk-notify-integration/letters/paginated_view/1?"
+                    + "letter_sending_date=2025-10-14"
+                    + "&psc_name=Joe Bloggs"
+                    + "&company_number=00006400"
+                    + "&template_id=new_psc_direction_letter_v1";
 
     @Autowired
     private MockMvc mockMvc;
@@ -213,10 +242,49 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
+                get(VIEW_LETTER_BY_REFERENCE_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letters request as unauthorised")
+    @Test
+    void viewLettersWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                get(VIEW_LETTERS_BY_REFERENCE_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letter request with selection criteria as unauthorised")
+    @Test
+    void viewLetterByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                get(VIEW_LETTER_BY_SELECTION_CRITERIA_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
+    @DisplayName("Reports unauthenticated view letters request with selection criteria as unauthorised")
+    @Test
+    void viewLettersByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                        get(VIEW_LETTERS_BY_SELECTION_CRITERIA_URI)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_PDF_VALUE)
+                                .header(X_REQUEST_ID, CONTEXT_ID))
                 .andExpect(status().isUnauthorized());
 
         assertThat(log.getAll().contains("no authorised identity"), is(true));
@@ -284,9 +352,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     /**
-     * Sends and views a <code>new_psc_direction_letter</code> letter. Letters of this type populate
-     * the letter sending date from the calculated <code>idv_start_date</code> personalisation
-     * detail provided.
+     * Sends and views a <code>new_psc_direction_letter_v1</code> letter. Letters of this type
+     * populate the letter sending date from the calculated <code>idv_start_date</code>
+     * personalisation detail provided.
      *
      * @param log the captured log output to be checked for relevant log messages
      * @throws Exception should something unexpected happen in the test
@@ -339,7 +407,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     /**
-     * Sends and views a <code>transitional_non_director_psc_information_letter</code> letter.
+     * Sends and views a <code>transitional_non_director_psc_information_letter_v1</code> letter.
      * Letters of this type populate the letter sending date from today's date at the time of
      * sending. However, when the letter PDF is recreated for viewing, the original sending
      * date must be used instead of today's date.
@@ -531,9 +599,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .thenThrow(new IOException("Thrown by test."));
 
         // When and then
-        viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
-                status().isInternalServerError());
-
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
@@ -543,8 +608,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
-                        getExpectedViewLetterInvocationLogMessage(
-                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE)),
                 is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
@@ -650,6 +717,398 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2), is(true));
     }
 
+    @Test
+    @DisplayName("View letter PDFs identified by reference successfully")
+    void viewLettersByReferenceSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        // When and then
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1,
+                status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                TOKEN_REFERENCE, LETTER_1)),
+                is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter number "
+                        + LETTER_1 + " with reference "
+                        + TOKEN_REFERENCE;
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+    }
+
+    @Test
+    @DisplayName("Unable to view letter PDF 0 identified by reference")
+    void unableToViewLetter0ByReference() throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        // When and then
+        var errorMessage = viewLetterPdfByReference(TOKEN_REFERENCE, INVALID_LETTER_0,
+                status().isBadRequest())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(errorMessage.contains(
+                        "Error in chs-gov-uk-notify-integration-api: Letter number ("
+                                + INVALID_LETTER_0 + ") cannot be less than 1."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("Unable to view letter PDF 2 identified by reference")
+    void unableToViewLetter2ByReference() throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        // When and then
+        var errorMessage = viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_2,
+                status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(errorMessage.contains(
+                        "Error in chs-gov-uk-notify-integration-api: Letter number " + LETTER_2
+                                + " not found. Total number of matching letters was 1."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("Reports fact letters cannot be found by reference")
+    void unableToViewLettersAsNoLettersWithReferenceFound(CapturedOutput log) throws Exception {
+        viewLetterPdfByReference(REFERENCE_FOR_MISSING_LETTER, LETTER_1,
+                status().isNotFound())
+                .andExpect(content().string(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(REFERENCE_FOR_MISSING_LETTER, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE), is(true));
+    }
+
+    @Test
+    @DisplayName("View letters reports IOException loading letter PDF with a 500 response")
+    void viewLettersReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1, status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                TOKEN_REFERENCE, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letters reports IOException closing letter PDF stream with a 500 response")
+    void viewLettersReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetterWithReference(TOKEN_REFERENCE);
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1, status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                TOKEN_REFERENCE, LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                    "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letter PDFs identified by reference paginates correctly")
+    void viewLettersByReferencePaginatesCorrectly() throws Exception {
+
+        // Given
+        sendLetterWithReferenceNow("Reference");
+        sendLetterWithReferenceNow("Reference 1");
+        sendLetterWithReferenceNow("Reference 11");
+        sendLetterWithReferenceNow("Reference 111");
+
+        // When and then
+        checkCorrectLetterIsReturned("Reference", "Reference", LETTER_1);
+        checkCorrectLetterIsReturned("Reference", "Reference 1", LETTER_2);
+        checkCorrectLetterIsReturned("Reference", "Reference 11", LETTER_3);
+        checkCorrectLetterIsReturned("Reference", "Reference 111", LETTER_4);
+    }
+
+    @Test
+    @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date successfully")
+    void viewLettersByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetter();
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isOk());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                            PSC_NAME, COMPANY_NUMBER, LETTER_TYPE, LETTER_SENDING_DATE, LETTER_1)),
+                is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter with psc name "
+                        + PSC_NAME + ", companyNumber "
+                        + COMPANY_NUMBER + ", templateId "
+                        + LETTER_TYPE + ", letter sending date "
+                        + LETTER_SENDING_DATE + ", letter number "
+                        + LETTER_1 + ".";
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+    }
+
+    @Test
+    @DisplayName("Unable to view letter PDF 0 identified by PSC name, company number, letter type and sending date")
+    void unableToViewLetter0ByPscCompanyLetterTypeAndDate() throws Exception {
+
+        // Given
+        sendLetter();
+
+        // When and then
+        var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                INVALID_LETTER_0,
+                status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+        assertThat(errorMessage.contains(
+                "Error in chs-gov-uk-notify-integration-api: Letter number ("
+                        + INVALID_LETTER_0 + ") cannot be less than 1."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("Unable to view letter PDF 2 identified by PSC name, company number, letter type and sending date")
+    void unableToViewLetter2ByPscCompanyLetterTypeAndDate() throws Exception {
+
+        // Given
+        sendLetter();
+
+        // When and then
+        var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_2,
+                status().isNotFound())
+                    .andReturn().getResponse().getContentAsString();
+
+        assertThat(errorMessage.contains(
+                "Error in chs-gov-uk-notify-integration-api: Letter number " + LETTER_2
+                        + " not found. Total number of matching letters was 1."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("Reports fact letters cannot be found by PSC name, company number, letter type and sending date")
+    void unableToViewLettersAsNoLettersWithPscCompanyLetterTypeAndDateFound(CapturedOutput log)
+            throws Exception {
+
+        // Given, when and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isNotFound())
+                .andExpect(content().string(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedViewLetterInvocationLogMessage(
+                        PSC_NAME,
+                        COMPANY_NUMBER,
+                        LETTER_TYPE,
+                        LETTER_SENDING_DATE,
+                        LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE), is(true));
+    }
+
+    @Test
+    @DisplayName("View letters identified by PSC name, company number, letter type and sending date reports IOException loading letter PDF with a 500 response")
+    void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetter();
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenThrow(new IOException("Thrown by test."));
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE,
+                                LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letters identified by PSC name, company number, letter type and sending date reports IOException closing letter PDF stream with a 500 response")
+    void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
+
+        // Given
+        sendLetter();
+
+        doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
+                .thenReturn(precompiledPdfInputStream);
+        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isInternalServerError());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(PSC_NAME,
+                                COMPANY_NUMBER,
+                                LETTER_TYPE,
+                                LETTER_SENDING_DATE,
+                                LETTER_1)),
+                is(true));
+        assertThat(log.getAll().contains(
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date paginates correctly")
+    void viewLettersByByPscCompanyLetterTypeAndDatePaginatesCorrectly() throws Exception {
+
+        // Given
+        sendLetterWithReferenceNow("Reference 1");
+        sendLetterWithReferenceNow("Reference 2");
+        sendLetterWithReferenceNow("Reference 3");
+        sendLetterWithReferenceNow("Reference 4");
+
+        // When and then
+        checkCorrectLetterIsReturned("Reference 1", LETTER_1);
+        checkCorrectLetterIsReturned("Reference 2", LETTER_2);
+        checkCorrectLetterIsReturned("Reference 3", LETTER_3);
+        checkCorrectLetterIsReturned("Reference 4", LETTER_4);
+    }
+
+    private void checkCorrectLetterIsReturned(String referenceExpected,
+                                              int letterNumber) throws Exception {
+        var letter =  viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                LETTER_TYPE,
+                LocalDate.now().toString(),
+                letterNumber,
+                status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        checkReference(letter, referenceExpected);
+    }
+
+    private void checkCorrectLetterIsReturned(String referenceSought,
+                                              String referenceExpected,
+                                              int letterNumber) throws Exception {
+        var letter = viewLetterPdfByReference(referenceSought, letterNumber,
+                status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        checkReference(letter, referenceExpected);
+    }
+
+    private void checkReference(byte[] letter, String referenceExpected) throws
+            IOException {
+        var document = Loader.loadPDF(letter);
+
+        // Reference is on page 1.
+        var page1 = getPageText(document, 1);
+
+        // Check reference in letter PDF.
+        assertThat(page1, containsString(
+                "Reference:\n" + referenceExpected));
+    }
+
+    private void sendLetterWithReferenceNow(String reference) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSentNowSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(), reference);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+    }
+
+    private void sendLetterWithReference(String reference) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(), reference);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+    }
+
+    private void sendLetter() throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        postSendLetterRequest(mockMvc, getValidSendDirectionLetterRequestBody(),
+                status().isCreated());
+    }
+
+
     private void implementLetterNotFoundTest(CapturedOutput log,
                                              String pscName,
                                              String companyNumber,
@@ -717,6 +1176,28 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(expectedResponseStatus);
     }
 
+    private ResultActions viewLetterPdfByPscCompanyLetterTypeAndDate(String pscName,
+                                                                     String companyNumber,
+                                                                     String templateId,
+                                                                     String letterSendingDate,
+                                                                     int letterNumber,
+                                                                     ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(get("/gov-uk-notify-integration/letters/paginated_view/"
+                        + letterNumber
+                        + "?psc_name=" + pscName
+                        + "&company_number=" + companyNumber
+                        + "&template_id=" + templateId
+                        + "&letter_sending_date="+ letterSendingDate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
+                .andExpect(expectedResponseStatus);
+    }
+
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -728,6 +1209,29 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
                 .andExpect(expectedResponseStatus);
+    }
+
+    private ResultActions viewLetterPdfByReference(String reference,
+                                                   int letterNumber,
+                                                   ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(get("/gov-uk-notify-integration/letters/paginated_view/"
+                        + reference + "/" + letterNumber)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
+                .andExpect(expectedResponseStatus);
+    }
+
+    private String getSentNowSendLetterRequestWithReference(String requestBody, String reference)
+            throws IOException {
+        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
+        request.getSenderDetails().setReference(reference);
+        request.setCreatedAt(OffsetDateTime.now());
+        return objectMapper.writeValueAsString(request);
     }
 
     private String getSendLetterRequestWithReference(String requestBody, String reference)
@@ -754,6 +1258,15 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
 
+    private static String getExpectedViewLetterInvocationLogMessage(String reference,
+                                                                    int letterNumber) {
+        return   "{\"reference\":\"" + reference + "\","
+                + "\"letter\":" + letterNumber + ","
+                + "\"action\":\"view_letter_pdfs\","
+                + "\"message\":\"Starting viewLetterPdfsByReference process\","
+                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
+    }
+
     private static String getExpectedViewLetterInvocationLogMessage(String pscName,
                                                                     String companyNumber,
                                                                     String templateId,
@@ -764,6 +1277,21 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"action\":\"view_letter_pdf\","
                 + "\"template_id\":\"" + templateId + "\","
                 + "\"message\":\"Starting viewLetterPdf process\","
+                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
+    }
+
+    private static String getExpectedViewLetterInvocationLogMessage(String pscName,
+                                                                    String companyNumber,
+                                                                    String templateId,
+                                                                    String letterSendingDate,
+                                                                    int letterNumber) {
+        return   "{\"letter_sending_date\":\"" + letterSendingDate + "\","
+                + "\"company_number\":\"" + companyNumber + "\","
+                + "\"psc_name\":\"" + pscName + "\","
+                + "\"letter\":" + letterNumber + ","
+                + "\"action\":\"view_letter_pdfs\","
+                + "\"template_id\":\"" + templateId + "\","
+                + "\"message\":\"Starting viewLetterPdfs process\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
 
