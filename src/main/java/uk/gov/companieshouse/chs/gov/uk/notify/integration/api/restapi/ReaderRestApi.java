@@ -34,6 +34,9 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     private static final String REFERENCE = "reference";
     private static final String LETTER_PDF_IO_ERROR_MESSAGE =
             "Failed to load precompiled letter PDF. Caught IOException: ";
+    // Filename element separator. Constant name made short for intelligibility of code composing
+    // filenames.
+    private static final String SEP = "-";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
@@ -235,7 +238,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         try {
             return ResponseEntity
                 .ok()
-                .headers(suggestFilename(pscName + ":" + templateId + ":" + letterSendingDate))
+                .headers(suggestFilename(pscName + SEP + templateId + SEP + letterSendingDate))
                 .body(IOUtils.toByteArray(
                         fetcher.fetchLetter(
                                 pscName,
@@ -274,7 +277,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     letterSendingDate,
                     letterNumber,
                     contextId);
-            var fileName = pscName + ":" + templateId + ":" + letterSendingDate
+            var fileName = pscName + SEP + templateId + SEP + letterSendingDate
                     + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
             return ResponseEntity
                     .ok()
