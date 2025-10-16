@@ -2,6 +2,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDF;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDFS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
@@ -30,8 +32,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     private static final String RETRIEVED = "Retrieved ";
     private static final String REFERENCE = "reference";
-    private static final String VIEW_LETTER_PDF = "view_letter_pdf";
-    private static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
     private static final String LETTER_PDF_IO_ERROR_MESSAGE =
             "Failed to load precompiled letter PDF. Caught IOException: ";
 

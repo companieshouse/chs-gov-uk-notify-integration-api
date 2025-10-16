@@ -2,6 +2,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetche
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDF;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDFS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
@@ -76,7 +78,7 @@ public class SentLetterFetcher {
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter with reference "
-                            + reference, createLogMap(contextId, "view_letter"));
+                            + reference, createLogMap(contextId, VIEW_LETTER_PDF));
             return precompiledPdf;
         }
     }
@@ -95,7 +97,7 @@ public class SentLetterFetcher {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter number "
                             + letterNumber + " with reference "
-                            + reference, createLogMap(contextId, "view_letters"));
+                            + reference, createLogMap(contextId, VIEW_LETTER_PDFS));
             var numberOfLetters = page.getTotalPages();
             return new FetchedLetter(precompiledPdf, numberOfLetters);
         }
@@ -131,7 +133,7 @@ public class SentLetterFetcher {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter with "
                     + queryParameters(pscName, companyNumber, templateId, letterSendingDate),
-                    createLogMap(contextId, "view_letter"));
+                    createLogMap(contextId, VIEW_LETTER_PDF));
             return precompiledPdf;
         }
     }
@@ -160,7 +162,7 @@ public class SentLetterFetcher {
                                               templateId,
                                               letterSendingDate,
                                               letterNumber),
-                    createLogMap(contextId, "view_letter"));
+                    createLogMap(contextId, VIEW_LETTER_PDFS));
             var numberOfLetters = page.getTotalPages();
             return new FetchedLetter(precompiledPdf, numberOfLetters);
         }
