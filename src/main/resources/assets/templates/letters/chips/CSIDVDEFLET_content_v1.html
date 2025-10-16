@@ -1,66 +1,71 @@
-<p class="subject-line">ACTION REQUIRED: Overdue Statutory Filings</p>
-<p class="subject-line"><span class="subject-line">[[${company_name}]] ([[${company_number}]])</span></p>
-<hr/>
-
-<p>
-    We are writing to inform you that [[${company_name}]] has failed to deliver the following documents to Companies House:
-    <ol>
-        <li>Annual confirmation statement (CS01 form) for the review period between <span id="cs-review-period-start-date">[[${cs_review_period_start_date}]]</span> and <span id="cs-review-period-end-date">[[${cs_review_period_end_date}]]</span>.</li>
-        <li>Director identity verification statements for all registered company directors.</li>
-    </ol>
-</p>
-
-<p>These statements must be filed together to comply with requirements under the Economic Crime and Corporate Transparency Act 2023, which introduced mandatory identity verification for all company directors and persons with significant control (PSCs).</p>
-
-<p>You must deliver the outstanding statements or, if you are unable to comply due to exceptional circumstances, submit the reason in writing by <span id="action-due-date">[[${action_due_date}]]</span>.</p>
-
-<p>Failure to file a confirmation statement constitutes an offence under Section 853L of the Companies Act 2006. In addition, any director who continues to act without verifying their identity will be committing an offence under Section 167M of the Companies Act 2006.</p>
-
-<p>
-    Where these requirements are not met, we may initiate enforcement action without further notice. This may include:
-    <ul>
-        <li>Prosecution of the company and its officers</li>
-        <li>Financial penalties imposed on individual directors and the company</li>
-        <li>Strike-off proceedings, resulting in the company being removed from the register</li>
-        <li>Disqualification of directors, preventing them from acting in similar roles in the future</li>
+<p class="subject-line">Overdue confirmation statement and <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> identity verification statements for <span class="subject-line">[[${company_name}]]</span></p>
+<br/>
+<div class="grey-bg-block">
+    <div class="grey-title">
+        You have not delivered the following statements to Companies House:
+    </div>
+    <ul class="grey-list">
+        <li>confirmation statement due by <span id="cs-review-period-end-date">[[${cs_review_period_end_date}]]</span></li>
+        <li>identity verification statements for all registered <span th:if="${is_llp == 'yes'}">limited liability partnership (LLP) members</span><span th:if="${is_llp == 'no'}">company directors</span></li>
     </ul>
-</p>
+    <div class="grey-warning-block">
+        <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
+        <div class="grey-warning-block-text">
+            <span>
+                <strong>You must file your overdue confirmation and identity verification statements or make a representation.</strong> There are instructions on the back of this letter.
+            </span>
+        </div>
+    </div>
+</div>
 
-<p class="emphasis">Instructions on how to comply with identity verification requirements and submit reasons for exceptional circumstances are on the back of this letter.</p>
 
-<p class="subject-line" style="page-break-before: always">There are 2 steps to comply with identity verification requirements:</p>
+<!--Check font size-->
+<p class="small-heading">If you do not file the statements we may take enforcement action without further notice</p>
+
+<p>This may include prosecution or financial penalties for the <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span>.</p>
+
+<div class="black-warning-block">
+    <img class="white-warning-img" th:src="@{${common} + warning_white.svg}" alt="Warning"/>
+    <div class="black-warning-block-text">
+        <span>
+            <strong>The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> may be committing an offence for failing to file a confirmation statement.</strong>
+            Any <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> who continues to act as a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> without verifying their identity is also committing an offence. The <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is committing an offence for failing to rectify this.
+        </span>
+    </div>
+</div>
+
+<p>For guidance on your duties <span th:if="${is_llp == 'yes'}">in running an LLP, visit:<br/><span class="emphasis">gov.uk/guidance/set-up-and-run-a-limited-liability-partnership-llp</span></span><span th:if="${is_llp == 'no'}">as a director, visit:<span class="emphasis">gov.uk/guidance/being-a-company-director</span></span></p>
+
+<p class="subject-line" style="page-break-before: always">What you need to do</p>
 <p class="subject-line-spacer"></p>
 
 <table>
     <tr>
         <td class="verification-requirements">
-            <p class="verification-requirements-heading">1. Verify your identity</p>
-            <p class="verification-requirements-text">For information on how to do this, search online for ‘Verifying your identity for Companies House’, or visit: <span class="emphasis">gov.uk/guidance/verifying-your-identity-for-companies-house</span></p>
-            <p class="verification-requirements-text">After you’ve verified your identity, you’ll get a unique identifier, called a Companies House personal code.</p>
+            <p class="verification-requirements-heading">Step 1. Each <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> must verify their identity</p>
+            <p class="verification-requirements-text">For information on how to do this, search online for ‘Verifying your identity for Companies House’, or visit:<br/><span class="emphasis">gov.uk/guidance/verifying-your-identity-for-companies-house</span></p>
+            <p class="verification-requirements-text">After each <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> has verified, they’ll receive a unique identifier called a Companies House personal code.</p>
             <p class="verification-requirements-text">If you already have a personal code, you do not need to verify your identity again.</p>
-            <br/>
-            <p class="emphasis">All registered company directors will need a personal code</p>
+            <p class="verification-requirements-text">You’ll need each <span th:if="${is_llp == 'yes'}">member’s</span><span th:if="${is_llp == 'no'}">director’s</span> personal code for step 2.</p>
         </td>
         <td class="verification-requirements-spacer"></td>
         <td class="verification-requirements">
-            <p class="verification-requirements-heading">2. Provide your Companies House personal code</p>
-            <p class="verification-requirements-text">This is so we can connect your verified identity to the director name on our records.</p>
-            <p class="verification-requirements-text">Search online for the ‘Provide identity verification details for a person with significant control’ service, or visit:<br/><span class="emphasis">[insert link]</span></p>
-            <p class="verification-requirements-text">You’ll also be asked to tick a statement confirming that you’ve verified your identity when filing the companies confirmation statement.</p>
-            <p class="verification-requirements-text">You need to do this even if you’ve already done it for other roles you have at this company, or at other companies.</p>
+            <p class="verification-requirements-heading">Step 2. File the confirmation statement and verification statement</p>
+            <p class="verification-requirements-text">In the confirmation statement, you will need to provide the Companies House personal code for each <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> to submit their identity verification statements.</p>
+            <p class="verification-requirements-text">You need to do this even if a <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> has already provided their personal code and statement for other roles at this <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span>, or at other companies.</p>
+            <p class="verification-requirements-text">To file your confirmation statement, search GOV.UK for ‘file your confirmation statement with Companies House’ or visit:<br/><span class="emphasis">gov.uk/file-your-confirmation-statement-with-companies-house</span></p>
         </td>
     </tr>
 </table>
 
-<p class="small-heading">Exceptional circumstances</p>
-<p>If you are unable to comply due to exceptional circumstances, you may submit written representations by [insert contact method] within <span class="emphasis">28 days</span> of the date of this letter.</p>
+<p class="small-heading">How to make representations</p>
 
-<p>If the exceptional circumstances are accepted, enforcement action will be paused for a limited period to allow time for you to submit the required documents. If enforcement action is paused, the company and its directors remain in default until the required documents are received. If the documents are not submitted by the deadline we provide, enforcement action will resume without further notice.</p>
+<p>If there are exceptional circumstances you want us to consider before we proceed with enforcement action, you must write to us by [[${cs_review_period_end_date}]]. This is called a representation.</p>
 
-<p>For further guidance on exceptional circumstances visit: [insert link].</p>
+<p>To make a representation, go to <span class="emphasis">[URL-to-be-confirmed]</span></p>
 
-<p class="small-heading">Check the register</p>
-<p>It is important to make sure we hold the correct details for each director of your company. If there are directors that are no longer active, you may wish to remove them from the register by filing a form [make changes form].</p>
+<p>If we accept your representation, we will pause enforcement action for a limited period so you can file the statements. The <span th:if="${is_llp == 'yes'}">LLP and its members</span><span th:if="${is_llp == 'no'}">company and its directors</span> will remain in default and we’ll resume enforcement if you do not successfully file the statements.</p>
 
-<p class="small-heading">If you no longer need the company</p>
-<p>You may be able to apply to remove it from the register. It’s important to close down your company properly. Visit: <span class="emphasis">gov.uk/closing-a-limited-company</span></p>
+<p class="small-heading">If you no longer need the <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span></p>
+
+<p>If your <span th:if="${is_llp == 'yes'}">LLP</span><span th:if="${is_llp == 'no'}">company</span> is not trading and you want to remove it from the register, go to:<br/><span class="emphasis"><span th:if="${is_llp == 'yes'}">gov.uk/government/publications/striking-off-or-dissolving-a-limited-liability-partnership</span><span th:if="${is_llp == 'no'}">gov.uk/closing-a-limited-company</span></span></p>
