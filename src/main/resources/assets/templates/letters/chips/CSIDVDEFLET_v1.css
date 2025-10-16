@@ -12,6 +12,7 @@
     padding-bottom: 3mm;
     padding-top: 2mm;
     background-color: black;
+    border-radius: 1.2mm;
     /* border-radius removed for CSS1 compatibility */
 }
 
@@ -20,9 +21,10 @@
 .black-warning-block {
     background-color: #1a1a1a;
     color: white;
+    border-radius: 1.2mm;
     /* border-radius removed */
-    margin-top: 2mm;
-    padding: 4mm 4mm 4mm 5mm;
+    margin-top: 3mm;
+    padding: 4mm 4mm 4mm 8px;
     text-align: left;
     font-size: 13pt;
     line-height: 1.15;
@@ -41,34 +43,39 @@
     /* margin-bottom: 2mm; */
 }
 
+.black-warning-block-text {
+    margin-left: 8mm;
+}
+
 .white-warning-img {
     float: left;
     height: 7mm;
     width: 7mm;
-    margin-right: 2mm;
+    /*margin-right: 2mm;*/
     margin-top: -1mm;
-    margin-left: -10mm;
     display: block;
 }
 
 .grey-bg-block {
     border-top: 3px solid #111;
     background-color: #f1f1f1;
+    border-radius: 1.2mm;
     /* border-radius removed */
-    padding: 24px 32px 24px 8px;
+    padding: 4mm 4mm 4mm 8px;
     margin: 32px 0px;
     /* max-width removed */
     font-family: Arial, sans-serif;
+    font-size: 13pt;
 }
 
 .grey-title {
     font-weight: bold;
-    margin-bottom: 12px;
+    margin-bottom: 5px;
 }
 
 .grey-list {
     margin-top: 0;
-    margin-bottom: 18px;
+    margin-bottom: 4px;
     padding-left: 32px;
 }
 
@@ -96,15 +103,15 @@
     /* overflow: hidden removed */
 }
 
-.black-warning-img {
-    float: left;
-    height: 29px;
-    width: 29px;
-    margin-right: 2mm;
-    margin-top: -5px;
-    display: block;
+.grey-warning-block-text {
+    margin-left: 8mm;
 }
 
-.black-warning-block-text {
-    margin-left: 10mm; /* 7mm icon + 2mm margin + 1mm buffer */
+.black-warning-img {
+    float: left;
+    height: 7mm;
+    width: 7mm;
+    /*margin-right: 2mm;*/
+    margin-top: -5px;
+    display: block;
 }

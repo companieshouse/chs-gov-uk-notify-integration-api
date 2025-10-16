@@ -1,6 +1,5 @@
 <p class="subject-line">Overdue confirmation statement and <span th:if="${is_llp == 'yes'}">member</span><span th:if="${is_llp == 'no'}">director</span> identity verification statements for <span class="subject-line">[[${company_name}]]</span></p>
 <br/>
-<br/>
 <div class="grey-bg-block">
     <div class="grey-title">
         You have not delivered the following statements to Companies House:
@@ -11,9 +10,11 @@
     </ul>
     <div class="grey-warning-block">
         <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
-        <span>
-      <strong>You must file your overdue confirmation and identity verification statements or make a representation.</strong> There are instructions on the back of this letter.
-    </span>
+        <div class="grey-warning-block-text">
+            <span>
+                <strong>You must file your overdue confirmation and identity verification statements or make a representation.</strong> There are instructions on the back of this letter.
+            </span>
+        </div>
     </div>
 </div>
 
