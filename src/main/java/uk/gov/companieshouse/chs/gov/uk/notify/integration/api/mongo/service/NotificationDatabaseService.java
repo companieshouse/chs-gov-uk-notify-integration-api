@@ -75,9 +75,7 @@ public class NotificationDatabaseService {
     }
 
     public Page<NotificationLetterRequest> getLetterByReference(final String reference,
-                                                                final int letterNumber)
-    {
-        // TODO DEEP-546 Sorting sorted?
+                                                                final int letterNumber) {
         return notificationLetterRequestRepository.findByReference(reference,
                 PageRequest.of(letterNumber - 1, 1));
     }
@@ -103,7 +101,6 @@ public class NotificationDatabaseService {
             final LocalDate letterSendingDate,
             final int letterNumber) {
         var nextDay = letterSendingDate.plusDays(1);
-        // TODO DEEP-546 Sorting sorted?
         return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,

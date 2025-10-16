@@ -15,7 +15,8 @@ public interface NotificationLetterRequestRepository extends
     @Query("{ 'request.senderDetails.reference' : ?0 }")
     List<NotificationLetterRequest> findByReference(String reference);
 
-    @Query("{ 'request.senderDetails.reference' : { $regex: ?0 }}")
+    @Query(value = "{ 'request.senderDetails.reference' : { $regex: ?0 }}",
+            sort = "{ 'request.createdAt' : 1 }")
     Page<NotificationLetterRequest> findByReference(String reference, Pageable pageable);
 
     @Query("""
@@ -36,7 +37,7 @@ public interface NotificationLetterRequestRepository extends
               String letterSendingDate,
               String letterSendingDateNextDay);
 
-    @Query("""
+    @Query(value = """
             {$and: [
                 {'request.letterDetails.personalisationDetails':
                  {$regex: '"psc_name": "?0"'}},
@@ -45,7 +46,8 @@ public interface NotificationLetterRequestRepository extends
                 {'request.letterDetails.templateId': '?2'},
                 {'request.createdAt': { $gte: { $date: '?3'}, $lt: { $date: '?4'} }}
             ]}
-            """
+            """,
+            sort = "{ 'request.createdAt' : 1 }"
     )
     Page<NotificationLetterRequest> findByNameCompanyTemplateDate(
             String pscName,

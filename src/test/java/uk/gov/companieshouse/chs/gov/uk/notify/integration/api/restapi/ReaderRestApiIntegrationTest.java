@@ -3,6 +3,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -843,10 +845,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByReferencePaginatesCorrectly() throws Exception {
 
         // Given
-        sendLetterWithReference("Reference");
-        sendLetterWithReference("Reference 1");
-        sendLetterWithReference("Reference 11");
-        sendLetterWithReference("Reference 111");
+        sendLetterWithReferenceNow("Reference");
+        sendLetterWithReferenceNow("Reference 1");
+        sendLetterWithReferenceNow("Reference 11");
+        sendLetterWithReferenceNow("Reference 111");
 
         // When and then
         checkCorrectLetterIsReturned("Reference", "Reference", LETTER_1);
@@ -1031,10 +1033,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByByPscCompanyLetterTypeAndDatePaginatesCorrectly() throws Exception {
 
         // Given
-        sendLetterWithReference("Reference 1");
-        sendLetterWithReference("Reference 2");
-        sendLetterWithReference("Reference 3");
-        sendLetterWithReference("Reference 4");
+        sendLetterWithReferenceNow("Reference 1");
+        sendLetterWithReferenceNow("Reference 2");
+        sendLetterWithReferenceNow("Reference 3");
+        sendLetterWithReferenceNow("Reference 4");
 
         // When and then
         checkCorrectLetterIsReturned("Reference 1", LETTER_1);
@@ -1049,7 +1051,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 PSC_NAME,
                 COMPANY_NUMBER,
                 LETTER_TYPE,
-                LETTER_SENDING_DATE,
+                LocalDate.now().toString(),
                 letterNumber,
                 status().isOk())
                 .andReturn().getResponse().getContentAsByteArray();
@@ -1075,6 +1077,16 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Check reference in letter PDF.
         assertThat(page1, containsString(
                 "Reference:\n" + referenceExpected));
+    }
+
+    private void sendLetterWithReferenceNow(String reference) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+        var requestBody = getSentNowSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(), reference);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
     }
 
     private void sendLetterWithReference(String reference) throws Exception {
@@ -1212,6 +1224,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
                 .andExpect(expectedResponseStatus);
+    }
+
+    private String getSentNowSendLetterRequestWithReference(String requestBody, String reference)
+            throws IOException {
+        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
+        request.getSenderDetails().setReference(reference);
+        request.setCreatedAt(OffsetDateTime.now());
+        return objectMapper.writeValueAsString(request);
     }
 
     private String getSendLetterRequestWithReference(String requestBody, String reference)
