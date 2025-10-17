@@ -19,7 +19,7 @@
   },
   "letter_details": {
     "template_id": "CSIDVDEFLET_v1",
-    "personalisation_details": "{ \"cs_review_period_start_date\": \"18 September 2024\", \"cs_review_period_end_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\"}"
+    "personalisation_details": "{ \"verification_due_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\", \"is_llp\": \"no\"}"
   },
   "created_at": "2025-10-03T15:46:24.905+00:00"
 }
