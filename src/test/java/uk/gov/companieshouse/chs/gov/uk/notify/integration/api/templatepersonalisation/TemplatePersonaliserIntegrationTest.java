@@ -486,9 +486,10 @@ class TemplatePersonaliserIntegrationTest {
                 IDVPSCDEFAULT,
                 "123456789",
                 Map.of(
+                        IS_LLP, "yes",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
                         COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, "Mr Worldwide"),
+                        COMPANY_NAME, TOKEN_VALUE),
                 ADDRESS));
 
         // Then
@@ -503,9 +504,47 @@ class TemplatePersonaliserIntegrationTest {
                 )
         );
         assertThat(
-                getText(letter, "#psc-name"),
-                is("Mr Worldwide")
+                getText(letter, "#verification-due-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE)
         );
+    }
+
+    @Test
+    @DisplayName("Generate English IDVPSCDEFAULT LLP HTML successfully")
+    void generateEnglishIDVPSCDEFAULTLLPSuccessfully() {
+
+        // Given and when
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                IDVPSCDEFAULT,
+                "123456789",
+                Map.of(
+                        IS_LLP, "yes",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE),
+                ADDRESS));
+
+        verifyLetterIsEnglishOnly(letter);
+        verifyLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#action-due-date"),
+                is(
+                        LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER)
+                )
+        );
+        assertThat(
+                getText(letter, "#verification-due-date"),
+                is(VALID_IDV_VERIFICATION_DUE_DATE)
+        );
+        String letterHtml = letter.html();
+        assertThat(letterHtml.contains("director"), is(false));
+        assertThat(letterHtml.contains("directors"), is(false));
+        assertThat(letterHtml.contains("member"), is(true));
+        assertThat(letterHtml.contains("members"), is(true));
+        assertThat(letterHtml.contains("LLP"), is(true));
+        assertThat(letterHtml.contains("limited liability partnership"), is(true));
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
