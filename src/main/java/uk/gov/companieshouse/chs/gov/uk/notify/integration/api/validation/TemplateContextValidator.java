@@ -123,8 +123,10 @@ public class TemplateContextValidator {
                                     REFERENCE,
                                     COMPANY_NAME,
                                     COMPANY_NUMBER,
+                                    VERIFICATION_DUE_DATE,
                                     TODAYS_DATE,
-                                    ACTION_DUE_DATE
+                                    ACTION_DUE_DATE,
+                                    IS_LLP
                             )
                     )
 
