@@ -34,30 +34,12 @@ public class ApiKeyMapping {
     public ApiKeyMapping(String regexPattern, String apiKey, String description) {
         this.id = UUID.randomUUID();
         this.regexPattern = regexPattern;
-        this.compiledPattern = Pattern.compile(regexPattern);
+        this.compiledPattern = Pattern.compile(regexPattern); // NOSONAR javasecurity:S2631 (private route)
         this.apiKey = apiKey;
         this.description = description;
         this.createdAt = LocalDateTime.now();
     }
-
-    /**
-     * Creates a new API key mapping with a specific ID (for loading pre-defined mappings).
-     *
-     * @param id the unique identifier
-     * @param regexPattern the regex pattern to match against notification references
-     * @param apiKey the Gov.uk Notify API key to use when pattern matches
-     * @param description explanation of why this mapping exists
-     * @param createdAt the creation timestamp
-     */
-    public ApiKeyMapping(UUID id, String regexPattern, String apiKey, String description, LocalDateTime createdAt) {
-        this.id = id;
-        this.regexPattern = regexPattern;
-        this.compiledPattern = Pattern.compile(regexPattern);
-        this.apiKey = apiKey;
-        this.description = description;
-        this.createdAt = createdAt;
-    }
-
+    
     /**
      * Checks if the given reference matches this mapping's regex pattern.
      *

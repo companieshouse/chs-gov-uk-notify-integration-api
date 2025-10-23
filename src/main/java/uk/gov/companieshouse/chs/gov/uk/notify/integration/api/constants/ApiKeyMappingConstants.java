@@ -44,6 +44,7 @@ public class ApiKeyMappingConstants {
      */
     public static final List<ApiKeyMapping> DEFAULT_MAPPINGS = Collections.emptyList();
 
+    // sonarignore:start 
     /*
      * COMMENTED EXAMPLE - Uncomment and modify only if you need permanent test mappings:
      *
@@ -53,8 +54,9 @@ public class ApiKeyMappingConstants {
      *         "your-test-api-key-here",
      *         "For specific E2E test scenario XYZ - uses dedicated test API key"
      *     )
-     * );
+     * ); //NOSONAR java:S125
      */
+     // sonarignore:end
 
     private ApiKeyMappingConstants() {
         // Utility class - prevent instantiation

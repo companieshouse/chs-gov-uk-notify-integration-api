@@ -17,8 +17,7 @@ public class ApiKeyMappingRequest {
     @JsonProperty("regex_pattern")
     @Schema(
         description = "Regular expression pattern to match against notification reference field",
-        example = "^e2e-test-.*",
-        required = true
+        example = "^e2e-test-.*"
     )
     private String regexPattern;
 
@@ -26,8 +25,7 @@ public class ApiKeyMappingRequest {
     @JsonProperty("api_key")
     @Schema(
         description = "The Gov.uk Notify API key to use when the pattern matches",
-        example = "test-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012",
-        required = true
+        example = "test-12345678-1234-1234-1234-123456789012-12345678-1234-1234-1234-123456789012"
     )
     private String apiKey;
 
@@ -35,14 +33,9 @@ public class ApiKeyMappingRequest {
     @JsonProperty("description")
     @Schema(
         description = "Explanation of why this mapping exists (e.g., 'For Team Poseidon E2E tests')",
-        example = "For Team Poseidon E2E test coverage using dedicated API key",
-        required = true
+        example = "For Team Poseidon E2E test coverage using dedicated API key"
     )
     private String description;
-
-    public ApiKeyMappingRequest() {
-        // empty constructor
-    }
 
     public ApiKeyMappingRequest(String regexPattern, String apiKey, String description) {
         this.regexPattern = regexPattern;

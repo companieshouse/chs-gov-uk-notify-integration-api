@@ -58,7 +58,7 @@ class ApiKeyMappingControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, Object> body = (Map<String, Object>) response.getBody();
-        assertThat(body.get("total_count")).isEqualTo(1);
+        assertThat(body).containsEntry("total_count", 1);
         assertThat(body.get("mappings")).isNotNull();
 
         verify(apiKeyMappingService).getAllMappings();
@@ -77,7 +77,8 @@ class ApiKeyMappingControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, Object> body = (Map<String, Object>) response.getBody();
-        assertThat(body.get("total_count")).isEqualTo(0);
+        assertThat(body).containsEntry("total_count", 0);
+        
 
         verify(apiKeyMappingService).getAllMappings();
     }
@@ -169,7 +170,7 @@ class ApiKeyMappingControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, String> body = (Map<String, String>) response.getBody();
-        assertThat(body.get("error")).isEqualTo("Invalid regex pattern");
+        assertThat(body).containsEntry("error", "Invalid regex pattern");
     }
 
     @Test

@@ -19,6 +19,8 @@ import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
 
+    private static final String API_KEY_MAPPINGS = "/api-key-mappings/**";
+    
     private final InternalUserInterceptor internalUserInterceptor;
 
     public SecurityConfig(InternalUserInterceptor internalUserInterceptor) {
@@ -41,11 +43,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
                         .permitAll()
                         // API Key Mapping endpoints (internal testing)
-                        .requestMatchers(GET, "/api-key-mappings/**")
+                        .requestMatchers(GET, API_KEY_MAPPINGS)
                         .permitAll()
-                        .requestMatchers(POST, "/api-key-mappings/**")
+                        .requestMatchers(POST, API_KEY_MAPPINGS)
                         .permitAll()
-                        .requestMatchers(DELETE, "/api-key-mappings/**")
+                        .requestMatchers(DELETE, API_KEY_MAPPINGS)
                         .permitAll()
                         .anyRequest()
                         .denyAll())

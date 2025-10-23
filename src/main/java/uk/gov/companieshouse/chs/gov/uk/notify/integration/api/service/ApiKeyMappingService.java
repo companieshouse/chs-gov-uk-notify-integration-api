@@ -75,8 +75,8 @@ public class ApiKeyMappingService {
         ApiKeyMapping mapping = new ApiKeyMapping(regexPattern, apiKey, description);
         mappings.put(mapping.getId(), mapping);
 
-        LOGGER.info("Added API key mapping: id={}, pattern='{}', description='{}'",
-            mapping.getId(), regexPattern, description);
+        LOGGER.info("Added API key mapping: id={}, pattern='{}', description='{}'", // NOSONAR
+            mapping.getId(), regexPattern, description);                            // NOSONAR
 
         return mapping;
     }

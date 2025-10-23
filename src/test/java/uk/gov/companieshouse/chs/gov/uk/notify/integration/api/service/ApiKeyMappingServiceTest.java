@@ -277,7 +277,7 @@ class ApiKeyMappingServiceTest {
         int count = service.getMappingCount();
 
         // Then
-        assertThat(count).isEqualTo(0);
+        assertThat(count).isZero();
     }
 
     @Test

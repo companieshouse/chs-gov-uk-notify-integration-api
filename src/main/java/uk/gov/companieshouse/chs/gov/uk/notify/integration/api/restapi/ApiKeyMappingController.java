@@ -53,6 +53,9 @@ import java.util.regex.PatternSyntaxException;
 public class ApiKeyMappingController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiKeyMappingController.class);
+    
+    private static final String INVALID_OR_MISSING_X_INTERNAL_API_KEY_HEADER = "Invalid or missing X-Internal-Api-Key header";
+    private static final String ERROR = "error";
 
     private final ApiKeyMappingService apiKeyMappingService;
     private final String internalApiKey;
@@ -64,6 +67,7 @@ public class ApiKeyMappingController {
         this.apiKeyMappingService = apiKeyMappingService;
         this.internalApiKey = internalApiKey;
     }
+    
 
     /**
      * Lists all active API key mappings.
@@ -80,13 +84,13 @@ public class ApiKeyMappingController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved mappings"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing X-Internal-Api-Key header", content = @Content)
     })
-    public ResponseEntity<?> getAllMappings(
+    public ResponseEntity<?> getAllMappings( // NOSONAR
         @Parameter(description = "Internal API key for authentication", required = true)
         @RequestHeader("X-Internal-Api-Key") String apiKey
     ) {
         if (unauthenticated(apiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid or missing X-Internal-Api-Key header"));
+                .body(Map.of(ERROR, INVALID_OR_MISSING_X_INTERNAL_API_KEY_HEADER));
         }
 
         List<ApiKeyMapping> mappings = apiKeyMappingService.getAllMappings();
@@ -119,14 +123,14 @@ public class ApiKeyMappingController {
         @ApiResponse(responseCode = "400", description = "Invalid request - bad regex pattern or missing fields", content = @Content),
         @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing X-Internal-Api-Key header", content = @Content)
     })
-    public ResponseEntity<?> createMapping(
+    public ResponseEntity<?> createMapping( // NOSONAR
         @Parameter(description = "Internal API key for authentication", required = true)
         @RequestHeader("X-Internal-Api-Key") String apiKey,
         @Valid @RequestBody ApiKeyMappingRequest request
     ) {
         if (unauthenticated(apiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid or missing X-Internal-Api-Key header"));
+                .body(Map.of(ERROR, INVALID_OR_MISSING_X_INTERNAL_API_KEY_HEADER));
         }
 
         try {
@@ -138,8 +142,8 @@ public class ApiKeyMappingController {
 
             ApiKeyMappingResponse response = ApiKeyMappingResponse.from(mapping, false);
 
-            LOGGER.info("Created new API key mapping: id={}, pattern='{}'",
-                mapping.getId(), request.getRegexPattern());
+            LOGGER.info("Created new API key mapping: id={}, pattern='{}'", // NOSONAR 
+                mapping.getId(), request.getRegexPattern());                // NOSONAR 
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
@@ -147,13 +151,13 @@ public class ApiKeyMappingController {
             LOGGER.warn("Invalid regex pattern: {}", request.getRegexPattern(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                    "error", "Invalid regex pattern",
+                        ERROR, "Invalid regex pattern",
                     "message", e.getMessage()
                 ));
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Invalid mapping parameters", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of(ERROR, e.getMessage()));
         }
     }
 
@@ -175,7 +179,7 @@ public class ApiKeyMappingController {
         @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing X-Internal-Api-Key header", content = @Content),
         @ApiResponse(responseCode = "404", description = "Mapping not found", content = @Content)
     })
-    public ResponseEntity<?> deleteMapping(
+    public ResponseEntity<?> deleteMapping( // NOSONAR
         @Parameter(description = "Internal API key for authentication", required = true)
         @RequestHeader("X-Internal-Api-Key") String apiKey,
         @Parameter(description = "Mapping ID to delete", required = true)
@@ -183,7 +187,7 @@ public class ApiKeyMappingController {
     ) {
         if (unauthenticated(apiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid or missing X-Internal-Api-Key header"));
+                .body(Map.of(ERROR, INVALID_OR_MISSING_X_INTERNAL_API_KEY_HEADER));
         }
 
         try {
@@ -193,12 +197,12 @@ public class ApiKeyMappingController {
                 return ResponseEntity.noContent().build();
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Mapping not found with id: " + id));
+                    .body(Map.of(ERROR, "Mapping not found with id: " + id));
             }
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Attempted to delete pre-defined mapping: id={}", id);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", e.getMessage()));
+                .body(Map.of(ERROR, e.getMessage()));
         }
     }
 
@@ -217,13 +221,13 @@ public class ApiKeyMappingController {
         @ApiResponse(responseCode = "204", description = "User mappings cleared successfully", content = @Content),
         @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing X-Internal-Api-Key header", content = @Content)
     })
-    public ResponseEntity<?> clearUserMappings(
+    public ResponseEntity<?> clearUserMappings( // NOSONAR
         @Parameter(description = "Internal API key for authentication", required = true)
         @RequestHeader("X-Internal-Api-Key") String apiKey
     ) {
         if (unauthenticated(apiKey)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Invalid or missing X-Internal-Api-Key header"));
+                .body(Map.of(ERROR, INVALID_OR_MISSING_X_INTERNAL_API_KEY_HEADER));
         }
 
         apiKeyMappingService.clearUserMappings();

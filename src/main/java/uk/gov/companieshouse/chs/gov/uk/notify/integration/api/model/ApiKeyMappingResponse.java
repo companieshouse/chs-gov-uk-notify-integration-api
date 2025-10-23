@@ -38,10 +38,6 @@ public class ApiKeyMappingResponse {
     @Schema(description = "Whether this mapping was loaded from constants (cannot be deleted)", example = "false")
     private boolean isPredefined;
 
-    public ApiKeyMappingResponse() {
-        // empty constructor
-    }
-
     public ApiKeyMappingResponse(UUID id, String regexPattern, String apiKeyPreview, String description,
                                  LocalDateTime createdAt, boolean isPredefined) {
         this.id = id;
