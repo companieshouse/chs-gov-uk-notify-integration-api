@@ -53,6 +53,12 @@ public class GovUKNotifyServiceTest {
     @Mock
     private NotificationClient mockClient;
 
+    @Mock
+    private NotificationClient mockMappedClient;
+
+    @Mock
+    private ApiKeyMappingService apiKeyMappingService;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,10 +84,13 @@ public class GovUKNotifyServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient, objectMapper));
+        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient, objectMapper, apiKeyMappingService));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
         govUkNotifyService = (GovUkNotifyService) factory.getProxy();
+
+        // By default, no API key mapping matches
+        when(apiKeyMappingService.findMatchingApiKey(anyString())).thenReturn(null);
     }
 
     @Nested
@@ -283,6 +292,134 @@ public class GovUKNotifyServiceTest {
                     Arguments.of("", VALID_TEMPLATE_ID, "Empty email with valid template"),
                     Arguments.of("invalid-email", "", "Invalid email with empty template")
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("API Key Mapping Tests")
+    class ApiKeyMappingTests {
+
+        @Test
+        @DisplayName("When_NoMappingMatches_Expect_DefaultClientUsedForEmail")
+        void When_NoMappingMatches_Expect_DefaultClientUsedForEmail() throws NotificationClientException {
+            // Given
+            UUID mockUuid = UUID.randomUUID();
+            when(mockEmailResponse.getNotificationId()).thenReturn(mockUuid);
+            when(apiKeyMappingService.findMatchingApiKey(VALID_REFERENCE)).thenReturn(null);
+            when(mockClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockEmailResponse);
+
+            // When
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(
+                VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION
+            );
+
+            // Then
+            assertTrue(result.success());
+            verify(apiKeyMappingService).findMatchingApiKey(VALID_REFERENCE);
+            verify(mockClient).sendEmail(VALID_TEMPLATE_ID, VALID_EMAIL, VALID_PERSONALISATION, VALID_REFERENCE);
+        }
+
+        @Test
+        @DisplayName("When_MappingMatches_Expect_MappedClientUsedForEmail")
+        void When_MappingMatches_Expect_MappedClientUsedForEmail() throws NotificationClientException {
+            // Given
+            String mappedApiKey = "mapped-api-key-123";
+            UUID mockUuid = UUID.randomUUID();
+            when(mockEmailResponse.getNotificationId()).thenReturn(mockUuid);
+            when(apiKeyMappingService.findMatchingApiKey(VALID_REFERENCE)).thenReturn(mappedApiKey);
+            when(apiKeyMappingService.getNotificationClient(mappedApiKey)).thenReturn(mockMappedClient);
+            when(mockMappedClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(mockEmailResponse);
+
+            // When
+            GovUkNotifyService.EmailResp result = govUkNotifyService.sendEmail(
+                VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION
+            );
+
+            // Then
+            assertTrue(result.success());
+            verify(apiKeyMappingService).findMatchingApiKey(VALID_REFERENCE);
+            verify(apiKeyMappingService).getNotificationClient(mappedApiKey);
+            verify(mockMappedClient).sendEmail(VALID_TEMPLATE_ID, VALID_EMAIL, VALID_PERSONALISATION, VALID_REFERENCE);
+        }
+
+        @Test
+        @DisplayName("When_NoMappingMatches_Expect_DefaultClientUsedForLetter")
+        void When_NoMappingMatches_Expect_DefaultClientUsedForLetter() throws NotificationClientException {
+            // Given
+            UUID mockUuid = UUID.randomUUID();
+            when(mockLetterResponse.getNotificationId()).thenReturn(mockUuid);
+            when(apiKeyMappingService.findMatchingApiKey(VALID_RECIPIENT)).thenReturn(null);
+            when(mockClient.sendPrecompiledLetterWithInputStream(anyString(), any(InputStream.class)))
+                .thenReturn(mockLetterResponse);
+
+            // When
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+
+            // Then
+            assertTrue(result.success());
+            verify(apiKeyMappingService).findMatchingApiKey(VALID_RECIPIENT);
+            verify(mockClient).sendPrecompiledLetterWithInputStream(VALID_RECIPIENT, mockPdf);
+        }
+
+        @Test
+        @DisplayName("When_MappingMatches_Expect_MappedClientUsedForLetter")
+        void When_MappingMatches_Expect_MappedClientUsedForLetter() throws NotificationClientException {
+            // Given
+            String mappedApiKey = "mapped-api-key-456";
+            UUID mockUuid = UUID.randomUUID();
+            when(mockLetterResponse.getNotificationId()).thenReturn(mockUuid);
+            when(apiKeyMappingService.findMatchingApiKey(VALID_RECIPIENT)).thenReturn(mappedApiKey);
+            when(apiKeyMappingService.getNotificationClient(mappedApiKey)).thenReturn(mockMappedClient);
+            when(mockMappedClient.sendPrecompiledLetterWithInputStream(anyString(), any(InputStream.class)))
+                .thenReturn(mockLetterResponse);
+
+            // When
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+
+            // Then
+            assertTrue(result.success());
+            verify(apiKeyMappingService).findMatchingApiKey(VALID_RECIPIENT);
+            verify(apiKeyMappingService).getNotificationClient(mappedApiKey);
+            verify(mockMappedClient).sendPrecompiledLetterWithInputStream(VALID_RECIPIENT, mockPdf);
+        }
+
+        @Test
+        @DisplayName("When_DifferentReferences_Expect_DifferentMappedClients")
+        void When_DifferentReferences_Expect_DifferentMappedClients() throws NotificationClientException {
+            // Given
+            String reference1 = "e2e-test-1";
+            String reference2 = "integration-test-1";
+            String mappedKey1 = "api-key-1";
+            String mappedKey2 = "api-key-2";
+
+            NotificationClient client1 = mockMappedClient;
+            NotificationClient client2 = org.mockito.Mockito.mock(NotificationClient.class);
+
+            SendEmailResponse response1 = org.mockito.Mockito.mock(SendEmailResponse.class);
+            SendEmailResponse response2 = org.mockito.Mockito.mock(SendEmailResponse.class);
+            when(response1.getNotificationId()).thenReturn(UUID.randomUUID());
+            when(response2.getNotificationId()).thenReturn(UUID.randomUUID());
+
+            when(apiKeyMappingService.findMatchingApiKey(reference1)).thenReturn(mappedKey1);
+            when(apiKeyMappingService.findMatchingApiKey(reference2)).thenReturn(mappedKey2);
+            when(apiKeyMappingService.getNotificationClient(mappedKey1)).thenReturn(client1);
+            when(apiKeyMappingService.getNotificationClient(mappedKey2)).thenReturn(client2);
+            when(client1.sendEmail(anyString(), anyString(), anyMap(), eq(reference1))).thenReturn(response1);
+            when(client2.sendEmail(anyString(), anyString(), anyMap(), eq(reference2))).thenReturn(response2);
+
+            // When
+            GovUkNotifyService.EmailResp result1 = govUkNotifyService.sendEmail(
+                VALID_EMAIL, VALID_TEMPLATE_ID, reference1, VALID_PERSONALISATION
+            );
+            GovUkNotifyService.EmailResp result2 = govUkNotifyService.sendEmail(
+                VALID_EMAIL, VALID_TEMPLATE_ID, reference2, VALID_PERSONALISATION
+            );
+
+            // Then
+            assertTrue(result1.success());
+            assertTrue(result2.success());
+            verify(client1).sendEmail(VALID_TEMPLATE_ID, VALID_EMAIL, VALID_PERSONALISATION, reference1);
+            verify(client2).sendEmail(VALID_TEMPLATE_ID, VALID_EMAIL, VALID_PERSONALISATION, reference2);
         }
     }
 }

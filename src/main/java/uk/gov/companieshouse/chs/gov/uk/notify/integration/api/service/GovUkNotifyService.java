@@ -28,12 +28,33 @@ public class GovUkNotifyService {
     public static final String ERROR_MESSAGE_KEY = "error";
     public static final UUID NIL_UUID = new UUID(0L, 0L);
 
-    private final NotificationClient client;
+    private final NotificationClient defaultNotificationClient;
     private final ObjectMapper objectMapper;
+    private final ApiKeyMappingService apiKeyMappingService;
 
-    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper) {
-        this.client = client;
+    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper,
+                              ApiKeyMappingService apiKeyMappingService) {
+        this.defaultNotificationClient = client;
         this.objectMapper = objectMapper;
+        this.apiKeyMappingService = apiKeyMappingService;
+    }
+
+    /**
+     * Resolves which NotificationClient to use based on API key mappings.
+     *
+     * <p>If a mapping exists for the given reference, uses the mapped API key.
+     * Otherwise, uses the default API key from application.properties.</p>
+     *
+     * @param reference the notification reference to check
+     * @return the appropriate NotificationClient to use
+     */
+    private NotificationClient resolveNotificationClient(String reference) {
+        String mappedApiKey = apiKeyMappingService.findMatchingApiKey(reference);
+        if (mappedApiKey != null) {
+            LOGGER.info("Using mapped API key for reference: " + reference);
+            return apiKeyMappingService.getNotificationClient(mappedApiKey);
+        }
+        return defaultNotificationClient;
     }
 
     public record EmailResp(boolean success, SendEmailResponse response) {
@@ -46,6 +67,7 @@ public class GovUkNotifyService {
             @NotBlank String reference,
             Map<String, ?> personalisation) {
         try {
+            NotificationClient client = resolveNotificationClient(reference);
             SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
             return new EmailResp(response != null && response.getNotificationId() != null, response);
         } catch (NotificationClientException e) {
@@ -66,6 +88,7 @@ public class GovUkNotifyService {
             @NotBlank String reference,
             @NotNull InputStream precompiledPdf) {
         try {
+            NotificationClient client = resolveNotificationClient(reference);
             var response =
                     client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
             return new LetterResp(response != null && response.getNotificationId() != null,

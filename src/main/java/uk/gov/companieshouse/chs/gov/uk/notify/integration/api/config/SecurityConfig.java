@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
@@ -31,9 +32,20 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
+                        // Main API endpoints
                         .requestMatchers(GET, "/gov-uk-notify-integration/**")
                         .permitAll()
                         .requestMatchers(POST, "/gov-uk-notify-integration/**")
+                        .permitAll()
+                        // Swagger/OpenAPI endpoints
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                        .permitAll()
+                        // API Key Mapping endpoints (internal testing)
+                        .requestMatchers(GET, "/api-key-mappings/**")
+                        .permitAll()
+                        .requestMatchers(POST, "/api-key-mappings/**")
+                        .permitAll()
+                        .requestMatchers(DELETE, "/api-key-mappings/**")
                         .permitAll()
                         .anyRequest()
                         .denyAll())
