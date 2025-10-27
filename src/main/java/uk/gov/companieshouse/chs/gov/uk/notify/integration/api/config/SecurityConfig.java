@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
@@ -18,6 +19,8 @@ import uk.gov.companieshouse.api.interceptor.InternalUserInterceptor;
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
 
+    private static final String API_KEY_MAPPINGS = "/api-key-mappings/**";
+    
     private final InternalUserInterceptor internalUserInterceptor;
 
     public SecurityConfig(InternalUserInterceptor internalUserInterceptor) {
@@ -31,9 +34,20 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
+                        // Main API endpoints
                         .requestMatchers(GET, "/gov-uk-notify-integration/**")
                         .permitAll()
                         .requestMatchers(POST, "/gov-uk-notify-integration/**")
+                        .permitAll()
+                        // Swagger/OpenAPI endpoints
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                        .permitAll()
+                        // API Key Mapping endpoints (internal testing)
+                        .requestMatchers(GET, API_KEY_MAPPINGS)
+                        .permitAll()
+                        .requestMatchers(POST, API_KEY_MAPPINGS)
+                        .permitAll()
+                        .requestMatchers(DELETE, API_KEY_MAPPINGS)
                         .permitAll()
                         .anyRequest()
                         .denyAll())
