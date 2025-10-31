@@ -77,7 +77,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 personalisationDetails
         );
 
-        logger.debug("Storing email response in database", createLogMap(xHeaderId, "store_response"));
+        logger.debug("Storing email response in database",
+                createLogMap(xHeaderId, emailResp.response()));
         notificationDatabaseService.storeResponse(emailResp);
 
         if (emailResp.success()) {
