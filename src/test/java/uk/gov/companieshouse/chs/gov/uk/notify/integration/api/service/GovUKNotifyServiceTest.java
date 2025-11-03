@@ -164,7 +164,7 @@ public class GovUKNotifyServiceTest {
             when(mockClient.sendPrecompiledLetterWithInputStream(
                     anyString(), any(InputStream.class))).thenReturn(mockLetterResponse);
 
-            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, mockPdf);
 
             assertTrue(result.success());
             assertEquals(mockLetterResponse, result.response());
@@ -177,7 +177,7 @@ public class GovUKNotifyServiceTest {
             when(mockClient.sendPrecompiledLetterWithInputStream(
                     anyString(), any(InputStream.class))).thenReturn(null);
 
-            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, mockPdf);
 
             assertFalse(result.success());
             assertNull(result.response());
@@ -190,7 +190,7 @@ public class GovUKNotifyServiceTest {
             when(mockClient.sendPrecompiledLetterWithInputStream(anyString(),
                     any(InputStream.class))).thenReturn(mockLetterResponse);
 
-            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, mockPdf);
 
             assertFalse(result.success());
             assertEquals(mockLetterResponse, result.response());
@@ -202,7 +202,7 @@ public class GovUKNotifyServiceTest {
             when(mockClient.sendPrecompiledLetterWithInputStream(anyString(), any(InputStream.class)))
                     .thenThrow(new NotificationClientException("Test exception"));
 
-            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+            GovUkNotifyService.LetterResp result = govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, mockPdf);
 
             assertFalse(result.success());
             assertNotNull(result.response());
@@ -220,7 +220,7 @@ public class GovUKNotifyServiceTest {
             when(objectMapper.writeValueAsString(anyMap())).thenThrow(mockJsonProcessingException);
 
             GovUkNotifyService.LetterResp result =
-                    govUkNotifyService.sendLetter(VALID_RECIPIENT, mockPdf);
+                    govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, mockPdf);
 
             assertFalse(result.success());
             assertNull(result.response());
@@ -265,14 +265,14 @@ public class GovUKNotifyServiceTest {
         @NullAndEmptySource
         void When_LetterInvalidRecipientProvided_Expect_ConstraintViolationException(String invalidRecipient) {
             assertThrows(ConstraintViolationException.class, () ->
-                    govUkNotifyService.sendLetter(invalidRecipient, mockPdf)
+                    govUkNotifyService.sendLetter("abc", invalidRecipient, mockPdf)
             );
         }
 
         @Test
         void When_LetterInvalidFileProvided_Expect_ConstraintViolationException() {
             assertThrows(ConstraintViolationException.class, () ->
-                    govUkNotifyService.sendLetter(VALID_RECIPIENT, null)
+                    govUkNotifyService.sendLetter("abc", VALID_RECIPIENT, null)
             );
         }
 

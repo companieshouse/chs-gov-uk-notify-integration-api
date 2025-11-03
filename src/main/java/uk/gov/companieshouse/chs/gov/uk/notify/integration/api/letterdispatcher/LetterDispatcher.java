@@ -54,7 +54,7 @@ public class LetterDispatcher {
                 address,
                 personalisationDetailsString,
                 contextId);
-        return sendLetterPdf(reference, contextId, letter);
+        return sendLetterPdf(templateId, reference, contextId, letter);
     }
 
     private String personaliseLetter(
@@ -79,6 +79,7 @@ public class LetterDispatcher {
 
     private GovUkNotifyService.LetterResp
             sendLetterPdf(
+                        final String templateId,
                         final String reference,
                         final String contextId,
                         final String letter) throws IOException {
@@ -87,6 +88,7 @@ public class LetterDispatcher {
 
             var response =
                     govUkNotifyService.sendLetter(
+                            templateId,
                             reference,
                             precompiledPdf);
 

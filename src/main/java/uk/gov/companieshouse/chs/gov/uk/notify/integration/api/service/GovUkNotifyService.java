@@ -63,11 +63,18 @@ public class GovUkNotifyService {
     }
 
     public LetterResp sendLetter(
+            String templateId,
             @NotBlank String reference,
             @NotNull InputStream precompiledPdf) {
         try {
-            var response =
-                    client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
+            LetterResponse response;
+            if (templateId.equals("IDVPSCDEFAULT_v1") || templateId.equals("CSIDVDEFLET_v1")) {
+                System.out.println("Sending letter using economy postage");
+                response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, "economy");
+            } else {
+                System.out.println("Sending letter using second class postage (default");
+                response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
+            }
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
