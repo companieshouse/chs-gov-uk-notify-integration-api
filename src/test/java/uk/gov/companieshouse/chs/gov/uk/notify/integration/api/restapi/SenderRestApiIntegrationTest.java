@@ -668,7 +668,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     @DisplayName("Send letter with postage economy for CSIDVDEFLET_v1 or IDVPSCDEFAULT_v1")
     void sendLetterWithEconomyPostage(CapturedOutput log) throws Exception {
-        // Arrange
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
@@ -705,7 +704,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class), anyString()))
                 .thenReturn(responseReceived);
-        // Test for other template (should use SECOND_CLASS_POSTAGE)
+
         String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(
