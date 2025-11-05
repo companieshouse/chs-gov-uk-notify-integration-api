@@ -26,7 +26,7 @@ public class GovUkNotifyService {
 
     /*
      * These POSTAGE constants should be removed in the future and postage should be
-     *  read from the request object.
+     * read from the request object.
      */
     public static final String SECOND_CLASS_POSTAGE = "second";
     public static final String ECONOMY_POSTAGE = "economy";
@@ -75,8 +75,7 @@ public class GovUkNotifyService {
             @NotBlank String reference,
             @NotNull InputStream precompiledPdf) {
         try {
-            LetterResponse response;
-            response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
+            var response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
