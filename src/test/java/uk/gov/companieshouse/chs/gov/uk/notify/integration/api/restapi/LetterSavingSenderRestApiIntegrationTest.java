@@ -160,7 +160,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
         // When and then
         postSendLetterRequest(mockMvc,
@@ -179,7 +179,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
         // When and then
         postSendLetterRequest(mockMvc,
