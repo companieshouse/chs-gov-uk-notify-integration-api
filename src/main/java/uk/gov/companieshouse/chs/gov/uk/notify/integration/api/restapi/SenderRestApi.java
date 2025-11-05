@@ -1,5 +1,9 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ECONOMY_POSTAGE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.SECOND_CLASS_POSTAGE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +23,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -111,18 +117,30 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         var templateId = letterDetails.getTemplateId();
-
+        /* This is a temporary block to send new CSIDV letters via economy before
+         * IDV go live. In the future this block should be removed and the postage
+         * should be read from the request object.
+         */
+        var postage = SECOND_CLASS_POSTAGE;
+        if (
+            List.of(CSIDVDEFLET, IDVPSCDEFAULT)
+                    .contains(new LetterTemplateKey(appId, templateId))
+        ) {
+            postage = ECONOMY_POSTAGE;
+        }
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
             var response = letterDispatcher.sendLetter(
+                    postage,
                     reference,
                     appId,
                     templateId,
                     address,
                     personalisationDetails,
-                    contextId);
+                    contextId
+                    );
             if (response.success()) {
                 logger.info("Letter processed successfully",
                         createLogMap(contextId, "letter_success"));
