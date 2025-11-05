@@ -8,9 +8,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,6 +44,7 @@ import com.lowagie.text.pdf.PdfXConformanceException;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -59,10 +62,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -174,6 +179,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private SAXSVGDocumentFactory svgDocumentFactory;
 
     @MockitoSpyBean
+    private LetterDispatcher letterDispatcher;
+
+    @MockitoSpyBean
+    private GovUkNotifyService govUkNotifyService;
+
+    @MockitoSpyBean
     private SvgReplacedElementFactory svgReplacedElementFactory;
 
     @Test
@@ -185,7 +196,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         var capturedFileSignature = new StringBuilder();
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class)))
+                anyString(), any(InputStream.class), anyString()))
                 .thenAnswer(invocation -> {
                     InputStream inputStream = invocation.getArgument(1);
                     byte[] bytes = new byte[5];
@@ -272,7 +283,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         // NotificationClientException constructor is package accessible only. For the purposes
         // of this test however, it's good enough.
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class)))
+                anyString(), any(InputStream.class), anyString()))
                 .thenThrow(
                         new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
@@ -445,7 +456,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -653,6 +664,56 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with postage economy for CSIDVDEFLET_v1 or IDVPSCDEFAULT_v1")
+    void sendLetterWithEconomyPostage(CapturedOutput log) throws Exception {
+        // Arrange
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString()))
+                .thenReturn(responseReceived);
+
+        String csidvdefletRequest = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
+        postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
+        verify(letterDispatcher).sendLetter(
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("CSIDVDEFLET_v1"), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
+        );
+
+        // Reset mocks to verify second call independently
+        reset(letterDispatcher, govUkNotifyService);
+
+        String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
+        postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
+        verify(letterDispatcher).sendLetter(
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
+        );
+
+
+    }
+
+    @Test
+    @DisplayName("Send letter postage second class for all other templates")
+    void sendLetterWithSecondClassPostage(CapturedOutput log) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString()))
+                .thenReturn(responseReceived);
+        // Test for other template (should use SECOND_CLASS_POSTAGE)
+        String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
+        postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
+        verify(letterDispatcher).sendLetter(
+                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any(), any(), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(
+                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any()
+        );
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
