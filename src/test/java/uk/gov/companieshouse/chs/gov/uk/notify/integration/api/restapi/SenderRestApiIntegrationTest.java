@@ -44,7 +44,6 @@ import com.lowagie.text.pdf.PdfXConformanceException;
 import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
