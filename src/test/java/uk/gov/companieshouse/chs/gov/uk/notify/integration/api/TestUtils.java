@@ -78,6 +78,26 @@ public class TestUtils {
                 .createdAt(OffsetDateTime.now());
     }
 
+    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId, String templateId) {
+        SenderDetails senderDetails = new SenderDetails(appId, "test-reference");
+        Address address = new Address()
+                .addressLine1("Test Address Line 1")
+                .addressLine2("Apt 101")
+                .addressLine3("District")
+                .addressLine4("City")
+                .addressLine5("County");
+        RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
+                .name("Test Recipient")
+                .physicalAddress(address);
+        LetterDetails letterDetails = new LetterDetails(templateId, "Dear {{name}}");
+
+        return new GovUkLetterDetailsRequest()
+                .senderDetails(senderDetails)
+                .recipientDetails(recipientDetails)
+                .letterDetails(letterDetails)
+                .createdAt(OffsetDateTime.now());
+    }
+
     public static GovUkEmailDetailsRequest createSampleEmailRequest(String email) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
         RecipientDetailsEmail recipientDetails = new RecipientDetailsEmail("Test User", email);
