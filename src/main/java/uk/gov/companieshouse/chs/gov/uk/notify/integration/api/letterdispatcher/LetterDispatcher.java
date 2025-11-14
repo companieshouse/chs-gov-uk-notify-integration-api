@@ -85,15 +85,17 @@ public class LetterDispatcher {
                         final String contextId,
                         final String letter) throws IOException {
 
+        logger.debugContext( contextId, "Attempting to generate PDF", null );
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(letter, reference)) {
 
+            logger.debugContext( contextId, "Attempting to send letter", null );
             var response =
                     govUkNotifyService.sendLetter(
                             postage,
                             reference,
                             precompiledPdf);
 
-            logger.debug("Storing letter response in database",
+            logger.debugContext( contextId, "Storing letter response in database",
                     createLogMap(contextId, "store_letter_response"));
             notificationDatabaseService.storeResponse(response);
 
