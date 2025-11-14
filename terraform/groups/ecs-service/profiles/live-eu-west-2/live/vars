@@ -9,7 +9,6 @@ log_level = "debug"
 service_autoscale_enabled  = true
 
 # auto scaling
-service_autoscale_enabled  = true
 service_autoscale_target_value_cpu = 60
 
 desired_task_count=5

@@ -11,7 +11,6 @@ service_scaledown_schedule = "55 19 * * ? *"
 service_scaleup_schedule   = "5 6 * * ? *"
 
 # auto scaling
-service_autoscale_enabled  = true
 service_autoscale_target_value_cpu = 60
 
 desired_task_count=3
