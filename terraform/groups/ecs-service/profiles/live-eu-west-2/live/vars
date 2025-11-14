@@ -8,6 +8,9 @@ log_level = "debug"
 # Scheduled scaling of tasks
 service_autoscale_enabled  = true
 
+required_cpus = 768
+required_memory = 1536
+
 # auto scaling
 service_autoscale_target_value_cpu = 60
 
