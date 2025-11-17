@@ -70,11 +70,6 @@ public class NotificationLetterRequest {
         this.id = id;
     }
 
-    // NOSONAR
-    public int getVersion(){
-        return version;
-    }
-
     @Override
     public String toString() {
         return "NotificationLetterRequest{" +
@@ -82,7 +77,7 @@ public class NotificationLetterRequest {
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
                 ", version=" + version +
-                ", Id='" + id + '\'' +
+                ", id='" + id + '\'' +
                 '}';
     }
 }

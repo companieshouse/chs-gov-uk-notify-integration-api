@@ -70,19 +70,14 @@ public class NotificationLetterResponse {
         this.id = id;
     }
 
-    // NOSONAR
-    public int getVersion(){
-        return version;
-    }
-
     @Override
     public String toString() {
         return "NotificationLetterResponse{" +
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", response=" + response +
+                ", id='" + id + '\'' +
                 ", version=" + version +
-                ", Id='" + id + '\'' +
                 '}';
     }
 }

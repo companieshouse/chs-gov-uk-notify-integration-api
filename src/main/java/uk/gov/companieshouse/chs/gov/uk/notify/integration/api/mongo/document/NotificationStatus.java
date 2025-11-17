@@ -106,11 +106,6 @@ public class NotificationStatus {
         this.id = id;
     }
 
-    // NOSONAR
-    public int getVersion(){
-        return version;
-    }
-
     @Override
     public String toString() {
         return "NotificationStatus{" +
@@ -120,8 +115,8 @@ public class NotificationStatus {
                 ", responseId='" + responseId + '\'' +
                 ", status='" + status + '\'' +
                 ", statusDetails=" + statusDetails +
+                ", id='" + id + '\'' +
                 ", version=" + version +
-                ", Id='" + id + '\'' +
                 '}';
     }
 }

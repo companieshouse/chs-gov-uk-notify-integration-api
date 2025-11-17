@@ -69,19 +69,14 @@ public class NotificationEmailRequest {
         this.updatedAt = updatedAt;
     }
 
-    // NOSONAR
-    public int getVersion(){
-        return version;
-    }
-
     @Override
     public String toString() {
         return "NotificationEmailRequest{" +
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
-                ", version=" + version +
                 ", id='" + id + '\'' +
+                ", version=" + version +
                 '}';
     }
 }
