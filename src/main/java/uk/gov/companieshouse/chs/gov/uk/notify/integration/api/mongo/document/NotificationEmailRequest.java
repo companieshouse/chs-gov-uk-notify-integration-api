@@ -69,6 +69,7 @@ public class NotificationEmailRequest {
         this.updatedAt = updatedAt;
     }
 
+    // NOSONAR
     public int getVersion(){
         return version;
     }

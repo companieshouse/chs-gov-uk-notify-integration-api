@@ -70,6 +70,7 @@ public class NotificationEmailResponse {
         this.id = id;
     }
 
+    // NOSONAR
     public int getVersion(){
         return version;
     }

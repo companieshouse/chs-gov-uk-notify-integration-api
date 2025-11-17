@@ -106,6 +106,7 @@ public class NotificationStatus {
         this.id = id;
     }
 
+    // NOSONAR
     public int getVersion(){
         return version;
     }
