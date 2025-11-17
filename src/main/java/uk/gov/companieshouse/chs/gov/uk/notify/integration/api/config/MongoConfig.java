@@ -10,7 +10,6 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DateToOffsetDateTimeConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DocumentToLetterResponseConverter;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.DocumentToSendEmailResponseConverter;
@@ -19,7 +18,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.O
 @Configuration
 @EnableMongoRepositories("uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository")
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
-@EnableTransactionManagement
 public class MongoConfig {
 
     @Bean( name = "mongodbDatetimeProvider" )
