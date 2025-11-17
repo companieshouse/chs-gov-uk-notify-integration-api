@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 
@@ -78,8 +79,9 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
         GovUkEmailDetailsRequest initialRequest = createSampleEmailRequest("initial@example.com");
         NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, initialRequest, null));
 
-        GovUkEmailDetailsRequest updatedRequest = createSampleEmailRequest("updated@example.com");
-        requestRepository.save(new NotificationEmailRequest(null, null, updatedRequest, savedRequest.getId()));
+        savedRequest.getRequest().getSenderDetails().setEmailAddress( "updated@example.com" );
+
+        requestRepository.save(savedRequest);
 
         NotificationEmailRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 

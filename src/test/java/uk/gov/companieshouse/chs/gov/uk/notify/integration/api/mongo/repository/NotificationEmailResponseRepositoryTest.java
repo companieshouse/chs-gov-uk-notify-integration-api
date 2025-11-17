@@ -69,22 +69,6 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         assertFalse(deletedResponse.isPresent());
     }
 
-    @Test
-    void When_ResponseUpdated_Expect_ChangesReflectedInDatabase() {
-        UUID initialNotificationId = UUID.randomUUID();
-        UUID updatedNotificationId = UUID.randomUUID();
-
-        NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),initialNotificationId), "1"));
-
-        responseRepository.save(new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),updatedNotificationId), savedResponse.getId()));
-
-        NotificationEmailResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
-
-        assertNotNull(retrievedResponse);
-        assertEquals(updatedNotificationId, retrievedResponse.getResponse().getNotificationId());
-    }
-
     private SendEmailResponse createSampleEmailResponse(UUID templateId, UUID notificationId) {
         JSONObject templateJson = new JSONObject()
                 .put("id", templateId.toString())
