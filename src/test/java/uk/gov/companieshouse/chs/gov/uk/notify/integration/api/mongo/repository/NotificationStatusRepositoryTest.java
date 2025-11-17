@@ -161,9 +161,10 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
                 null, null, testData.requestId, testData.responseId, "SENT",
                 Map.of("sentAt", "2023-03-15T14:30:00Z"), null));
 
-        statusRepository.save(new NotificationStatus(
-                null, null, testData.requestId, testData.responseId, "FAILED",
-                Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email"), savedStatus.getId()));
+        savedStatus.setStatus( "FAILED" );
+        savedStatus.setStatusDetails( Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email") );
+
+        statusRepository.save(savedStatus);
 
         NotificationStatus retrievedStatus = statusRepository.findById(savedStatus.getId()).orElse(null);
 

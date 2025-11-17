@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 
@@ -86,7 +85,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
         NotificationEmailRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
         assertNotNull(retrievedRequest);
-        assertEquals("updated@example.com", retrievedRequest.getRequest().getRecipientDetails().getEmailAddress());
+        assertEquals("updated@example.com", retrievedRequest.getRequest().getSenderDetails().getEmailAddress());
     }
     
 }
