@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.service.notify.SendEmailResponse;
@@ -23,6 +24,9 @@ public class NotificationEmailResponse {
 
     @Id
     private String id;
+
+    @Version
+    private Integer version;
 
     public NotificationEmailResponse(LocalDateTime createdAt, LocalDateTime updatedAt, SendEmailResponse response, String id) {
         this.createdAt = createdAt;
@@ -66,12 +70,17 @@ public class NotificationEmailResponse {
         this.id = id;
     }
 
+    public int getVersion(){
+        return version;
+    }
+
     @Override
     public String toString() {
         return "NotificationEmailResponse{" +
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", response=" + response +
+                ", version=" + version +
                 ", Id='" + id + '\'' +
                 '}';
     }
