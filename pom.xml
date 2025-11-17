@@ -52,12 +52,11 @@
         <spring-security-core.version>6.5.4</spring-security-core.version>
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
-        <tomcat-embed.version>10.1.44</tomcat-embed.version>
+        <tomcat-embed.version>11.0.14</tomcat-embed.version>
         <!-- CVE-2024-11407 -->
         <grpc-context.version>1.73.0</grpc-context.version>
         <!-- CVE-2025-53864 -->
         <gson.version>2.13.1</gson.version>
-        <tomcat-embed-core.version>11.0.14</tomcat-embed-core.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -346,11 +345,6 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-context</artifactId>
             <version>${grpc-context.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat-embed-core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
