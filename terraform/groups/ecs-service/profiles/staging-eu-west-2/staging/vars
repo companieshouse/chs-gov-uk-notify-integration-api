@@ -16,7 +16,7 @@ required_memory = 1536
 # auto scaling
 service_autoscale_target_value_cpu = 60
 
-desired_task_count=5
+desired_task_count=10
 max_task_count=10
 min_task_count=5
 
