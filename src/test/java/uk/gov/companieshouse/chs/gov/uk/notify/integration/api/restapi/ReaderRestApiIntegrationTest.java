@@ -95,7 +95,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String EXPECTED_SECURITY_OK_LOG_MESSAGE =
             "authorised as api key (internal user)";
 
-    private static final String PSC_NAME = "Joe Bloggs";
+    private static final String PSC_NAME = "ANDREWPHILLIPLONGNAME BARROW";
     private static final String COMPANY_NUMBER = "00006400";
     private static final String LETTER_TYPE = "new_psc_direction_letter_v1";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
