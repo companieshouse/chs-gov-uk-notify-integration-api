@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <!--  4 metadata properties that will be populated in the PDF info.
+          Of these, for some reason Adobe Acrobat does not report the creator (author),
+          nor the keywords, in its Document properties dialog, unless the configured conformance level is
+          downgraded to PDF/A-1b (Basic).
+          However, the presence of any one of these 4 properties seems to result in the document being
+          categorised as an invalid PDF/A document, whether the configured conformance level is PDF/A-1a
+          (Accessible), or PDF/A-1b (Basic). -->
+    <!--    <title th:text="${title}"></title>-->
+    <!--    <meta name="creator" content="Companies House"/>-->
+    <!--    <meta name="subject" content="Verify your identity - Director"/>-->
+    <!--    <meta name="keywords" content="CS IDV"/>-->
+
+    <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
+    <link th:href="@{${letter} + CSIDVDEFLET_v2.css}" media="all" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div id="english_letter">
+    <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
+        ~{CSIDVDEFLET_content_v2},
+        ~{CSIDVDEFLET_title_v2},
+        'Company number',
+        ${company_number})}">
+    </section>
+</div>
+</body>
+</html>
