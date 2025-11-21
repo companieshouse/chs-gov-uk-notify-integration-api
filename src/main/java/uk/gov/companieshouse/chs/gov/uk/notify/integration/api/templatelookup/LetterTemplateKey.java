@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup;
 
+import java.util.Set;
+
 /**
  * Key identifying a letter template.
  * @param appId the ID of the client app (aka service) requesting the sending of the letter
@@ -32,16 +34,13 @@ public record LetterTemplateKey(String appId, String id) {
                     CHIPS_APPLICATION_ID,
                     "second_extension_acceptance_letter_v1");
 
-    public static final LetterTemplateKey CSIDVDEFLET =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1");
+    public static Set<LetterTemplateKey> CSIDVDEFLET_TEMPLATES = Set.of(
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1"),
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1.1")
+    );
 
-    public static final LetterTemplateKey IDVPSCDEFAULT =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1");
-
-    public static final LetterTemplateKey CSIDVDEFLET_v1_1 =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1.1");
-
-    public static final LetterTemplateKey IDVPSCDEFAULT_v1_1 =
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1.1");
-
+    public static Set<LetterTemplateKey> IDVPSCDEFAULT_TEMPLATES = Set.of(
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1"),
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1.1")
+    );
 }
