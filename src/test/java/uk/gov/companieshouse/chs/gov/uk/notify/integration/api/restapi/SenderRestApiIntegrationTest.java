@@ -666,7 +666,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Send letter with postage economy for CSIDVDEFLET_v2 or IDVPSCDEFAULT_v1")
+    @DisplayName("Send letter with postage economy for CSIDVDEFLET_v2 or IDVPSCDEFAULT_v2")
     void sendLetterWithEconomyPostage(CapturedOutput log) throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -688,7 +688,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
         postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v2"), any(), any(), any());
         verify(govUkNotifyService).sendLetter(
                 eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
         );
