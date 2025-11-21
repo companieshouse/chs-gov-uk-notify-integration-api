@@ -23,14 +23,11 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET_v1_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT_v1_1;
 
 import com.google.common.collect.Sets;
 import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Component;
@@ -41,124 +38,98 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 @Component
 public class TemplateContextValidator {
 
-    private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS =
-            Map.ofEntries(
-                    new AbstractMap.SimpleEntry<>(
-                            CHIPS_DIRECTION_LETTER_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    TODAYS_DATE,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    PSC_FULL_NAME,
-                                    DEADLINE_DATE,
-                                    EXTENSION_DATE
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    IDV_START_DATE,
-                                    PSC_APPOINTMENT_DATE,
-                                    IDV_VERIFICATION_DUE_DATE,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    PSC_NAME
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    TODAYS_DATE,
-                                    IDV_START_DATE,
-                                    IDV_VERIFICATION_DUE_DATE,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    PSC_NAME
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    EXTENSION_REQUEST_DATE,
-                                    IDV_VERIFICATION_DUE_DATE,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    PSC_NAME
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    EXTENSION_REQUEST_DATE,
-                                    IDV_VERIFICATION_DUE_DATE,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    PSC_NAME
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CSIDVDEFLET,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    VERIFICATION_DUE_DATE,
-                                    TODAYS_DATE,
-                                    ACTION_DUE_DATE,
-                                    IS_LLP
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            CSIDVDEFLET_v1_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    VERIFICATION_DUE_DATE,
-                                    TODAYS_DATE,
-                                    ACTION_DUE_DATE,
-                                    IS_LLP
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            IDVPSCDEFAULT,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    VERIFICATION_DUE_DATE,
-                                    TODAYS_DATE,
-                                    ACTION_DUE_DATE,
-                                    IS_LLP
-                            )
-                    ),
-                    new AbstractMap.SimpleEntry<>(
-                            IDVPSCDEFAULT_v1_1,
-                            Set.of(
-                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                                    REFERENCE,
-                                    COMPANY_NAME,
-                                    COMPANY_NUMBER,
-                                    VERIFICATION_DUE_DATE,
-                                    TODAYS_DATE,
-                                    ACTION_DUE_DATE,
-                                    IS_LLP
-                            )
-                    )
-
-            );
+    private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS;
+    
+    static {
+        VALID_CONTEXTS = new HashMap<>();
+        VALID_CONTEXTS.putAll(Map.ofEntries(
+              new AbstractMap.SimpleEntry<>(
+                      CHIPS_DIRECTION_LETTER_1,
+                      Set.of(
+                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                              TODAYS_DATE,
+                              REFERENCE,
+                              COMPANY_NAME,
+                              PSC_FULL_NAME,
+                              DEADLINE_DATE,
+                              EXTENSION_DATE
+                      )
+              ),
+              new AbstractMap.SimpleEntry<>(
+                      CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+                      Set.of(
+                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                              IDV_START_DATE,
+                              PSC_APPOINTMENT_DATE,
+                              IDV_VERIFICATION_DUE_DATE,
+                              REFERENCE,
+                              COMPANY_NAME,
+                              COMPANY_NUMBER,
+                              PSC_NAME
+                      )
+              ),
+              new AbstractMap.SimpleEntry<>(
+                      CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+                      Set.of(
+                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                              TODAYS_DATE,
+                              IDV_START_DATE,
+                              IDV_VERIFICATION_DUE_DATE,
+                              REFERENCE,
+                              COMPANY_NAME,
+                              COMPANY_NUMBER,
+                              PSC_NAME
+                      )
+              ),
+              new AbstractMap.SimpleEntry<>(
+                      CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+                      Set.of(
+                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                              EXTENSION_REQUEST_DATE,
+                              IDV_VERIFICATION_DUE_DATE,
+                              REFERENCE,
+                              COMPANY_NAME,
+                              COMPANY_NUMBER,
+                              PSC_NAME
+                      )
+              ),
+              new AbstractMap.SimpleEntry<>(
+                      CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
+                      Set.of(
+                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                              EXTENSION_REQUEST_DATE,
+                              IDV_VERIFICATION_DUE_DATE,
+                              REFERENCE,
+                              COMPANY_NAME,
+                              COMPANY_NUMBER,
+                              PSC_NAME
+                      )
+              )));
+        for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
+            VALID_CONTEXTS.put(key, Set.of(
+                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                    REFERENCE,
+                    COMPANY_NAME,
+                    COMPANY_NUMBER,
+                    VERIFICATION_DUE_DATE,
+                    TODAYS_DATE,
+                    ACTION_DUE_DATE,
+                    IS_LLP
+            ));
+        }
+        for (LetterTemplateKey key : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
+            VALID_CONTEXTS.put(key, Set.of(
+                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                    REFERENCE,
+                    COMPANY_NAME,
+                    COMPANY_NUMBER,
+                    VERIFICATION_DUE_DATE,
+                    TODAYS_DATE,
+                    ACTION_DUE_DATE,
+                    IS_LLP
+            ));
+        }
+    }
 
     /**
      * Validate that the context provided contains the variables expected for the letter

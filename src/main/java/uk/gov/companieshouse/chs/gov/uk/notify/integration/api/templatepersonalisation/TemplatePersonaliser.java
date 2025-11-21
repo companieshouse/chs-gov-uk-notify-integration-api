@@ -20,14 +20,12 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET_v1_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT_v1_1;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
@@ -40,6 +38,11 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 
 @Component
 public class TemplatePersonaliser {
+    private static final Set<LetterTemplateKey> ACTION_DUE_DATE_PLUS_28 = Stream
+            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
+                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
+            .collect(Collectors.toSet());
+    
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
     private final AbstractConfigurableTemplateResolver templateResolver;
@@ -184,7 +187,7 @@ public class TemplatePersonaliser {
                 date = LocalDate.now().format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
-            if(List.of(CSIDVDEFLET, IDVPSCDEFAULT, CSIDVDEFLET_v1_1, IDVPSCDEFAULT_v1_1).contains(templateLookupKey)) {
+            if(ACTION_DUE_DATE_PLUS_28.contains(templateLookupKey)) {
                 context.setVariable(ACTION_DUE_DATE,
                         LocalDate.parse(date, DATE_FORMATTER)
                                 .plusDays(28)
