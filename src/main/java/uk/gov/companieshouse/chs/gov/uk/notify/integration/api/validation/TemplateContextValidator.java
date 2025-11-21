@@ -24,7 +24,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelo
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET_v1_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT_v1_1;
 
 import com.google.common.collect.Sets;
 import java.util.AbstractMap;
@@ -117,7 +119,33 @@ public class TemplateContextValidator {
                             )
                     ),
                     new AbstractMap.SimpleEntry<>(
+                            CSIDVDEFLET_v1_1,
+                            Set.of(
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    COMPANY_NUMBER,
+                                    VERIFICATION_DUE_DATE,
+                                    TODAYS_DATE,
+                                    ACTION_DUE_DATE,
+                                    IS_LLP
+                            )
+                    ),
+                    new AbstractMap.SimpleEntry<>(
                             IDVPSCDEFAULT,
+                            Set.of(
+                                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                                    REFERENCE,
+                                    COMPANY_NAME,
+                                    COMPANY_NUMBER,
+                                    VERIFICATION_DUE_DATE,
+                                    TODAYS_DATE,
+                                    ACTION_DUE_DATE,
+                                    IS_LLP
+                            )
+                    ),
+                    new AbstractMap.SimpleEntry<>(
+                            IDVPSCDEFAULT_v1_1,
                             Set.of(
                                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                                     REFERENCE,

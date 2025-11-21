@@ -3,7 +3,9 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ECONOMY_POSTAGE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.SECOND_CLASS_POSTAGE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET_v1_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT_v1_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -123,7 +125,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
          */
         var postage = SECOND_CLASS_POSTAGE;
         if (
-            List.of(CSIDVDEFLET, IDVPSCDEFAULT)
+            List.of(CSIDVDEFLET, IDVPSCDEFAULT, CSIDVDEFLET_v1_1, IDVPSCDEFAULT_v1_1)
                     .contains(new LetterTemplateKey(appId, templateId))
         ) {
             postage = ECONOMY_POSTAGE;

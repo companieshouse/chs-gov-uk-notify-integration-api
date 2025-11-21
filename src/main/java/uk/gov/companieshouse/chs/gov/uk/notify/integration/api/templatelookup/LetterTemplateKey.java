@@ -38,4 +38,10 @@ public record LetterTemplateKey(String appId, String id) {
     public static final LetterTemplateKey IDVPSCDEFAULT =
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1");
 
+    public static final LetterTemplateKey CSIDVDEFLET_v1_1 =
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "CSIDVDEFLET_v1.1");
+
+    public static final LetterTemplateKey IDVPSCDEFAULT_v1_1 =
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1.1");
+
 }
