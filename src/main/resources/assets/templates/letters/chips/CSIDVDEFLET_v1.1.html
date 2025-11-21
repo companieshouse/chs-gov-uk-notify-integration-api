@@ -15,14 +15,14 @@
     <!--    <meta name="keywords" content="CS IDV"/>-->
 
     <link th:replace="~{../common/notify_letter_layout :: stylesheet()}">
-    <link th:href="@{${letter} + CSIDVDEFLET_v2.css}" media="all" rel="stylesheet" type="text/css" />
+    <link th:href="@{${letter} + CSIDVDEFLET_v1.css}" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
 
 <div id="english_letter">
     <section th:replace="~{../common/notify_letter_layout :: notifyLetterLayout(
-        ~{CSIDVDEFLET_content_v2},
-        ~{CSIDVDEFLET_title_v2},
+        ~{CSIDVDEFLET_content_v1.1},
+        ~{CSIDVDEFLET_title_v1},
         'Company number',
         ${company_number})}">
     </section>
