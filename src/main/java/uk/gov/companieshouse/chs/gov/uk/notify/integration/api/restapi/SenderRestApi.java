@@ -2,8 +2,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ECONOMY_POSTAGE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.SECOND_CLASS_POSTAGE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,8 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,6 +30,12 @@ import uk.gov.companieshouse.logging.Logger;
 public class SenderRestApi implements NotifyIntegrationSenderControllerInterface {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final Set<LetterTemplateKey> ECONOMY_LETTERS = Stream
+            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
+                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
+            .collect(Collectors.toSet());
+
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
     private final LetterDispatcher letterDispatcher;
@@ -122,10 +128,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
          * should be read from the request object.
          */
         var postage = SECOND_CLASS_POSTAGE;
-        if (
-            List.of(CSIDVDEFLET, IDVPSCDEFAULT)
-                    .contains(new LetterTemplateKey(appId, templateId))
-        ) {
+        if (ECONOMY_LETTERS.contains(new LetterTemplateKey(appId, templateId))) {
             postage = ECONOMY_POSTAGE;
         }
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
