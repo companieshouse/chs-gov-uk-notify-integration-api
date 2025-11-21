@@ -168,7 +168,7 @@ class SenderRestApiTests {
 
     @Test
     void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1.1");
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
         Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
