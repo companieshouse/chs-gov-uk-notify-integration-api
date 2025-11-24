@@ -151,11 +151,12 @@
 }
 .address {
     height: 26.8mm;
-    width: 95.4mm;
-    padding-top: 2mm;
-    padding-right: 5mm;
-    padding-left: 9.6mm;
-    padding-bottom: 6.7mm;
+    width: 95mm;
+    margin-top: 2mm;
+    margin-right: 7.4mm;
+    margin-left: 7.4mm;
+    margin-bottom: 6.7mm;
+    /*border: 0.1mm outset green; */
 
     /* Gov Notify address font is always Arial 8pt.
        GDS Support have confirmed that whatever font we use here, Gov Notify will automatically reformat
