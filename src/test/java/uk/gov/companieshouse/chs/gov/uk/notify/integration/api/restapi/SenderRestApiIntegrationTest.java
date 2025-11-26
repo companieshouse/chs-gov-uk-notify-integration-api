@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,7 +47,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -77,7 +79,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @Tag("integration-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
+@ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class, MockitoExtension.class})
 class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String REQUEST_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
@@ -666,48 +668,45 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
-    @Test
-    @DisplayName("Send letter with postage economy for CSIDVDEFLET_v1 or IDVPSCDEFAULT_v1")
-    void sendLetterWithEconomyPostage(CapturedOutput log) throws Exception {
+    @ParameterizedTest(name = "Send letter with economy postage for {0}")
+    @CsvSource({ "CSIDVDEFLET_v1,send-csidvdeflet-request",
+            "IDVPSCDEFAULT_v1,send-idvpscdefault-request" })
+    void sendLetterWithEconomyPostage(String letterType, String reference, CapturedOutput log)
+            throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString()))
+                eq(reference), any(InputStream.class), eq("economy")))
                 .thenReturn(responseReceived);
 
-        String csidvdefletRequest = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
+        String csidvdefletRequest = resourceToString("/fixtures/" + reference + ".json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq("send-csidvdeflet-request"),
-                eq("chips"), eq("CSIDVDEFLET_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq("send-csidvdeflet-request"),
-                any());
-
-        // Reset mocks to verify second call independently
-        reset(letterDispatcher, govUkNotifyService);
-
-        String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
-        postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq("send-idvpscdefault-request"),
-                eq("chips"), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq("send-idvpscdefault-request"),
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
+                eq("chips"), eq(letterType), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(reference),
                 any());
     }
 
-    @Test
-    @DisplayName("Send letter postage second class for all other templates")
-    void sendLetterWithSecondClassPostage(CapturedOutput log) throws Exception {
+    @ParameterizedTest(name = "Send letter with second class postage for {0}")
+    @CsvSource({ "direction_letter_v1,send-direction-letter-request",
+            "new_psc_direction_letter_v1,send-new-psc-direction-letter-request",
+            "extension_acceptance_letter_v1,send-extension-acceptance-letter-request",
+            "second_extension_acceptance_letter_v1,send-second-extension-acceptance-letter-request",
+            "transitional_non_director_psc_information_letter_v1,send-transitional-non-director-psc-information-letter-request" })
+    void sendLetterWithSecondClassPostage(String letterType, String reference, CapturedOutput log)
+            throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString()))
+                eq(reference), any(InputStream.class), eq("second")))
                 .thenReturn(responseReceived);
 
-        String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
+        String otherRequest = resourceToString("/fixtures/" + reference + ".json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
 
-        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq("send-letter-request"),
-                eq("chips"), eq("direction_letter_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq("send-letter-request"),
+        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
+                eq("chips"), eq(letterType), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
                 any());
     }
 
@@ -751,7 +750,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedResponse.getResponse(), is(notNullValue()));
         assertThat(storedResponse.getResponse().getNotificationId(), is(NIL_UUID));
         assertThat(storedResponse.getResponse().getReference().isPresent(), is(true));
-        assertThat(storedResponse.getResponse().getReference().get(), is("send-letter-request"));
+        assertThat(storedResponse.getResponse().getReference().get(), is("send-direction-letter-request"));
         assertThat(storedResponse.getResponse().getData(), is(notNullValue()));
         var data = storedResponse.getResponse().getData();
         assertThat(data.get("data"), is(notNullValue()));

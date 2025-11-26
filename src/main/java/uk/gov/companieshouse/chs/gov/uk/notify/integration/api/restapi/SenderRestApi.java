@@ -10,8 +10,6 @@ import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,10 +28,15 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Set<LetterTemplateKey> ECONOMY_LETTERS = Stream
-            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
-                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
-            .collect(Collectors.toSet());
+    /**
+     * Set of letters that should be sent using second class postage
+     */
+    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = Set.of(
+            LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
+            LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+            LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+            LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+            LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1);
 
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
@@ -153,10 +156,11 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     private Postage determinePostage(final String appId, final String templateId) {
         var letterTemplateKey = new LetterTemplateKey(appId, templateId);
-        if (ECONOMY_LETTERS.contains(letterTemplateKey)) {
-            return Postage.ECONOMY;
-        } else {
+        if (SECOND_CLASS_LETTERS.contains(letterTemplateKey)) {
             return Postage.SECOND_CLASS;
+        } else {
+            // Default to economy mail
+            return Postage.ECONOMY;
         }
     }
 }

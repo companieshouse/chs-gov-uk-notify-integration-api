@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,6 +24,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
 
@@ -120,10 +121,7 @@ class SenderRestApiTests {
 
     }
 
-    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
-    @CsvSource({
-            "null, valid"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidation() {
         GovUkEmailDetailsRequest request =  new GovUkEmailDetailsRequest();
 
@@ -132,10 +130,7 @@ class SenderRestApiTests {
         );
     }
 
-    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
-    @CsvSource({
-            "null, valid"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidationMissingDetails() {
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -155,10 +150,7 @@ class SenderRestApiTests {
         );
     }
 
-    @ParameterizedTest(name = "When request is {0}, exception should be thrown")
-    @CsvSource({
-            "null, null"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidationMissingHeader() {
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         assertThrowsExactly(NullPointerException.class, () ->
@@ -166,10 +158,11 @@ class SenderRestApiTests {
         );
     }
 
-    @Test
-    void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1" })
+    void sendLetter_shouldReturnCreated_defaultPostage(String templateId) throws Exception {
         String contextId = "context1234";
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", templateId);
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
@@ -184,10 +177,15 @@ class SenderRestApiTests {
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
     }
 
-    @Test
-    void sendLetter_shouldReturnCreated_whenSecondClassPostage() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = { LetterTemplateKey.DIRECTION_LETTER,
+            LetterTemplateKey.NEW_PSC_DIRECTION_LETTER,
+            LetterTemplateKey.TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER,
+            LetterTemplateKey.EXTENSION_ACCEPTANCE_LETTER,
+            LetterTemplateKey.SECOND_EXTENSION_ACCEPTANCE_LETTER })
+    void sendLetter_shouldReturnCreated_whenSecondClassPostage(String templateId) throws Exception {
         String contextId = "context5678";
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", templateId);
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
