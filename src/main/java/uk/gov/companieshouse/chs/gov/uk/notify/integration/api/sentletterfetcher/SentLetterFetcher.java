@@ -67,6 +67,7 @@ public class SentLetterFetcher {
 
         var letter = letters.getFirst().getRequest();
         var appId = letter.getSenderDetails().getAppId();
+        var letterId = letter.getLetterDetails().getLetterId();
         var templateId = letter.getLetterDetails().getTemplateId();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
@@ -80,6 +81,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
+                        letterId,
                         templateId),
                 reference,
                 personalisationDetails,
@@ -129,6 +131,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
+                        "TODO", // Do we expect a letterId as a parameter to search in db?
                         templateId),
                 reference,
                 personalisationDetails,

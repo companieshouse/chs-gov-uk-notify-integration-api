@@ -190,7 +190,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     public ResponseEntity<Object> viewLetterPdf(
             final String pscName,
             final String companyNumber,
-            final String templateId,
+            final String templateId, // TODO: do we need a letterId here too?
             final LocalDate letterSendingDate,
             final String contextId) {
 

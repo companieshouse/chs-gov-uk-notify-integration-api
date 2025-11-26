@@ -31,9 +31,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Set<LetterTemplateKey> ECONOMY_LETTERS = Stream
-            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
-                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
+    private static final Set<String> ECONOMY_LETTERS = Stream
+            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream().map(LetterTemplateKey::letterId),
+                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream().map(LetterTemplateKey::letterId))
             .collect(Collectors.toSet());
 
     private final GovUkNotifyService govUkNotifyService;
@@ -122,13 +122,14 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        var letterId = letterDetails.getLetterId();
         var templateId = letterDetails.getTemplateId();
         /* This is a temporary block to send new CSIDV letters via economy before
          * IDV go live. In the future this block should be removed and the postage
          * should be read from the request object.
          */
         var postage = SECOND_CLASS_POSTAGE;
-        if (ECONOMY_LETTERS.contains(new LetterTemplateKey(appId, templateId))) {
+        if (ECONOMY_LETTERS.contains(letterId)) {
             postage = ECONOMY_POSTAGE;
         }
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
@@ -139,6 +140,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                     postage,
                     reference,
                     appId,
+                    letterId,
                     templateId,
                     address,
                     personalisationDetails,

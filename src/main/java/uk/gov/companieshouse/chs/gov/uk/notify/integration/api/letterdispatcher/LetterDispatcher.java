@@ -44,6 +44,7 @@ public class LetterDispatcher {
             final String postage,
             final String reference,
             final String appId,
+            final String letterId,
             final String templateId,
             final Address address,
             final String personalisationDetailsString,
@@ -51,6 +52,7 @@ public class LetterDispatcher {
         var letter = personaliseLetter(
                 reference,
                 appId,
+                letterId,
                 templateId,
                 address,
                 personalisationDetailsString,
@@ -61,6 +63,7 @@ public class LetterDispatcher {
     private String personaliseLetter(
             final String reference,
             final String appId,
+            final String letterId,
             final String templateId,
             final Address address,
             final String personalisationDetailsString,
@@ -72,6 +75,7 @@ public class LetterDispatcher {
         return templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
+                        letterId,
                         templateId),
                         reference,
                         personalisationDetails,

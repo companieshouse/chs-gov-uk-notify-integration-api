@@ -677,7 +677,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String csidvdefletRequest = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("CSIDVDEFLET_v1"), any(), any(), any());
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), any(), eq("CSIDVDEFLET_v1"), any(), any(), any());
         verify(govUkNotifyService).sendLetter(
                 eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
         );
@@ -688,7 +688,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
         postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
+                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
         verify(govUkNotifyService).sendLetter(
                 eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
         );
@@ -708,7 +708,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any(), any(), any(), any(), any());
+                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any(), any(), any(), any(), any(), any());
         verify(govUkNotifyService).sendLetter(
                 eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any()
         );

@@ -22,7 +22,7 @@ public class PathsPublisher {
 
         context.setVariable(ROOT_RESOURCE_PATH_VARIABLE, ROOT_RESOURCE_PATH);
         context.setVariable(LETTER_RESOURCE_PATH_VARIABLE,
-                ROOT_RESOURCE_PATH + templateLookupKey.appId() + "/");
+                ROOT_RESOURCE_PATH + templateLookupKey.appId() + "/" + templateLookupKey.letterId() + "/");
         context.setVariable(COMMON_RESOURCE_PATH_VARIABLE, COMMON_RESOURCE_PATH);
 
     }

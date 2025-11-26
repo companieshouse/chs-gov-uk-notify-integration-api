@@ -169,31 +169,31 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
-        Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context1234");
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("economy"), any(), any(), any(), any(), any(), any());
+        Mockito.verify(letterDispatcher).sendLetter(eq("economy"), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void sendLetter_shouldReturnCreated_whenSecondClassPostage() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(eq("second"), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(eq("second"), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("second"), any(), any(), any(), any(), any(), any());
+        Mockito.verify(letterDispatcher).sendLetter(eq("second"), any(), any(),  any(), any(), any(), any(), any());
     }
 
     @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(any(), any(),  any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
@@ -204,7 +204,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(any(), any(),  any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");

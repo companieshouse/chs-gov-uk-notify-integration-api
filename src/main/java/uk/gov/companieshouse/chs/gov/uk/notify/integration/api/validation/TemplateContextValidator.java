@@ -38,7 +38,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 @Component
 public class TemplateContextValidator {
 
-    private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS;
+    private static final Map<LetterTemplateKey, Set<String>> VALID_CONTEXTS; // TODO: We don't need to keep all templates but only letter types?
     
     static {
         VALID_CONTEXTS = new HashMap<>();
@@ -140,7 +140,7 @@ public class TemplateContextValidator {
      * @param template identifies the letter template to be personalised
      */
     public void validateContextForTemplate(Context context, LetterTemplateKey template) {
-        var validContext = VALID_CONTEXTS.get(template);
+        var validContext = VALID_CONTEXTS.get(template); // TODO: we could use just the letter type here
         if (validContext == null) {
             throw new LetterValidationException(
                     "Unable to find a valid context for " + template);
