@@ -215,7 +215,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view"
+                get("/gov-uk-notify-integration/letters/view_by_reference"
                         + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
@@ -229,7 +229,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithUserAuthIsForbidden(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view"
+                get("/gov-uk-notify-integration/letters/view_by_reference"
                         + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
