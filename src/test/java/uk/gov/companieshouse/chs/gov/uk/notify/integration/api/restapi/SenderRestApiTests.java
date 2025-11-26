@@ -23,13 +23,13 @@ import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -168,26 +168,38 @@ class SenderRestApiTests {
 
     @Test
     void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
+        String contextId = "context1234";
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
-        Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any()))
+
+        var senderDetails = req.getSenderDetails();
+        var letterDetails = req.getLetterDetails();
+        Mockito.when(letterDispatcher.sendLetter(Postage.ECONOMY, senderDetails.getReference(),
+                senderDetails.getAppId(), letterDetails.getTemplateId(),
+                req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context1234");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, contextId);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("economy"), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void sendLetter_shouldReturnCreated_whenSecondClassPostage() throws Exception {
+        String contextId = "context5678";
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(eq("second"), any(), any(), any(), any(), any(), any()))
+
+        var senderDetails = req.getSenderDetails();
+        var letterDetails = req.getLetterDetails();
+        Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, senderDetails.getReference(),
+                senderDetails.getAppId(), letterDetails.getTemplateId(),
+                req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("second"), any(), any(), any(), any(), any(), any());
     }
 
     @Test

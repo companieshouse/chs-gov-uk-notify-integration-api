@@ -67,6 +67,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -676,24 +677,20 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         String csidvdefletRequest = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("CSIDVDEFLET_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
-        );
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq("send-csidvdeflet-request"),
+                eq("chips"), eq("CSIDVDEFLET_v1"), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq("send-csidvdeflet-request"),
+                any());
 
         // Reset mocks to verify second call independently
         reset(letterDispatcher, govUkNotifyService);
 
         String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
         postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
-        );
-
-
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq("send-idvpscdefault-request"),
+                eq("chips"), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq("send-idvpscdefault-request"),
+                any());
     }
 
     @Test
@@ -707,11 +704,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any(), any(), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any()
-        );
+
+        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq("send-letter-request"),
+                eq("chips"), eq("direction_letter_v1"), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq("send-letter-request"),
+                any());
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
