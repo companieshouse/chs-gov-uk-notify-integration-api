@@ -8,6 +8,7 @@ import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.TemplatePersonaliser;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.PersonalisationDetailsParser;
@@ -41,7 +42,7 @@ public class LetterDispatcher {
     }
 
     public GovUkNotifyService.LetterResp sendLetter(
-            final String postage,
+            final Postage postage,
             final String reference,
             final String appId,
             final String templateId,
@@ -80,7 +81,7 @@ public class LetterDispatcher {
 
     private GovUkNotifyService.LetterResp
             sendLetterPdf(
-                        final String postage,
+                        final Postage postage,
                         final String reference,
                         final String contextId,
                         final String letter) throws IOException {

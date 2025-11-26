@@ -57,7 +57,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     
     private static final String SAVED_LETTER_FILEPATH =
-            HtmlPdfGenerator.getPdfFilepath("send-letter-request");
+            HtmlPdfGenerator.getPdfFilepath("send-direction-letter-request");
     private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
             new File(SAVED_LETTER_FILEPATH),
             new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request")),
@@ -90,7 +90,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-letter-request", log);
+        sendLetter("send-direction-letter-request", log);
         verifyLetterPdfContent();
     }
 
@@ -197,7 +197,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
+        return resourceToString("/fixtures/send-direction-letter-request.json", UTF_8);
     }
 
     private static String getSendLetterRequestBody(final String requestName) throws IOException {
