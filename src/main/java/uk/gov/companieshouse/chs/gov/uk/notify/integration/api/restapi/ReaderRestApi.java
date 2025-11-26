@@ -9,17 +9,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import jakarta.validation.constraints.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -152,36 +146,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     @Override
     public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference(
             final String reference,
-            final String xRequestId
+            final String contextId
     ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_letter_by_reference");
-        logMap.put(REFERENCE, reference);
-        LOGGER.info("Retrieving letter notifications by reference: " + reference, logMap);
-
-        List<NotificationLetterRequest> letters = notificationDatabaseService.getLetterByReference(reference);
-
-        logMap.put("letter_count", letters.size());
-        LOGGER.info(RETRIEVED + letters.size() + " letter notifications with reference: " + reference, logMap);
-
-        return new ResponseEntity<>(
-                letters.stream()
-                        .map(NotificationLetterRequest::getRequest)
-                        .toList(),
-                HttpStatus.OK
-        );
-    }
-
-    // TODO DEEP-708 Rename this to getLetterDetailsByReference and change its path to ...reference,
-    // stop duplicating getLetterDetailsByReference.
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/reference2"},
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference2(
-            final @RequestParam("reference") String reference,
-            final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
-
         Map<String, Object> logMap = createLogMap(contextId, "get_letter_by_reference");
         logMap.put(REFERENCE, reference);
         LOGGER.info("Retrieving letter notifications by reference: " + reference, logMap);
@@ -203,33 +169,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     public ResponseEntity<Object> viewLetterPdfByReference(
             final String reference,
             final String contextId) {
-
-        var logMap = createLogMap(contextId, "view_letter_pdf");
-        logMap.put(REFERENCE, reference);
-        LOGGER.info("Starting viewLetterPdfByReference process", logMap);
-
-        try {
-            return ResponseEntity
-                    .ok()
-                    .headers(suggestFilename(reference))
-                    .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
-        } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    // TODO DEEP-708 Rename this to viewLetterPdfByReference and change its path to ...view, stop
-    // duplicating viewLetterPdfByReference.
-    @GetMapping(
-            value = {"/gov-uk-notify-integration/letters/view2"},
-            produces = MediaType.APPLICATION_PDF_VALUE
-    )
-    public ResponseEntity<Object> viewLetterPdfByReference2(
-            final @RequestParam("reference") String reference,
-            final @RequestHeader(value = "X-Request-Id")
-            @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") String contextId) {
 
         var logMap = createLogMap(contextId, "view_letter_pdf");
         logMap.put(REFERENCE, reference);

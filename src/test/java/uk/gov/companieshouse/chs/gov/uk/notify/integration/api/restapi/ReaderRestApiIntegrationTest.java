@@ -215,7 +215,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
+                get("/gov-uk-notify-integration/letters/view"
+                        + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
@@ -228,7 +229,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithUserAuthIsForbidden(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
+                get("/gov-uk-notify-integration/letters/view"
+                        + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
@@ -722,7 +724,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view/" + reference)
+        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view_by_reference"
+                        + "?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
