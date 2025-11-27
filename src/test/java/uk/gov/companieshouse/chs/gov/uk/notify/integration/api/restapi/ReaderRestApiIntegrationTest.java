@@ -1085,7 +1085,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSentNowSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(), reference);
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
@@ -1095,7 +1095,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(), reference);
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
@@ -1105,7 +1105,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         postSendLetterRequest(mockMvc, getValidSendDirectionLetterRequestBody(),
                 status().isCreated());
     }
