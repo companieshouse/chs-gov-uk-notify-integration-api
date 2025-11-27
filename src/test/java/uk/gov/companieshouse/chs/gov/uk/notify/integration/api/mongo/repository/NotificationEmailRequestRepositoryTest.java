@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequest;
 
+@Tag("integration-test")
 @SpringBootTest
 class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     
@@ -76,13 +78,14 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
         GovUkEmailDetailsRequest initialRequest = createSampleEmailRequest("initial@example.com");
         NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, initialRequest, null));
 
-        GovUkEmailDetailsRequest updatedRequest = createSampleEmailRequest("updated@example.com");
-        requestRepository.save(new NotificationEmailRequest(null, null, updatedRequest, savedRequest.getId()));
+        savedRequest.getRequest().getSenderDetails().setEmailAddress( "updated@example.com" );
+
+        requestRepository.save(savedRequest);
 
         NotificationEmailRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
         assertNotNull(retrievedRequest);
-        assertEquals("updated@example.com", retrievedRequest.getRequest().getRecipientDetails().getEmailAddress());
+        assertEquals("updated@example.com", retrievedRequest.getRequest().getSenderDetails().getEmailAddress());
     }
     
 }

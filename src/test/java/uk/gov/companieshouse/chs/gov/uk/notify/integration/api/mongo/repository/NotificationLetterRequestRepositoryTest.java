@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterWithReference;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
 
+@Tag("integration-test")
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
@@ -31,7 +33,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     private static final Pageable LETTER_2 = PageRequest.of(1, 1);
     private static final Pageable LETTER_3 = PageRequest.of(2, 1);
     private static final Pageable LETTER_4 = PageRequest.of(3, 1);
-    
+
     @Autowired
     private NotificationLetterRequestRepository requestRepository;
 
@@ -89,8 +91,9 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
 
-        GovUkLetterDetailsRequest updatedRequest = createSampleLetterRequest("Updated Address");
-        requestRepository.save(new NotificationLetterRequest(null, null, updatedRequest, savedRequest.getId()));
+        savedRequest.getRequest().getRecipientDetails().getPhysicalAddress().setAddressLine1( "Updated Address" );
+
+        requestRepository.save(savedRequest);
 
         NotificationLetterRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
@@ -204,5 +207,5 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         var letter = createLetterWithReference(reference);
         requestRepository.save(new NotificationLetterRequest(null, null, letter, null));
     }
-    
+
 }

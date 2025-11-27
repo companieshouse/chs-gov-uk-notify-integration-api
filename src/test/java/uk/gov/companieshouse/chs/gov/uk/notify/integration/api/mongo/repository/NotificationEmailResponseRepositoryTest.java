@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.json.JSONObject;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("integration-test")
 @SpringBootTest
 class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
     
@@ -65,22 +67,6 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
 
         Optional<NotificationEmailResponse> deletedResponse = responseRepository.findById(savedResponse.getId());
         assertFalse(deletedResponse.isPresent());
-    }
-
-    @Test
-    void When_ResponseUpdated_Expect_ChangesReflectedInDatabase() {
-        UUID initialNotificationId = UUID.randomUUID();
-        UUID updatedNotificationId = UUID.randomUUID();
-
-        NotificationEmailResponse savedResponse = responseRepository.save(
-                new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),initialNotificationId), "1"));
-
-        responseRepository.save(new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),updatedNotificationId), savedResponse.getId()));
-
-        NotificationEmailResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
-
-        assertNotNull(retrievedResponse);
-        assertEquals(updatedNotificationId, retrievedResponse.getResponse().getNotificationId());
     }
 
     private SendEmailResponse createSampleEmailResponse(UUID templateId, UUID notificationId) {

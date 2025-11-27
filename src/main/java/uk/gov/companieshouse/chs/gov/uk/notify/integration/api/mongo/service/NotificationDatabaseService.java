@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
@@ -46,40 +47,49 @@ public class NotificationDatabaseService {
         this.notificationStatusRepository = notificationStatusRepository;
     }
 
+    @Transactional
     public NotificationEmailRequest storeEmail(final GovUkEmailDetailsRequest emailDetailsRequest) {
         return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailDetailsRequest, null));
     }
 
+    @Transactional( readOnly = true )
     public Optional<NotificationEmailRequest> getEmail(final String id) {
         return notificationEmailRequestRepository.findById(id);
     }
 
+    @Transactional( readOnly = true )
     public List<NotificationEmailRequest> getEmailByReference(final String reference) {
         return notificationEmailRequestRepository.findByReference(reference);
     }
 
+    @Transactional( readOnly = true )
     public List<NotificationEmailRequest> findAllEmails() {
         return notificationEmailRequestRepository.findAll();
     }
 
+    @Transactional()
     public NotificationLetterRequest storeLetter(final GovUkLetterDetailsRequest letterDetails) {
         return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterDetails, null));
     }
 
+    @Transactional( readOnly = true )
     public Optional<NotificationLetterRequest> getLetter(final String letterId) {
         return notificationLetterRequestRepository.findById(letterId);
     }
 
+    @Transactional( readOnly = true )
     public List<NotificationLetterRequest> getLetterByReference(final String reference) {
         return notificationLetterRequestRepository.findByReference(reference);
     }
 
+    @Transactional( readOnly = true )
     public Page<NotificationLetterRequest> getLetterByReference(final String reference,
                                                                 final int letterNumber) {
         return notificationLetterRequestRepository.findByReference(reference,
                 PageRequest.of(letterNumber - 1, 1));
     }
 
+    @Transactional( readOnly = true )
     public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
@@ -94,6 +104,7 @@ public class NotificationDatabaseService {
                 nextDay + UTC_TIMEZONE_SUFFIX);
     }
 
+    @Transactional( readOnly = true )
     public Page<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
@@ -109,19 +120,23 @@ public class NotificationDatabaseService {
                 nextDay + UTC_TIMEZONE_SUFFIX,
                 PageRequest.of(letterNumber - 1, 1));
     }
-    
+
+    @Transactional( readOnly = true )
     public List<NotificationLetterRequest> findAllLetters() {
         return notificationLetterRequestRepository.findAll();
     }
 
+    @Transactional()
     public NotificationEmailResponse storeResponse(final GovUkNotifyService.EmailResp emailResp) {
         return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, null, emailResp.response(), null));
     }
 
+    @Transactional()
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
         return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, null, letterResp.response(), null));
     }
 
+    @Transactional()
     public NotificationStatus updateStatus(final NotificationStatus notificationStatus) {
         return notificationStatusRepository.save(notificationStatus);
     }

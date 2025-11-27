@@ -4,12 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import org.bson.UuidRepresentation;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.auditing.DateTimeProvider;
@@ -26,26 +20,9 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.O
 @EnableMongoAuditing(dateTimeProviderRef = "mongodbDatetimeProvider")
 public class MongoConfig {
 
-    private final String databaseUri;
-
-    public MongoConfig(@Value("${spring.data.mongodb.uri}") String databaseUri) {
-        this.databaseUri = databaseUri;
-    }
-
-    @Bean(name = "mongodbDatetimeProvider")
+    @Bean( name = "mongodbDatetimeProvider" )
     public DateTimeProvider dateTimeProvider() {
-        return () -> Optional.of(LocalDateTime.now());
-    }
-
-    @Bean
-    public MongoClient mongoClient() {
-        final var connectionString =
-                new ConnectionString(databaseUri);
-        final var mongoClientSettings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
-                .uuidRepresentation(UuidRepresentation.STANDARD)
-                .build();
-        return MongoClients.create(mongoClientSettings);
+        return () -> Optional.of( LocalDateTime.now() );
     }
 
     @Bean
@@ -57,5 +34,5 @@ public class MongoConfig {
                 new DocumentToLetterResponseConverter()
         ));
     }
-    
+
 }

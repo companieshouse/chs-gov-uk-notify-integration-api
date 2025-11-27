@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailResponse;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleNotificationRequest;
 
+@Tag("integration-test")
 @SpringBootTest
 class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
 
@@ -158,9 +161,10 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
                 null, null, testData.requestId, testData.responseId, "SENT",
                 Map.of("sentAt", "2023-03-15T14:30:00Z"), null));
 
-        statusRepository.save(new NotificationStatus(
-                null, null, testData.requestId, testData.responseId, "FAILED",
-                Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email"), savedStatus.getId()));
+        savedStatus.setStatus( "FAILED" );
+        savedStatus.setStatusDetails( Map.of("failedAt", "2023-03-15T14:35:00Z", "reason", "Invalid email") );
+
+        statusRepository.save(savedStatus);
 
         NotificationStatus retrievedStatus = statusRepository.findById(savedStatus.getId()).orElse(null);
 
@@ -187,6 +191,13 @@ class NotificationStatusRepositoryTest extends AbstractMongoDBTest {
             this.requestId = requestId;
             this.responseId = responseId;
         }
+    }
+
+    @AfterEach
+    void tearDown(){
+        requestRepository.deleteAll();
+        responseRepository.deleteAll();
+        statusRepository.deleteAll();
     }
 
 }

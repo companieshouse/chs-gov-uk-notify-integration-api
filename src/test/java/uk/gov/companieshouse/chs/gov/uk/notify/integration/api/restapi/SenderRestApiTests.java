@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.json.JSONObject;
@@ -11,23 +12,30 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.service.notify.LetterResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -38,6 +46,9 @@ class SenderRestApiTests {
 
     @Mock
     private NotificationDatabaseService notificationDatabaseService;
+
+    @Mock
+    private LetterDispatcher letterDispatcher;
 
     // This allows us to see what is logged during unit test execution, assuming that is
     // thought useful, when the logger is injected. If what is logged is
@@ -153,6 +164,52 @@ class SenderRestApiTests {
         assertThrowsExactly(NullPointerException.class, () ->
                 notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, null)
         );
+    }
+
+    @Test
+    void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
+        Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new GovUkNotifyService.LetterResp(true, null));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context1234");
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+        Mockito.verify(letterDispatcher).sendLetter(eq("economy"), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void sendLetter_shouldReturnCreated_whenSecondClassPostage() throws Exception {
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
+        Mockito.when(letterDispatcher.sendLetter(eq("second"), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new GovUkNotifyService.LetterResp(true, null));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+        Mockito.verify(letterDispatcher).sendLetter(eq("second"), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+
+        assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new IOException("PDF error"));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");
+
+        assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
     }
 
 

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -32,6 +33,9 @@ public class NotificationStatus {
 
     @Id
     private String id;
+
+    @Version
+    private Integer version;
 
     public NotificationStatus(LocalDateTime createdAt, LocalDateTime updatedAt, String requestId, String responseId, String status, Map<String, Object> statusDetails, String id) {
         this.createdAt = createdAt;
@@ -111,7 +115,8 @@ public class NotificationStatus {
                 ", responseId='" + responseId + '\'' +
                 ", status='" + status + '\'' +
                 ", statusDetails=" + statusDetails +
-                ", Id='" + id + '\'' +
+                ", id='" + id + '\'' +
+                ", version=" + version +
                 '}';
     }
 }

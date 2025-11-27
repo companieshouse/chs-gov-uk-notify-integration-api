@@ -37,9 +37,9 @@ public class ContextVariables {
     public static final String DEADLINE_DATE = "deadline_date";
     public static final String EXTENSION_DATE = "extension_date";
     public static final String TRIGGERING_EVENT_DATE = "triggering_event_date";
-    public static final String CS_REVIEW_PERIOD_START_DATE = "cs_review_period_start_date";
-    public static final String CS_REVIEW_PERIOD_END_DATE = "cs_review_period_end_date";
+    public static final String VERIFICATION_DUE_DATE = "verification_due_date";
     public static final String ACTION_DUE_DATE = "action_due_date";
+    public static final String IS_LLP = "is_llp";
 
     // Used only when recreating a previously sent letter for viewing, and never used
     // as the name of an actual context variable.

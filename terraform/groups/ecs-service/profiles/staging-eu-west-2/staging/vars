@@ -10,11 +10,15 @@ service_autoscale_enabled  = true
 service_scaledown_schedule = "55 19 * * ? *"
 service_scaleup_schedule   = "5 6 * * ? *"
 
-# auto scaling
+required_cpus = 768
+required_memory = 1536
 
-desired_task_count=3
-max_task_count=6
-min_task_count=2
+# auto scaling
+service_autoscale_target_value_cpu = 60
+
+desired_task_count=10
+max_task_count=15
+min_task_count=10
 
 
 

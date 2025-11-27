@@ -12,25 +12,23 @@ import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_END_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.CS_REVIEW_PERIOD_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_LLP;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CSIDVDEFLET;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.IDVPSCDEFAULT;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -39,6 +37,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,6 +49,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
+@Tag("integration-test")
 @SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
 class TemplatePersonaliserIntegrationTest {
 
@@ -400,70 +400,157 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
-    @DisplayName("Generate English CSIDVDEFLET HTML successfully")
+    @DisplayName("Generate English CSIDVDEFLET Company HTML successfully")
     void generateEnglishCSIDVDEFLETSuccessfully() {
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CSIDVDEFLET,
-                "123456789",
-                Map.of(
-                        CS_REVIEW_PERIOD_END_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        CS_REVIEW_PERIOD_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE),
-                ADDRESS));
+        for (LetterTemplateKey templateKey : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    "123456789",
+                    Map.of(
+                            IS_LLP, "no",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
+                    ADDRESS));
+    
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
+            assertThat(
+                    getText(letter, "#verification-due-date"),
+                    is(VALID_IDV_VERIFICATION_DUE_DATE)
+            );
+            String letterHtml = letter.html();
+            assertThat(letterHtml.contains("director"), is(true));
+            assertThat(letterHtml.contains("directors"), is(true));
+            assertThat(letterHtml.contains("member"), is(false));
+            assertThat(letterHtml.contains("members"), is(false));
+            assertThat(letterHtml.contains("LLP"), is(false));
+            assertThat(letterHtml.contains("limited liability partnership"), is(false));
+        }
+    }
 
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsTodaysDate(letter);
-        assertThat(
-                getText(letter, "#action-due-date"),
-                is(
-                        LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
-                                plusDays(28).
-                                format(DATE_FORMATTER)
-                )
-        );
-        assertThat(
-                getText(letter, "#cs-review-period-start-date"),
-                is(VALID_IDV_START_DATE)
-        );
-        assertThat(
-                getText(letter, "#cs-review-period-end-date"),
-                is(VALID_IDV_VERIFICATION_DUE_DATE)
-        );
+    @Test
+    @DisplayName("Generate English CSIDVDEFLET LLP HTML successfully")
+    void generateEnglishCSIDVDEFLETLLPSuccessfully() {
+
+        for (LetterTemplateKey templateKey : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    "123456789",
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
+                    ADDRESS));
+    
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
+            assertThat(
+                    getText(letter, "#verification-due-date"),
+                    is(VALID_IDV_VERIFICATION_DUE_DATE)
+            );
+            String letterHtml = letter.html();
+            assertThat(letterHtml.contains("director"), is(false));
+            assertThat(letterHtml.contains("directors"), is(false));
+            assertThat(letterHtml.contains("member"), is(true));
+            assertThat(letterHtml.contains("members"), is(true));
+            assertThat(letterHtml.contains("LLP"), is(true));
+            assertThat(letterHtml.contains("limited liability partnership"), is(true));
+        }
     }
 
     @Test
     @DisplayName("Generate English IDVPSCDEFAULT HTML successfully")
     void generateEnglishIDVPSCDEFAULTSuccessfully() {
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                IDVPSCDEFAULT,
-                "123456789",
-                Map.of(
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, "Mr Worldwide"),
-                ADDRESS));
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    "123456789",
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
+                    ADDRESS));
+    
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
+            assertThat(
+                    getText(letter, "#verification-due-date"),
+                    is(VALID_IDV_VERIFICATION_DUE_DATE)
+            );
+        }
+    }
 
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsTodaysDate(letter);
-        assertThat(
-                getText(letter, "#action-due-date"),
-                is(
-                        LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
-                                plusDays(28).
-                                format(DATE_FORMATTER)
-                )
-        );
-        assertThat(
-                getText(letter, "#psc-name"),
-                is("Mr Worldwide")
-        );
+    @Test
+    @DisplayName("Generate English IDVPSCDEFAULT LLP HTML successfully")
+    void generateEnglishIDVPSCDEFAULTLLPSuccessfully() {
+
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    "123456789",
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
+                    ADDRESS));
+    
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
+            assertThat(
+                    getText(letter, "#verification-due-date"),
+                    is(VALID_IDV_VERIFICATION_DUE_DATE)
+            );
+            String letterHtml = letter.html();
+            assertThat(letterHtml.contains("director"), is(false));
+            assertThat(letterHtml.contains("directors"), is(false));
+            assertThat(letterHtml.contains("member"), is(true));
+            assertThat(letterHtml.contains("members"), is(true));
+            assertThat(letterHtml.contains("LLP"), is(true));
+            assertThat(letterHtml.contains("limited liability partnership"), is(true));
+        }
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {
