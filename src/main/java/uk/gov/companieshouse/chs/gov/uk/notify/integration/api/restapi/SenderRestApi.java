@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ECONOMY_POSTAGE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.SECOND_CLASS_POSTAGE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,6 +11,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,12 +23,19 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
 public class SenderRestApi implements NotifyIntegrationSenderControllerInterface {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final Set<LetterTemplateKey> ECONOMY_LETTERS = Stream
+            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
+                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
+            .collect(Collectors.toSet());
+
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
     private final LetterDispatcher letterDispatcher;
@@ -49,25 +61,25 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         Map<String, Object> logMap = createLogMap("", "letter_send");
         logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
 
-        logger.info("Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
+        logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
 
         Map<String, ?> personalisationDetails;
         try {
-            logger.debug("Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
+            logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
                     govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
                     new TypeReference<Map<String, Object>>() {
                     }
             );
         } catch (JsonProcessingException e) {
-            logger.error("Failed to parse personalisation details: " + e.getMessage(), createLogMap(xHeaderId, "parse_error"));
+            logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        logger.debug("Storing email request in database", createLogMap(xHeaderId, "store_email"));
+        logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
         notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
 
-        logger.info("Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+        logger.infoContext(xHeaderId, "Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
         var emailResp = govUkNotifyService.sendEmail(
@@ -77,15 +89,14 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 personalisationDetails
         );
 
-        logger.debug("Storing email response in database",
-                createLogMap(xHeaderId, emailResp.response()));
+        logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
         notificationDatabaseService.storeResponse(emailResp);
 
         if (emailResp.success()) {
-            logger.info("Email sent successfully", createLogMap(xHeaderId, "email_success"));
+            logger.infoContext(xHeaderId, "Email sent successfully", createLogMap(xHeaderId, "email_success"));
             return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
-            logger.error("Failed to send email", createLogMap(xHeaderId, "email_failure"));
+            logger.errorContext(xHeaderId, new Exception( "Failed to send email" ), createLogMap(xHeaderId, "email_failure"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -98,12 +109,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         Map<String, Object> logMap = createLogMap(contextId, "letter_send");
         logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
 
-        logger.info("Starting sendLetter process", logMap);
+        logger.infoContext( contextId,"Starting sendLetter process", logMap );
 
-        logger.debug("Storing letter request in database", createLogMap(contextId, "store_letter"));
+        logger.debugContext( contextId, "Storing letter request in database", createLogMap(contextId, "store_letter"));
         notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
 
-        logger.info("Processing letter for "
+        logger.infoContext( contextId, "Processing letter for "
                         + govUkLetterDetailsRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
@@ -112,29 +123,38 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         var templateId = letterDetails.getTemplateId();
-
+        /* This is a temporary block to send new CSIDV letters via economy before
+         * IDV go live. In the future this block should be removed and the postage
+         * should be read from the request object.
+         */
+        var postage = SECOND_CLASS_POSTAGE;
+        if (ECONOMY_LETTERS.contains(new LetterTemplateKey(appId, templateId))) {
+            postage = ECONOMY_POSTAGE;
+        }
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
             var response = letterDispatcher.sendLetter(
+                    postage,
                     reference,
                     appId,
                     templateId,
                     address,
                     personalisationDetails,
-                    contextId);
+                    contextId
+                    );
             if (response.success()) {
-                logger.info("Letter processed successfully",
+                logger.infoContext(contextId, "Letter processed successfully",
                         createLogMap(contextId, "letter_success"));
                 return new ResponseEntity<>(HttpStatus.CREATED);
             } else {
-                logger.error("Failed to process letter", createLogMap(contextId, "letter_failure"));
+                logger.errorContext( contextId, new Exception("Failed to process letter"), createLogMap(contextId, "letter_failure"));
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } catch (IOException ioe) {
-            logger.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            logger.errorContext( contextId, new Exception( "Failed to load precompiled letter PDF. Caught IOException: "
+                    + ioe.getMessage()), createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

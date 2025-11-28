@@ -41,6 +41,7 @@ public class LetterDispatcher {
     }
 
     public GovUkNotifyService.LetterResp sendLetter(
+            final String postage,
             final String reference,
             final String appId,
             final String templateId,
@@ -54,7 +55,7 @@ public class LetterDispatcher {
                 address,
                 personalisationDetailsString,
                 contextId);
-        return sendLetterPdf(reference, contextId, letter);
+        return sendLetterPdf(postage, reference, contextId, letter);
     }
 
     private String personaliseLetter(
@@ -79,19 +80,23 @@ public class LetterDispatcher {
 
     private GovUkNotifyService.LetterResp
             sendLetterPdf(
+                        final String postage,
                         final String reference,
                         final String contextId,
                         final String letter) throws IOException {
 
+        logger.debugContext( contextId, "Attempting to generate PDF", null );
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(letter, reference)) {
 
+            logger.debugContext( contextId, "Attempting to send letter", null );
             var response =
                     govUkNotifyService.sendLetter(
+                            postage,
                             reference,
                             precompiledPdf);
 
-            logger.debug("Storing letter response in database",
-                    createLogMap(contextId, response.response()));
+            logger.debugContext( contextId, "Storing letter response in database",
+                    createLogMap(contextId, "store_letter_response"));
             notificationDatabaseService.storeResponse(response);
 
             return response;

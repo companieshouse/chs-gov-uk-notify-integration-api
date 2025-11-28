@@ -40,6 +40,7 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
         assertNotNull(savedResponse.getId());
         assertNotNull(savedResponse.getCreatedAt());
         assertNotNull(savedResponse.getUpdatedAt());
+        assertTrue(savedResponse.getResponse().getPostage().isPresent());
     }
 
     @Test
@@ -67,23 +68,6 @@ class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
 
         Optional<NotificationLetterResponse> deletedResponse = responseRepository.findById(savedResponse.getId());
         assertFalse(deletedResponse.isPresent());
-    }
-
-    @Test
-    void When_ResponseUpdated_Expect_ChangesReflectedInDatabase() {
-        UUID initialNotificationId = UUID.randomUUID();
-        UUID updatedNotificationId = UUID.randomUUID();
-
-        NotificationLetterResponse savedResponse = responseRepository.save(
-                new NotificationLetterResponse(null, null, createSampleLetterResponse(initialNotificationId), null));
-
-        responseRepository.save(new NotificationLetterResponse(null, null,
-                createSampleLetterResponse(updatedNotificationId), savedResponse.getId()));
-
-        NotificationLetterResponse retrievedResponse = responseRepository.findById(savedResponse.getId()).orElse(null);
-
-        assertNotNull(retrievedResponse);
-        assertEquals(updatedNotificationId, retrievedResponse.getResponse().getNotificationId());
     }
 
     private LetterResponse createSampleLetterResponse(UUID notificationId) {

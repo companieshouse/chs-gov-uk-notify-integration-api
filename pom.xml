@@ -35,7 +35,7 @@
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <flapdoodle.version>4.16.1</flapdoodle.version>
         <email-producer-java.version>3.0.3</email-producer-java.version>
-        <logback-classic.version>1.5.17</logback-classic.version>
+        <logback-classic.version>1.5.19</logback-classic.version>
         <junit-jupiter-engine-version>5.11.4</junit-jupiter-engine-version>
         <mockito-junit-jupiter-version>5.15.2</mockito-junit-jupiter-version>
         <hamcrest-version>3.0</hamcrest-version>
@@ -52,7 +52,7 @@
         <spring-security-core.version>6.5.4</spring-security-core.version>
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
-        <tomcat-embed.version>10.1.44</tomcat-embed.version>
+        <tomcat-embed.version>11.0.14</tomcat-embed.version>
         <!-- CVE-2024-11407 -->
         <grpc-context.version>1.73.0</grpc-context.version>
         <!-- CVE-2025-53864 -->
@@ -272,6 +272,10 @@
                 <exclusion>
                     <groupId>io.grpc</groupId>
                     <artifactId>grpc-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

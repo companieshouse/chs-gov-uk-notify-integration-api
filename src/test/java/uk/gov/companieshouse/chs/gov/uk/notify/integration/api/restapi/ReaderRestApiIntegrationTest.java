@@ -95,7 +95,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String EXPECTED_SECURITY_OK_LOG_MESSAGE =
             "authorised as api key (internal user)";
 
-    private static final String PSC_NAME = "Joe Bloggs";
+    private static final String PSC_NAME = "ANDREWPHILLIPLONGNAME BARROW";
     private static final String COMPANY_NUMBER = "00006400";
     private static final String LETTER_TYPE = "new_psc_direction_letter_v1";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
@@ -263,7 +263,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         postSendLetterRequest(mockMvc,
                 getSendLetterRequestWithReference(
                 getValidSendLetterRequestBody(), REFERENCE_SHARED_BY_MULTIPLE_LETTERS),
@@ -301,7 +301,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
@@ -357,7 +357,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendInformationLetterRequestBody(),
                 REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER);
@@ -401,7 +401,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
@@ -433,7 +433,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
@@ -469,7 +469,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
@@ -522,7 +522,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
@@ -625,7 +625,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
@@ -662,7 +662,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class))).thenReturn(responseReceived);
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
                 REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);

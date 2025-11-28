@@ -23,6 +23,14 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 
 @Service
 public class GovUkNotifyService {
+
+    /*
+     * These POSTAGE constants should be removed in the future and postage should be
+     * read from the request object.
+     */
+    public static final String SECOND_CLASS_POSTAGE = "second";
+    public static final String ECONOMY_POSTAGE = "economy";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     public static final String ERROR_MESSAGE_KEY = "error";
@@ -63,11 +71,11 @@ public class GovUkNotifyService {
     }
 
     public LetterResp sendLetter(
+            @NotBlank String postage,
             @NotBlank String reference,
             @NotNull InputStream precompiledPdf) {
         try {
-            var response =
-                    client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
+            var response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {

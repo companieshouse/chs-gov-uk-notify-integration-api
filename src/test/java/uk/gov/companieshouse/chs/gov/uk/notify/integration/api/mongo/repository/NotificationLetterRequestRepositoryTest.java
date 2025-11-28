@@ -78,8 +78,9 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
 
-        GovUkLetterDetailsRequest updatedRequest = createSampleLetterRequest("Updated Address");
-        requestRepository.save(new NotificationLetterRequest(null, null, updatedRequest, savedRequest.getId()));
+        savedRequest.getRequest().getRecipientDetails().getPhysicalAddress().setAddressLine1( "Updated Address" );
+
+        requestRepository.save(savedRequest);
 
         NotificationLetterRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
 
