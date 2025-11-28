@@ -131,7 +131,7 @@ public class HtmlPdfGenerator {
 
     public static String getPdfFilepath(String reference) {
         return System.getProperty("user.home") + File.separator
-                + "letter_" + reference + ".pdf";
+                + "letter_" + reference.replace(File.separator, "_") + ".pdf";
     }
 
     private void addFont(final ITextRenderer renderer, final String fontFilename)

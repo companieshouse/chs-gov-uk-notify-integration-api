@@ -45,7 +45,8 @@ public class SecurityConfig implements WebMvcConfigurer {
     public void addInterceptors(final InterceptorRegistry registry) {
         registry.addInterceptor(internalUserInterceptor).addPathPatterns(
                 "/gov-uk-notify-integration/letter",
-                "/gov-uk-notify-integration/letters/view/*");
+                "/gov-uk-notify-integration/letters/view",
+                "/gov-uk-notify-integration/letters/view_by_reference");
     }
 
 }

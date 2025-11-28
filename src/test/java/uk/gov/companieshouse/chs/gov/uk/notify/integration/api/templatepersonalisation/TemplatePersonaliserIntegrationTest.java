@@ -37,7 +37,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +48,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
-@Tag("integration-test")
 @SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
 class TemplatePersonaliserIntegrationTest {
 
