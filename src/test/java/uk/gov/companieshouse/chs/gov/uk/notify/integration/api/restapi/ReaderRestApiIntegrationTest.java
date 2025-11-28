@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.Loader;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -64,7 +63,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.Html
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 
-@Tag("integration-test")
 @SpringBootTest(properties =
         {"logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG"})
 @AutoConfigureMockMvc
