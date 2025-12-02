@@ -1251,8 +1251,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    int letterNumber,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/paginated_view/"
-                        + reference + "/" + letterNumber)
+        return mockMvc.perform(
+                get("/gov-uk-notify-integration/letters/view_by_reference/paginated_view/"
+                        + letterNumber + "?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
