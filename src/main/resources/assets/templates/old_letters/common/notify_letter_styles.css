@@ -1,0 +1,327 @@
+@page :right {
+    size: A4;
+
+    margin-left: 15mm;
+    margin-right: 15mm;
+    margin-top: 35mm;
+    margin-bottom: 35mm;
+
+    @top-left {
+        content: element(p1-header-left);
+    }
+
+    @top-center {
+        content: element(p1-header-centre);
+    }
+
+    @top-right {
+        content: element(p1-header-right);
+    }
+
+    @bottom-left {
+        content: element(p1-footer-left);
+    }
+}
+@page :left {
+    size: A4;
+
+    margin-left: 15mm;
+    margin-right: 15mm;
+    margin-top: 30mm;
+    margin-bottom: 18mm;
+
+    @top-left {
+        content: element(pages-2-onwards-header-left);
+    }
+
+    @bottom-left {
+        content: element(pages-2-onwards-footer-left);
+    }
+}
+.frame {
+    /* Comment out the following to hide the outline of the block. */
+    /*border: 0.1mm outset red;*/
+}
+.content {
+    height: 100%;
+    width: 100%;
+
+    /* Comment out the following to hide the content block. */
+    /*border: 0.1mm outset olivedrab;*/
+}
+.address-and-date-ref-block {
+    /** 56.3mm is, to the nearest 0.1mm, the minimum block height we can have for the letter
+        content to remain within the Gov Notify printable area. Otherwise the letter text starts too
+        high on the page.
+     */
+    height: 56.3mm;
+}
+#date-and-reference-table {
+    width: 100%;
+}
+.date-and-ref {
+    height: 35.5mm; /* was 65mm */
+    width: 64mm; /* was 70mm */
+    font-family: Arial, sans-serif;
+}
+.date-and-reference-label {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+}
+.date-and-reference-spacing {
+    height: 4mm;
+}
+#date-and-reference-table tr {
+        line-height: 0.95;
+}
+#date-and-reference-table td {
+    margin-left: 0;
+    padding-left: 0;
+}
+.column {
+    float: left;
+}
+.logo {
+    height: 25mm;
+    width: 100%;
+    margin-left: 3mm;
+    padding-right: 5mm;
+    padding-bottom: 9.5mm;
+    position: relative;
+}
+.welsh-logo {
+    height: 21mm;
+    width: 100%;
+    margin-left: -3mm;
+    padding-right: 5mm;
+    padding-bottom: 9.5mm;
+    position: relative;
+}
+.logo-img {
+    top: -34mm;
+    width: 95%;
+    height: 95%;
+    position: absolute;
+}
+.page-1-footer-artwork {
+    width: 176mm;
+    margin-left: 2mm;
+    position: relative;
+}
+.page-1-footer-artwork-img {
+    top: 224mm;
+    width: 100%;
+    height: 99%;
+    position: absolute;
+}
+.pages-2-onwards-logo {
+    height: 25mm;
+    width: 100%;
+    margin-left: 2mm;
+    padding-right: 5mm;
+    padding-bottom: 9.5mm;
+    position: relative;
+}
+.pages-2-onwards-logo-img {
+    top: 177mm;
+    width: 60mm;
+    height: 60mm;
+    position: absolute;
+}
+.welsh-pages-2-onwards-logo-img {
+    top: 183mm;
+    width: 48mm;
+    height: 48mm;
+    position: absolute;
+}
+.pages-2-onwards-footer-artwork {
+    width: 176mm;
+    margin-left: 2mm;
+    position: relative;
+}
+.pages-2-onwards-footer-artwork-img {
+    top: 469mm;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+.title {
+    height: 25mm;
+    width: 64mm; /* was 70mm */
+}
+.address {
+    height: 26.8mm;
+    width: 95mm;
+    margin-top: 2mm;
+    margin-right: 7.4mm;
+    margin-left: 7.4mm;
+    margin-bottom: 6.7mm;
+    /*border: 0.1mm outset green; */
+
+    /* Gov Notify address font is always Arial 8pt.
+       GDS Support have confirmed that whatever font we use here, Gov Notify will automatically reformat
+       the address to be Arial 8pt. Hence, DO NOT CHANGE font-family or font-size, as these values provide
+       the most accurate reflection of what will actually appear in the letter. They will also make it more
+       likely than anything else to cause Gov Notify "printability validation" to fail only when it really should.
+     */
+
+    font-family: Arial, sans-serif;
+    font-size: 8pt;
+
+    /** This line-height has been reduced to get the height of the address block in the letters we generate to
+        closely match that in the address block following processing by Gov Notify. It cramps the lines together
+        slightly to allow a total of 7 lines in the address block.
+
+        DVLA docs state we can get 7 address lines + postcode or country into the address block.
+        Gov Notify docs state we can get 6 address lines + postcode or country into the address block.
+        Gov Notify validation enforces that limit - no more than 7 lines are allowed in the address in total.
+
+        [With default leading (i.e. not specifying a line-height here), we can actually only get 5 address lines +
+        postcode or country into the address block].
+     */
+    line-height: 2.56mm;
+
+    /* overflow-wrap: anywhere  is not recognised by the version of Flying Saucer we are using,
+       but word-wrap: break-word is. */
+    word-wrap: break-word;
+}
+li {
+    font-family: Arial, sans-serif;
+}
+hr {
+    margin-top: 5mm;
+    border: none;
+    height: 0.55mm;
+    background-color: black;
+}
+.emphasis {
+    font-weight:bold;
+}
+.small-heading {
+    font-weight:bold;
+    font-size: 5.0mm;
+}
+.emphatic-block {
+    display: block;
+    color: white;
+    margin-bottom: 1.5mm;
+    padding: 3mm;
+    /* CHN1 black from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #1a1a1a;
+    border-radius: 1.2mm;
+    text-align: center;
+}
+.information-img {
+    height:7mm;
+    width: 7mm;
+    position:relative;
+    float: left;
+}
+.subject-line-spacer {
+    font-size: x-small;
+}
+.verification-requirements {
+    border-top: 1mm solid black;
+    /* CHN2 grey from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #f1f1f1;
+    width: 46%;
+    padding-left: 3mm;
+    padding-right: 3mm;
+    padding-bottom: 5mm;
+    vertical-align: top;
+}
+.verification-requirements-spacer {
+    width: 3%;
+}
+.verification-requirements-text {
+    margin-top: 3mm;
+    margin-left: 2mm;
+    margin-right: 2mm;
+}
+.close-packed-top {
+    padding-bottom: 0;
+    margin-bottom: 0
+}
+.close-packed-middle {
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-top: 0;
+    margin-bottom: 0
+}
+.second-letter-spacer {
+    font-size: xx-small;
+}
+.subject-line {
+    padding-top: 0;
+    margin-top: 0;
+
+    font-family: Arial, sans-serif;
+    font-size: 5.3mm;
+    line-height: 7.0mm;
+    font-weight: bold;
+}
+p {
+    margin-bottom: -1mm;
+    font-family: Arial, sans-serif;
+    font-size: 4.0mm;
+    /* overflow-wrap: anywhere  is not recognised by the version of Flying Saucer we are using,
+       but word-wrap: break-word is. */
+    word-wrap: break-word;
+}
+.warning-block {
+    display: block;
+    font-size: 13pt;
+    line-height: 14pt;
+    color: white;
+    margin-top: 2mm;
+    padding: 3mm 3mm 3mm 5mm;
+    /* CHN3 accent only red from https://brand.companieshouse.gov.uk/document/309#/brand-elements/colour */
+    background-color: #cd1423;
+    border-radius: 1.2mm;
+    position: relative;
+    text-align: left;
+}
+.warning-img {
+    height:9mm;
+    width: 100%;
+    position:absolute;
+    top: 16mm;
+    left: 85mm;
+    z-index: 1;
+}
+.welsh-warning-img {
+    height:9mm;
+    width: 100%;
+    position:absolute;
+    top: 21mm;
+    left: 85mm;
+    z-index: 1;
+}
+.verification-requirements-heading {
+    font-size: 5.0mm;
+    line-height: 5.5mm;
+    font-weight: bold;
+    margin-top: 3mm;
+    margin-left: 2mm;
+    margin-right: 2mm;
+}
+.p1-header-left {
+    offset: left;
+    position: running(p1-header-left);
+}
+.p1-header-centre {
+    position: running(p1-header-centre);
+    width: 38mm;
+}
+.p1-header-right {
+    position: running(p1-header-right);
+}
+.pages-2-onwards-header-left {
+    position: running(pages-2-onwards-header-left);
+}
+.p1-footer-left {
+    position: running(p1-footer-left);
+}
+.pages-2-onwards-footer-left {
+    position: running(pages-2-onwards-footer-left);
+}

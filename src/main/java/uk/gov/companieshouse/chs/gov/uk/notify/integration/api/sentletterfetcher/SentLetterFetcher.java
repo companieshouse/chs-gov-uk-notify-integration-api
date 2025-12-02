@@ -67,6 +67,7 @@ public class SentLetterFetcher {
 
         var letter = letters.getFirst().getRequest();
         var appId = letter.getSenderDetails().getAppId();
+        var letterId = letter.getLetterDetails().getLetterId();
         var templateId = letter.getLetterDetails().getTemplateId();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
         var personalisationDetails =
@@ -80,6 +81,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
+                        letterId,
                         templateId),
                 reference,
                 personalisationDetails,
@@ -100,8 +102,8 @@ public class SentLetterFetcher {
      *
      * @param pscName the name of the PSC intended to receive the letter
      * @param companyNumber the company number
-     * @param templateId the ID of the template used to generate the letter. This corresponds
-     *                   directly to the letter type.
+     * @param letterId the ID of the letter
+     * @param templateId the ID of the template used to generate the letter
      * @param letterSendingDate the date on which CHIPS triggered the sending of the letter
      * @return the letter PDF
      * @throws IOException should something unexpected happen
@@ -109,12 +111,13 @@ public class SentLetterFetcher {
     public InputStream fetchLetter(
             final String pscName,
             final String companyNumber,
+            final String letterId,
             final String templateId,
             final LocalDate letterSendingDate,
             final String contextId)
             throws IOException {
 
-        var letter = fetchLetterFromDatabase(pscName, companyNumber, templateId, letterSendingDate);
+        var letter = fetchLetterFromDatabase(pscName, companyNumber, letterId, templateId, letterSendingDate);
         var reference = letter.getSenderDetails().getReference();
         var appId = letter.getSenderDetails().getAppId();
         var personalisationDetailsString = letter.getLetterDetails().getPersonalisationDetails();
@@ -129,6 +132,7 @@ public class SentLetterFetcher {
         var html = templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
                         appId,
+                        letterId,
                         templateId),
                 reference,
                 personalisationDetails,
@@ -137,7 +141,7 @@ public class SentLetterFetcher {
         try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
             logger.debug(
                     "Responding with regenerated letter PDF to view for letter with "
-                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate),
+                    + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate),
                     createLogMap(contextId, "view_letter"));
             return precompiledPdf;
         }
@@ -145,19 +149,21 @@ public class SentLetterFetcher {
 
     private GovUkLetterDetailsRequest fetchLetterFromDatabase(final String pscName,
                                                               final String companyNumber,
+                                                              final String letterId,
                                                               final String templateId,
                                                               final LocalDate letterSendingDate) {
         var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
+                letterId,
                 templateId,
                 letterSendingDate);
         if (letters.isEmpty()) {
             throw new LetterNotFoundException("Letter not found for "
-                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate));
+                    + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate));
         } else if (letters.size() > 1) {
             throw new TooManyLettersFoundException("Multiple letters found for "
-                    + queryParameters(pscName, companyNumber, templateId, letterSendingDate));
+                    + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate));
         }
 
         return letters.getFirst().getRequest();
@@ -165,10 +171,12 @@ public class SentLetterFetcher {
 
     private String queryParameters(final String pscName,
                                    final String companyNumber,
+                                   final String letterId,
                                    final String templateId,
                                    final LocalDate letterSendingDate) {
         return "psc name " + pscName
                 + ", companyNumber " + companyNumber
+                + ", letterId " + letterId
                 + ", templateId " + templateId
                 + ", letter sending date " + letterSendingDate + ".";
     }

@@ -96,7 +96,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String PSC_NAME = "ANDREWPHILLIPLONGNAME BARROW";
     private static final String COMPANY_NUMBER = "00006400";
-    private static final String LETTER_TYPE = "new_psc_direction_letter_v1";
+    private static final String LETTER_ID = null;
+    private static final String TEMPLATE_ID = "new_psc_direction_letter_v1";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
     private static final String NOT_LETTER_SENDING_DATE = "1999-12-30";
     private static final String UNPARSEABLE_LETTER_SENDING_DATE = "8 April 2025";
@@ -104,8 +105,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2 =
             "Error in chs-gov-uk-notify-integration-api: Multiple letters found for psc name "
                     + PSC_NAME  + ", companyNumber "
-                    + COMPANY_NUMBER + ", templateId "
-                    + LETTER_TYPE + ", letter sending date "
+                    + COMPANY_NUMBER +  ", letterId "
+                    + LETTER_ID + ", templateId "
+                    + TEMPLATE_ID + ", letter sending date "
                     + LETTER_SENDING_DATE + ".";
 
     @Autowired
@@ -480,20 +482,22 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
             COMPANY_NUMBER,
-            LETTER_TYPE,
+            LETTER_ID,
+            TEMPLATE_ID,
             LETTER_SENDING_DATE,
         status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                                PSC_NAME, COMPANY_NUMBER, LETTER_TYPE, LETTER_SENDING_DATE)),
+                                PSC_NAME, COMPANY_NUMBER, TEMPLATE_ID, LETTER_SENDING_DATE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
-                        + COMPANY_NUMBER + ", templateId "
-                        + LETTER_TYPE + ", letter sending date "
+                        + COMPANY_NUMBER + ", letterId "
+                        + LETTER_ID + ", templateId "
+                        + TEMPLATE_ID + ", letter sending date "
                         + LETTER_SENDING_DATE + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
 
@@ -540,7 +544,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 status().isInternalServerError());
 
@@ -593,7 +598,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME + " additional text",
                 COMPANY_NUMBER,
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -604,7 +610,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER + " additional text",
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -615,7 +622,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER,
-                LETTER_TYPE + " additional text",
+                LETTER_ID,
+                TEMPLATE_ID + " additional text",
                 LETTER_SENDING_DATE);
     }
 
@@ -626,7 +634,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER,
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 NOT_LETTER_SENDING_DATE);
     }
 
@@ -638,7 +647,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 UNPARSEABLE_LETTER_SENDING_DATE,
                 status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
@@ -670,7 +680,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                LETTER_TYPE,
+                LETTER_ID,
+                TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 status().isConflict())
                 .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2));
@@ -679,7 +690,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                 getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                         COMPANY_NUMBER,
-                        LETTER_TYPE,
+                        TEMPLATE_ID,
                         LETTER_SENDING_DATE)),
                 is(true));
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2), is(true));
@@ -688,6 +699,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private void implementLetterNotFoundTest(CapturedOutput log,
                                              String pscName,
                                              String companyNumber,
+                                             String letterId,
                                              String templateId,
                                              String letterSendingDate) throws Exception {
 
@@ -705,12 +717,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 pscName,
                 companyNumber,
+                letterId,
                 templateId,
                 letterSendingDate,
                 status().isNotFound())
                 .andExpect(content().string(getExpectedLetterNotFoundErrorMessage(
                         pscName,
                         companyNumber,
+                        letterId,
                         templateId,
                         letterSendingDate)));
 
@@ -725,6 +739,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(getExpectedLetterNotFoundErrorMessage(
                         pscName,
                         companyNumber,
+                        letterId,
                         templateId,
                         letterSendingDate)),
                 is(true));
@@ -734,6 +749,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private ResultActions viewLetterPdfByPscCompanyLetterTypeAndDate(String pscName,
                                                    String companyNumber,
+                                                   String letterId,
                                                    String templateId,
                                                    String letterSendingDate,
                                                    ResultMatcher expectedResponseStatus)
@@ -741,6 +757,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         return mockMvc.perform(get("/gov-uk-notify-integration/letters/view"
                         + "?psc_name=" + pscName
                         + "&company_number=" + companyNumber
+                        + (letterId!=null ? "&letter_id=" + letterId : "")
                         + "&template_id=" + templateId
                         + "&letter_sending_date="+ letterSendingDate)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -813,10 +830,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static String getExpectedLetterNotFoundErrorMessage(String pscName,
                                                                 String companyNumber,
+                                                                String letterId,
                                                                 String templateId,
                                                                 String letterSendingDate) {
        return "Error in chs-gov-uk-notify-integration-api: Letter not found for psc name " + pscName
                + ", companyNumber " + companyNumber
+               + ", letterId " + letterId
                + ", templateId " + templateId
                + ", letter sending date " + letterSendingDate + ".";
     }
