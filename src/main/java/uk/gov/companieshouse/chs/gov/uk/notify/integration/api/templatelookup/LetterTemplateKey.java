@@ -44,6 +44,7 @@ public record LetterTemplateKey(String appId, String id) {
 
     public static Set<LetterTemplateKey> IDVPSCDEFAULT_TEMPLATES = Set.of(
             new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1"),
-            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1.1")
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_v1.1"),
+            new LetterTemplateKey(CHIPS_APPLICATION_ID, "IDVPSCDEFAULT_WELSH_v1")
     );
 }
