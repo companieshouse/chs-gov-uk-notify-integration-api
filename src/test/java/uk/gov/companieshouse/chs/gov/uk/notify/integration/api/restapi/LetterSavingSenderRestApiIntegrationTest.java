@@ -31,7 +31,6 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +47,6 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@Tag("integration-test")
 @SpringBootTest(properties = {
         "save.letter=true",
         "logging.level.org.thymeleaf=TRACE"})
@@ -60,10 +58,6 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
             HtmlPdfGenerator.getPdfFilepath("send-direction-letter-request");
     private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
             new File(SAVED_LETTER_FILEPATH),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-new-psc-direction-letter-request")),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-transitional-non-director-psc-information-letter-request")),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-extension-acceptance-letter-request")),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-second-extension-acceptance-letter-request")),
             new File(HtmlPdfGenerator.getPdfFilepath("send-csidvdeflet-request")),
             new File(HtmlPdfGenerator.getPdfFilepath("send-idvpscdefault-request"))
     };
@@ -97,49 +91,51 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     @DisplayName("Send New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
     void sendNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-new-psc-direction-letter-request", log);
+        sendAndDeleteLetter("send-new-psc-direction-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Welsh New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
     void sendWelshNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendWelshLetter("send-new-psc-direction-letter-request", log);
+        sendAndDeleteWelshLetter("send-new-psc-direction-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
     void sendTransitionalPscInformationLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-transitional-non-director-psc-information-letter-request", log);
+        sendAndDeleteLetter("send-transitional-non-director-psc-information-letter-request",
+                log);
     }
 
     @Test
     @DisplayName("Send Welsh Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshTransitionalPscInformationLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendWelshLetter("send-transitional-non-director-psc-information-letter-request", log);
+    void sendWelshTransitionalPscInformationLetterSuccessfully(CapturedOutput log)
+            throws Exception {
+        sendAndDeleteWelshLetter("send-transitional-non-director-psc-information-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-extension-acceptance-letter-request", log);
+        sendAndDeleteLetter("send-extension-acceptance-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Welsh Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendWelshExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendWelshLetter("send-extension-acceptance-letter-request", log);
+        sendAndDeleteWelshLetter("send-extension-acceptance-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-second-extension-acceptance-letter-request", log);
+        sendAndDeleteLetter("send-second-extension-acceptance-letter-request", log);
     }
 
     @Test
     @DisplayName("Send Welsh Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
     void sendWelshSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendWelshLetter("send-second-extension-acceptance-letter-request", log);
+        sendAndDeleteWelshLetter("send-second-extension-acceptance-letter-request", log);
     }
 
     @Test
@@ -191,8 +187,27 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfSaved(requestName);
     }
 
-    private static String getExpectedSavingLetterLogMessage(final String requestName) {
-        var savedLetterFilepath = HtmlPdfGenerator.getPdfFilepath(requestName);
+    private void sendAndDeleteLetter(final String requestName, final CapturedOutput log) throws
+            Exception {
+        sendLetter(requestName, log);
+        deleteLetterPdf(requestName);
+    }
+
+    private void sendAndDeleteWelshLetter(final String requestName, final CapturedOutput log) throws
+            Exception {
+        sendWelshLetter(requestName, log);
+        deleteLetterPdf(requestName);
+    }
+
+    private void deleteLetterPdf(final String requestName) throws Exception {
+        var reference = getReference(requestName);
+        var file = new File(HtmlPdfGenerator.getPdfFilepath(reference));
+        file.deleteOnExit();
+    }
+
+    private String getExpectedSavingLetterLogMessage(final String requestName) throws IOException {
+        var reference = getReference(requestName);
+        var savedLetterFilepath = HtmlPdfGenerator.getPdfFilepath(reference);
         return "Saving PDF of letter to " + savedLetterFilepath + ".";
     }
 
@@ -204,9 +219,17 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         return resourceToString("/fixtures/" + requestName + ".json", UTF_8);
     }
 
-    private static void verifyLetterPdfSaved(final String requestName) {
-        var savedLetterFilepath = Paths.get(HtmlPdfGenerator.getPdfFilepath(requestName));
+    private void verifyLetterPdfSaved(final String requestName) throws IOException {
+        var reference = getReference(requestName);
+        var savedLetterFilepath = Paths.get(HtmlPdfGenerator.getPdfFilepath(reference));
         assertThat(Files.exists(savedLetterFilepath), is(true));
+    }
+
+    private String getReference(final String requestName) throws IOException {
+        var request = objectMapper.readValue(
+                getSendLetterRequestBody(requestName),
+                GovUkLetterDetailsRequest.class);
+        return request.getSenderDetails().getReference();
     }
 
     private void verifyLetterPdfContent() throws IOException {

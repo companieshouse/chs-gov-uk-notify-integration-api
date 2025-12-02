@@ -146,9 +146,9 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     @Override
     public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference(
             final String reference,
-            final String xRequestId
+            final String contextId
     ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_letter_by_reference");
+        Map<String, Object> logMap = createLogMap(contextId, "get_letter_by_reference");
         logMap.put(REFERENCE, reference);
         LOGGER.info("Retrieving letter notifications by reference: " + reference, logMap);
 
