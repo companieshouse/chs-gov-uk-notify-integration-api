@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ECONOMY_POSTAGE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.SECOND_CLASS_POSTAGE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,8 +10,6 @@ import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,6 +19,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -31,10 +28,15 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static final Set<LetterTemplateKey> ECONOMY_LETTERS = Stream
-            .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
-                    LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
-            .collect(Collectors.toSet());
+    /**
+     * Set of letters that should be sent using second class postage
+     */
+    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = Set.of(
+            LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
+            LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+            LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
+            LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
+            LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1);
 
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
@@ -123,14 +125,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         var templateId = letterDetails.getTemplateId();
-        /* This is a temporary block to send new CSIDV letters via economy before
-         * IDV go live. In the future this block should be removed and the postage
-         * should be read from the request object.
-         */
-        var postage = SECOND_CLASS_POSTAGE;
-        if (ECONOMY_LETTERS.contains(new LetterTemplateKey(appId, templateId))) {
-            postage = ECONOMY_POSTAGE;
-        }
+        var postage = determinePostage(appId, templateId);
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
@@ -159,4 +154,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
     }
 
+    private Postage determinePostage(final String appId, final String templateId) {
+        var letterTemplateKey = new LetterTemplateKey(appId, templateId);
+        if (SECOND_CLASS_LETTERS.contains(letterTemplateKey)) {
+            return Postage.SECOND_CLASS;
+        } else {
+            // Default to economy mail
+            return Postage.ECONOMY;
+        }
+    }
 }

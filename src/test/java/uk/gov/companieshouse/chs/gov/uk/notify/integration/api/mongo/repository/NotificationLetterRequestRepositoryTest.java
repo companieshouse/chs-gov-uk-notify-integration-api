@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterWithReference;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
 
-@Tag("integration-test")
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.Loader;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -66,7 +65,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.Html
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 
-@Tag("integration-test")
 @SpringBootTest(properties =
         {"logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG"})
 @AutoConfigureMockMvc
@@ -87,6 +85,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             "calculated sending date letter";
     private static final String REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER =
             "today's sending date letter";
+    private static final String REFERENCE_FOR_LETTER_SENT = "letter sent";
     private static final String TOKEN_REFERENCE = "token reference";
 
     private static final String EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE =
@@ -244,7 +243,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get(VIEW_LETTER_BY_REFERENCE_URI)
+                get("/gov-uk-notify-integration/letters/view_by_reference"
+                        + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
@@ -296,7 +296,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithUserAuthIsForbidden(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view/letter with a calculated sending date")
+                get("/gov-uk-notify-integration/letters/view_by_reference"
+                        + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
@@ -617,6 +618,38 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                is(true));
+    }
+
+    @Test
+    @DisplayName("Get letter details by reference successfully")
+    void getLetterDetailsByReferenceSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(), REFERENCE_FOR_LETTER_SENT);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When
+        mockMvc.perform(get("/gov-uk-notify-integration/letters/reference"
+                        + "?reference=" + REFERENCE_FOR_LETTER_SENT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
+                .andExpect(status().isOk());
+
+        // Then
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                getExpectedGetLetterDetailsByReferenceInvocationLogMessage(
+                        REFERENCE_FOR_LETTER_SENT)),
                 is(true));
     }
 
@@ -1203,7 +1236,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view/" + reference)
+        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view_by_reference"
+                        + "?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
@@ -1266,6 +1300,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"letter\":" + letterNumber + ","
                 + "\"action\":\"view_letter_pdfs\","
                 + "\"message\":\"Starting viewLetterPdfsByReference process\","
+                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
+    }
+
+    private static String getExpectedGetLetterDetailsByReferenceInvocationLogMessage(
+            String reference) {
+        return   "{\"reference\":\"" + reference + "\","
+                + "\"action\":\"get_letter_by_reference\","
+                + "\"message\":\"Retrieving letter notifications by reference: " + reference + "\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
 
