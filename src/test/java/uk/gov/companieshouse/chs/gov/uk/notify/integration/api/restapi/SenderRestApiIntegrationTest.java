@@ -686,12 +686,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @ParameterizedTest(name = "Send letter with second class postage for {0}")
-    @CsvSource({ "direction_letter_v1,send-direction-letter-request",
-            "new_psc_direction_letter_v1,send-new-psc-direction-letter-request",
-            "extension_acceptance_letter_v1,send-extension-acceptance-letter-request",
-            "second_extension_acceptance_letter_v1,send-second-extension-acceptance-letter-request",
-            "transitional_non_director_psc_information_letter_v1,send-transitional-non-director-psc-information-letter-request" })
-    void sendLetterWithSecondClassPostage(String letterType, String reference, CapturedOutput log)
+    @CsvSource({ "direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
+            "new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
+            "extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
+            "second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
+            "transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" })
+    void sendLetterWithSecondClassPostage(String letterType, String reference, String fixture)
             throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -699,7 +699,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 eq(reference), any(InputStream.class), eq("second")))
                 .thenReturn(responseReceived);
 
-        String otherRequest = resourceToString("/fixtures/" + reference + ".json", UTF_8);
+        String otherRequest = resourceToString("/fixtures/" + fixture + ".json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
 
         verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
