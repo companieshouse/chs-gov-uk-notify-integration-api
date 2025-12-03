@@ -40,6 +40,7 @@ public class ContextVariables {
     public static final String VERIFICATION_DUE_DATE = "verification_due_date";
     public static final String ACTION_DUE_DATE = "action_due_date";
     public static final String IS_LLP = "is_llp";
+    public static final String REPRESENTATION_DUE_DATE = "representation_due_date";
 
     // Used only when recreating a previously sent letter for viewing, and never used
     // as the name of an actual context variable.

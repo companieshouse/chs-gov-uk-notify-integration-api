@@ -159,7 +159,7 @@ class SenderRestApiTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1" })
+    @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "CSIDVDEFLET_v1.2", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1", "IDVPSCDEFAULT_v1.2" })
     void sendLetter_shouldReturnCreated_defaultPostage(String templateId) throws Exception {
         String contextId = "context1234";
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", templateId);
