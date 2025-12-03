@@ -15,7 +15,7 @@
         <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
         <div class="grey-warning-block-text">
             <span>
-                <strong>You must submit your identity verification statement or make a representation by <span id="action-due-date">[[${today_plus_28_days}]]</span>.</strong> There are instructions on the back of this letter.
+                <strong>You must submit your identity verification statement or make a representation by <span id="action-due-date">[[${action_due_date}]]</span>.</strong> There are instructions on the back of this letter.
             </span><br/><br/>
             <span>If you do not file the statement you may be committing an offence.</span><br/>
             <span>You may face prosecution or a financial penalty.</span>
@@ -47,7 +47,7 @@
 
 <p class="small-heading">How to make representations</p>
 
-<p>If there are exceptional circumstances you want us to consider before we proceed with enforcement action, you must write to us by [[${today_plus_28_days}]]. This is called a representation.</p>
+<p>If there are exceptional circumstances you want us to consider before we proceed with enforcement action, you must write to us by [[${action_due_date}]]. This is called a representation.</p>
 
 <p>To make a representation, go to <span class="emphasis">https://www.gov.uk/government/publications/make-a-representation-for-not-filing-an-identity-verification-statement</span>.</p>
 
