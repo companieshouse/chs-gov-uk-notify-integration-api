@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAY_PLUS_28_DAYS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -16,6 +16,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REPRESENTATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
@@ -106,28 +107,62 @@ public class TemplateContextValidator {
                       )
               )));
         for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
-            VALID_CONTEXTS.put(key, Set.of(
-                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                    REFERENCE,
-                    COMPANY_NAME,
-                    COMPANY_NUMBER,
-                    VERIFICATION_DUE_DATE,
-                    TODAYS_DATE,
-                    ACTION_DUE_DATE,
-                    IS_LLP
-            ));
+            if (
+                    !key.id().equals("CSIDVDEFLET_v1") &&
+                    !key.id().equals("CSIDVDEFLET_v1.1")
+            ) {
+                VALID_CONTEXTS.put(key, Set.of(
+                        ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                        REFERENCE,
+                        COMPANY_NAME,
+                        COMPANY_NUMBER,
+                        VERIFICATION_DUE_DATE,
+                        TODAYS_DATE,
+                        TODAY_PLUS_28_DAYS,
+                        IS_LLP,
+                        REPRESENTATION_DUE_DATE
+                ));
+            } else {
+                VALID_CONTEXTS.put(key, Set.of(
+                        ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                        REFERENCE,
+                        COMPANY_NAME,
+                        COMPANY_NUMBER,
+                        VERIFICATION_DUE_DATE,
+                        TODAYS_DATE,
+                        TODAY_PLUS_28_DAYS,
+                        IS_LLP
+                ));
+            }
         }
         for (LetterTemplateKey key : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
-            VALID_CONTEXTS.put(key, Set.of(
-                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                    REFERENCE,
-                    COMPANY_NAME,
-                    COMPANY_NUMBER,
-                    VERIFICATION_DUE_DATE,
-                    TODAYS_DATE,
-                    ACTION_DUE_DATE,
-                    IS_LLP
-            ));
+            if (
+                    !key.id().equals("IDVPSCDEFAULT_v1") &&
+                    !key.id().equals("IDVPSCDEFAULT_v1.1")
+            ) {
+                VALID_CONTEXTS.put(key, Set.of(
+                        ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                        REFERENCE,
+                        COMPANY_NAME,
+                        COMPANY_NUMBER,
+                        VERIFICATION_DUE_DATE,
+                        TODAYS_DATE,
+                        TODAY_PLUS_28_DAYS,
+                        IS_LLP,
+                        REPRESENTATION_DUE_DATE
+                ));
+            } else {
+                VALID_CONTEXTS.put(key, Set.of(
+                        ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                        REFERENCE,
+                        COMPANY_NAME,
+                        COMPANY_NUMBER,
+                        VERIFICATION_DUE_DATE,
+                        TODAYS_DATE,
+                        TODAY_PLUS_28_DAYS,
+                        IS_LLP
+                ));
+            }
         }
     }
 
