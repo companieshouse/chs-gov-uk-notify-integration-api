@@ -22,7 +22,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REPRESENTATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
@@ -78,7 +77,6 @@ class TemplatePersonaliserIntegrationTest {
     private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
     private static final String VALID_IDV_START_DATE = "30 June 2025";
     private static final String VALID_IDV_VERIFICATION_DUE_DATE = "14 July 2025";
-    private static final String VALID_REPRESENTATION_DUE_DATE = "11 August 2025";
     private static final String VALID_EXTENSION_REQUEST_DATE = "13 July 2025";
     private static final String WELSH_EXTENSION_REQUEST_DATE = "13 Gorffennaf 2025";
     private static final String EXPECTED_TODAYS_DATE;
@@ -405,41 +403,26 @@ class TemplatePersonaliserIntegrationTest {
 
         for (LetterTemplateKey templateKey : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             // Given and when
-            boolean isOldLetter =
-                    templateKey.id().equals("CSIDVDEFLET_v1") ||
-                    templateKey.id().equals("CSIDVDEFLET_v1.1");
-            Map<String, String> variables;
-            if (!isOldLetter) {
-                variables = Map.of(
-                        IS_LLP, "no",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        REPRESENTATION_DUE_DATE, VALID_REPRESENTATION_DUE_DATE);
-            } else {
-                variables = Map.of(
-                        IS_LLP, "no",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE
-                );
-            }
             var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                     templateKey,
                     "123456789",
-                    variables,
+                    Map.of(
+                            IS_LLP, "no",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-
+    
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
-            String expectedActionDueDate = VALID_REPRESENTATION_DUE_DATE;
-            if (isOldLetter) {
-                // Old versions wrongly use today + 28 days for action due date
-                expectedActionDueDate = LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER)
-                        .plusDays(28)
-                        .format(DATE_FORMATTER);
-            }
-            assertThat(getText(letter, "#action-due-date"), is(expectedActionDueDate));
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
             assertThat(
                     getText(letter, "#verification-due-date"),
                     is(VALID_IDV_VERIFICATION_DUE_DATE)
@@ -460,41 +443,26 @@ class TemplatePersonaliserIntegrationTest {
 
         for (LetterTemplateKey templateKey : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             // Given and when
-            boolean isOldLetter =
-                    templateKey.id().equals("CSIDVDEFLET_v1") ||
-                    templateKey.id().equals("CSIDVDEFLET_v1.1");
-            Map<String, String> variables;
-            if (!isOldLetter) {
-                variables = Map.of(
-                        IS_LLP, "yes",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        REPRESENTATION_DUE_DATE, VALID_REPRESENTATION_DUE_DATE);
-            } else {
-                variables = Map.of(
-                        IS_LLP, "yes",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE
-                );
-            }
             var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                     templateKey,
                     "123456789",
-                    variables,
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-
+    
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
-            String expectedActionDueDate = VALID_REPRESENTATION_DUE_DATE;
-            if (isOldLetter) {
-                // Old versions wrongly use today + 28 days for action due date
-                expectedActionDueDate = LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER)
-                        .plusDays(28)
-                        .format(DATE_FORMATTER);
-            }
-            assertThat(getText(letter, "#action-due-date"), is(expectedActionDueDate));
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
             assertThat(
                     getText(letter, "#verification-due-date"),
                     is(VALID_IDV_VERIFICATION_DUE_DATE)
@@ -514,43 +482,28 @@ class TemplatePersonaliserIntegrationTest {
     void generateEnglishIDVPSCDEFAULTSuccessfully() {
 
         for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
-            boolean isOldLetter =
-                    templateKey.id().equals("IDVPSCDEFAULT_v1") ||
-                    templateKey.id().equals("IDVPSCDEFAULT_v1.1");
-            Map<String, String> variables;
-            if (!isOldLetter) {
-                variables = Map.of(
-                        IS_LLP, "no",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        REPRESENTATION_DUE_DATE, VALID_REPRESENTATION_DUE_DATE);
-            } else {
-                variables = Map.of(
-                        IS_LLP, "no",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE
-                );
-            }
             // Given and when
             var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                     templateKey,
                     "123456789",
-                    variables,
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-
+    
             // Then
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
-            String expectedActionDueDate = VALID_REPRESENTATION_DUE_DATE;
-            if (isOldLetter) {
-                // Old versions wrongly use today + 28 days for action due date
-                expectedActionDueDate = LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER)
-                        .plusDays(28)
-                        .format(DATE_FORMATTER);
-            }
-            assertThat(getText(letter, "#action-due-date"), is(expectedActionDueDate));
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
             assertThat(
                     getText(letter, "#verification-due-date"),
                     is(VALID_IDV_VERIFICATION_DUE_DATE)
@@ -563,42 +516,27 @@ class TemplatePersonaliserIntegrationTest {
     void generateEnglishIDVPSCDEFAULTLLPSuccessfully() {
 
         for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES) {
-            boolean isOldLetter =
-                    templateKey.id().equals("IDVPSCDEFAULT_v1") ||
-                    templateKey.id().equals("IDVPSCDEFAULT_v1.1");
-            Map<String, String> variables;
-            if (!isOldLetter) {
-                variables = Map.of(
-                        IS_LLP, "yes",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        REPRESENTATION_DUE_DATE, VALID_REPRESENTATION_DUE_DATE);
-            } else {
-                variables = Map.of(
-                        IS_LLP, "yes",
-                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE
-                        );
-            }
             // Given and when
             var letter = parse(templatePersonalisation.personaliseLetterTemplate(
                     templateKey,
                     "123456789",
-                    variables,
+                    Map.of(
+                            IS_LLP, "yes",
+                            VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
     
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
-            String expectedActionDueDate = VALID_REPRESENTATION_DUE_DATE;
-            if (isOldLetter) {
-                // Old versions wrongly use today + 28 days for action due date
-                expectedActionDueDate = LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER)
-                        .plusDays(28)
-                        .format(DATE_FORMATTER);
-            }
-            assertThat(getText(letter, "#action-due-date"), is(expectedActionDueDate));
+            assertThat(
+                    getText(letter, "#action-due-date"),
+                    is(
+                            LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                    plusDays(28).
+                                    format(DATE_FORMATTER)
+                    )
+            );
             assertThat(
                     getText(letter, "#verification-due-date"),
                     is(VALID_IDV_VERIFICATION_DUE_DATE)
