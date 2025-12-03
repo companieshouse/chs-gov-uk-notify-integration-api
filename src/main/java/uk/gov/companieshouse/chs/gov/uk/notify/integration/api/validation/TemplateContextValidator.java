@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAY_PLUS_28_DAYS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -113,7 +113,7 @@ public class TemplateContextValidator {
                     COMPANY_NUMBER,
                     VERIFICATION_DUE_DATE,
                     TODAYS_DATE,
-                    ACTION_DUE_DATE,
+                    TODAY_PLUS_28_DAYS,
                     IS_LLP
             ));
         }
@@ -125,7 +125,7 @@ public class TemplateContextValidator {
                     COMPANY_NUMBER,
                     VERIFICATION_DUE_DATE,
                     TODAYS_DATE,
-                    ACTION_DUE_DATE,
+                    TODAY_PLUS_28_DAYS,
                     IS_LLP
             ));
         }

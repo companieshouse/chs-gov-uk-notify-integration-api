@@ -2,7 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAY_PLUS_28_DAYS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
@@ -38,7 +38,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 
 @Component
 public class TemplatePersonaliser {
-    private static final Set<LetterTemplateKey> ACTION_DUE_DATE_PLUS_28 = Stream
+    private static final Set<LetterTemplateKey> LETTERS_WITH_TODAY_PLUS_28 = Stream
             .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
                     LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
             .collect(Collectors.toSet());
@@ -187,8 +187,8 @@ public class TemplatePersonaliser {
                 date = LocalDate.now().format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
-            if(ACTION_DUE_DATE_PLUS_28.contains(templateLookupKey)) {
-                context.setVariable(ACTION_DUE_DATE,
+            if(LETTERS_WITH_TODAY_PLUS_28.contains(templateLookupKey)) {
+                context.setVariable(TODAY_PLUS_28_DAYS,
                         LocalDate.parse(date, DATE_FORMATTER)
                                 .plusDays(28)
                                 .format(DATE_FORMATTER)

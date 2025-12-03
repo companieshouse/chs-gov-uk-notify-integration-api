@@ -38,7 +38,7 @@ public class ContextVariables {
     public static final String EXTENSION_DATE = "extension_date";
     public static final String TRIGGERING_EVENT_DATE = "triggering_event_date";
     public static final String VERIFICATION_DUE_DATE = "verification_due_date";
-    public static final String ACTION_DUE_DATE = "action_due_date";
+    public static final String TODAY_PLUS_28_DAYS = "today_plus_28_days";
     public static final String IS_LLP = "is_llp";
 
     // Used only when recreating a previously sent letter for viewing, and never used
