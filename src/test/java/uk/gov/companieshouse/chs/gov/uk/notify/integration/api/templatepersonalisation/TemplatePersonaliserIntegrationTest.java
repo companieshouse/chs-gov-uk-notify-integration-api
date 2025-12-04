@@ -104,7 +104,7 @@ class TemplatePersonaliserIntegrationTest {
 
     private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
             "Context variable(s) [extension_request_date] missing for LetterTemplateKey"
-                    + "[appId=chips, id=extension_acceptance_letter_v1].";
+                    + "[appId=chips, letterId=null, templateId=extension_acceptance_letter_v1].";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -160,8 +160,8 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter1_v1");
-        var templateSpec2 = new LetterTemplateKey("app2", "letter1_v1");
+        var templateSpec1 = new LetterTemplateKey("app1", "letter1", "v1");
+        var templateSpec2 = new LetterTemplateKey("app2", "letter1", "v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 
@@ -188,7 +188,7 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter2_v1");
+        var templateSpec1 = new LetterTemplateKey("app1", "letter2", "v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 

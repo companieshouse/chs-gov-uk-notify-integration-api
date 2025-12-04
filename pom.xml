@@ -23,7 +23,7 @@
         <structured-logging.version>3.0.37</structured-logging.version>
         <log4j-version>2.24.2</log4j-version>
         <rest-service-common-library-version>2.0.2</rest-service-common-library-version>
-        <private-api-sdk-java.version>4.0.420</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.423</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.10</api-security-java-version>
         <web-security-java.version>3.1.6</web-security-java.version>

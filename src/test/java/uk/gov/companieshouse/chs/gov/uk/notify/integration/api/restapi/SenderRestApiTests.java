@@ -162,13 +162,14 @@ class SenderRestApiTests {
     @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1" })
     void sendLetter_shouldReturnCreated_defaultPostage(String templateId) throws Exception {
         String contextId = "context1234";
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", templateId);
+        String letterId = "letterId";
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
         Mockito.when(letterDispatcher.sendLetter(Postage.ECONOMY, senderDetails.getReference(),
-                senderDetails.getAppId(), letterDetails.getTemplateId(),
-                req.getRecipientDetails().getPhysicalAddress(),
+                senderDetails.getAppId(), letterDetails.getLetterId(),
+                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
@@ -185,13 +186,14 @@ class SenderRestApiTests {
             LetterTemplateKey.SECOND_EXTENSION_ACCEPTANCE_LETTER })
     void sendLetter_shouldReturnCreated_whenSecondClassPostage(String templateId) throws Exception {
         String contextId = "context5678";
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", templateId);
+        String letterId = null;
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
         Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, senderDetails.getReference(),
-                senderDetails.getAppId(), letterDetails.getTemplateId(),
-                req.getRecipientDetails().getPhysicalAddress(),
+                senderDetails.getAppId(), letterDetails.getLetterId(),
+                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
@@ -202,8 +204,8 @@ class SenderRestApiTests {
 
     @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
@@ -213,8 +215,8 @@ class SenderRestApiTests {
 
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");

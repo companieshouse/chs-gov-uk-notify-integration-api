@@ -1,0 +1,54 @@
+.IDVPSCDEFAULT-title {
+    display: block;
+    height: 18mm;
+    width: 58mm;
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 5.5mm;
+    line-height: 6.0mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 3mm;
+    padding-top: 2mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}
+
+.grey-bg-block {
+    border-top: 0.8mm solid #111;
+    background-color: #f1f1f1;
+    border-radius: 1.2mm;
+    padding: 4mm 4mm 4mm 2.12mm;
+    margin: 8.46mm 0mm;
+    font-family: Arial, sans-serif;
+    font-size: 13pt;
+}
+
+.grey-warning-block strong {
+    font-weight: bold;
+}
+
+.grey-warning-block {
+    background: none;
+    margin-top: 1mm;
+    width: 100%;
+    display: block;
+}
+
+.grey-warning-block span {
+    color: #111;
+    line-height: 1.15;
+}
+
+.grey-warning-block-text {
+    margin-left: 8mm;
+}
+
+.black-warning-img {
+    float: left;
+    height: 7mm;
+    width: 7mm;
+    margin-top: -1.32mm;
+    display: block;
+}
