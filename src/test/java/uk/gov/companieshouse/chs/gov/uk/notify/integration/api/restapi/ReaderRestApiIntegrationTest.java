@@ -123,7 +123,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String VIEW_LETTER_BY_REFERENCE_URI =
             "/gov-uk-notify-integration/letters/view/reference";
     private static final String VIEW_LETTERS_BY_REFERENCE_URI =
-            "/gov-uk-notify-integration/letters/paginated_view/reference/1";
+        "/gov-uk-notify-integration/letters/view_by_reference/paginated_view/1?reference=reference";
     private static final String VIEW_LETTER_BY_SELECTION_CRITERIA_URI =
             "/gov-uk-notify-integration/letters/view?"
             + "letter_sending_date=2025-10-14"
