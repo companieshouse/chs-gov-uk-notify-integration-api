@@ -15,6 +15,16 @@
         ${company_number})}">
     </section>
 </div>
+<div id="welsh-page-break" style="page-break-before: always"></div>
+<div id="welsh_letter" th:if="${is_welsh}" th:with="is_welsh_letter=true">
+    <p class="second-letter-spacer" th:if="${is_welsh}"></p>
+    <section th:replace="~{../../../common/notify_letter_layout :: notifyLetterLayout(
+            ~{content_cy},
+            ~{title_cy},
+            'Rhif y cwmni',
+            ${company_number})}">
+    </section>
+</div>
 
 </body>
 </html>
