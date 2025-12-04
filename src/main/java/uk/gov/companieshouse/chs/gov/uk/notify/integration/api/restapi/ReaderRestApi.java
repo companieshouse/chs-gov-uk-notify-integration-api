@@ -2,6 +2,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDF;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDFS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
@@ -30,6 +32,12 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     private static final String RETRIEVED = "Retrieved ";
     private static final String REFERENCE = "reference";
+    private static final String LETTER_PDF_IO_ERROR_MESSAGE =
+            "Failed to load precompiled letter PDF. Caught IOException: ";
+    // Filename element separator. Constant name made short for intelligibility of code composing
+    // filenames.
+    private static final String SEP = "-";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
     private final SentLetterFetcher fetcher;
@@ -170,7 +178,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final String reference,
             final String contextId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdf");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put(REFERENCE, reference);
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
@@ -180,8 +188,34 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                     .headers(suggestFilename(reference))
                     .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), createLogMap(contextId, "load_pdf_error"));
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
+                    createLogMap(contextId, "load_pdf_error"));
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Object> viewLetterPdfsByReference(
+            final String reference,
+            final Integer letterNumber,
+            final String contextId) {
+
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
+        logMap.put(REFERENCE, reference);
+        logMap.put("letter", letterNumber);
+        LOGGER.info("Starting viewLetterPdfsByReference process", logMap);
+
+        try {
+            var fetchedLetter = fetcher.fetchLetter(reference, letterNumber, contextId);
+            var fileName =
+                    reference + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
+            return ResponseEntity
+                    .ok()
+                    .headers(suggestFilename(fileName))
+                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
+        } catch (IOException ioe) {
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
+                    createLogMap(contextId, "load_pdf_error"));
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -192,9 +226,10 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             final String companyNumber,
             final String templateId,
             final LocalDate letterSendingDate,
-            final String contextId) {
+            final String contextId,
+            final String letterId) {
 
-        var logMap = createLogMap(contextId, "view_letter_pdf");
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
         logMap.put("template_id", templateId);
@@ -204,7 +239,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         try {
             return ResponseEntity
                 .ok()
-                .headers(suggestFilename(pscName + ":" + templateId + ":" + letterSendingDate))
+                .headers(suggestFilename(pscName + SEP + templateId + SEP + letterSendingDate))
                 .body(IOUtils.toByteArray(
                         fetcher.fetchLetter(
                                 pscName,
@@ -213,8 +248,44 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                                 letterSendingDate,
                                 contextId)));
         } catch (IOException ioe) {
-            LOGGER.error("Failed to load precompiled letter PDF. Caught IOException: "
-                    + ioe.getMessage(), logMap);
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<Object> viewLetterPdfs(
+            final String pscName,
+            final String companyNumber,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final Integer letterNumber,
+            final String contextId) {
+
+        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
+        logMap.put("psc_name", pscName);
+        logMap.put("company_number", companyNumber);
+        logMap.put("template_id", templateId);
+        logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
+        logMap.put("letter", letterNumber);
+        LOGGER.info("Starting viewLetterPdfs process", logMap);
+
+        try {
+            var fetchedLetter = fetcher.fetchLetter(
+                    pscName,
+                    companyNumber,
+                    templateId,
+                    letterSendingDate,
+                    letterNumber,
+                    contextId);
+            var fileName = pscName + SEP + templateId + SEP + letterSendingDate
+                    + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
+            return ResponseEntity
+                    .ok()
+                    .headers(suggestFilename(fileName))
+                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
+        } catch (IOException ioe) {
+            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
