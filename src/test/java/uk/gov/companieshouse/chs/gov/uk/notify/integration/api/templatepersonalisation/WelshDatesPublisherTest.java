@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
@@ -64,7 +65,7 @@ class WelshDatesPublisherTest {
         assertEquals("02 Chwefror 2020", setVars.get("welsh_dob_date"));
         // ensure other variables in the context were not added or changed
         assertNull(setVars.get("name"));
-        verify(context, org.mockito.Mockito.never()).getVariable("name");
+        verify(context, never()).getVariable("name");
 
     }
 }
