@@ -1,1 +1,2 @@
+# Description/reason for this version
 This is the first version of the CSIDVDEFLET template in the new folder structure. Its content matches [CSIDVDEFLET_v1.1](/src/main/resources/assets/templates/old_letters/chips/CSIDVDEFLET_v1.1.html) in the old structure
