@@ -2,7 +2,10 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static java.util.AbstractMap.SimpleEntry;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
@@ -35,14 +38,24 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("November",  "Tachwedd"),
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
-    public void publishWelshDatesViaContext(final Context context) {
-        var welshDateVariables = context.getVariableNames().stream()
+    public void publishWelshDates(final Context context) {
+        var welshDateVariables = extractWelshDates(context.getVariableNames(), context::getVariable);
+        Map<String, Object> welshDateVariablesObject = new HashMap<>(welshDateVariables);
+        context.setVariables(welshDateVariablesObject);
+    }
+
+    public void publishWelshDates(final Map<String, String> personalisationDetails) {
+        var welshDateVariables = extractWelshDates(personalisationDetails.keySet(), personalisationDetails::get);
+        personalisationDetails.putAll(welshDateVariables);
+    }
+
+    private Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, ?> dateGetter) {
+        return variableNames.stream()
                 .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
                 .collect(Collectors.toMap(
                         variableName -> WELSH_DATE_VARIABLE_NAME_PREFIX + variableName,
-                        variableName -> (Object) getWelshDate(
-                                (String) context.getVariable(variableName), variableName)));
-        context.setVariables(welshDateVariables);
+                        variableName -> getWelshDate(dateGetter.apply(variableName).toString(), variableName))
+                );
     }
 
     public static String getWelshDate(final String englishDate, final String dateVariableName) {

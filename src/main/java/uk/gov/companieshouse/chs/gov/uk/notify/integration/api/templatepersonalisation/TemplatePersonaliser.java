@@ -92,7 +92,7 @@ public class TemplatePersonaliser {
         validator.validateContextForTemplate(context, templateLookupKey);
 
         pathsPublisher.publishPathsViaContext(context, templateLookupKey);
-        welshDatesPublisher.publishWelshDatesViaContext(context);
+        welshDatesPublisher.publishWelshDates(context);
 
         var templateSpec = templateLookup.lookupTemplate(templateLookupKey);
         templateResolver.setPrefix(templateSpec.prefix());
