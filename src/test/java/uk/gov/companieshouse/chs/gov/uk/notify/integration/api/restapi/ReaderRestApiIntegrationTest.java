@@ -279,6 +279,19 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("no authorised identity"), is(true));
     }
 
+    @DisplayName("Reports unauthenticated get letter details by reference request as unauthorised")
+    @Test
+    void getLetterDetailsWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
+        mockMvc.perform(
+                        get("/gov-uk-notify-integration/letters/reference?reference=reference")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .header(X_REQUEST_ID, CONTEXT_ID))
+                .andExpect(status().isUnauthorized());
+
+        assertThat(log.getAll().contains("no authorised identity"), is(true));
+    }
+
     @DisplayName("Reports unauthenticated view letters request with selection criteria as unauthorised")
     @Test
     void viewLettersByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
