@@ -1,0 +1,4 @@
+<img th:with="footer_name = ${is_welsh_letter} ? 'welsh_page_1_footer_artwork' : 'page_1_footer_artwork'"
+     th:src="@{${common} + ${footer_name} + '.svg'}"
+     class="page-1-footer-artwork-img"
+     alt="Companies House footer artwork"/>

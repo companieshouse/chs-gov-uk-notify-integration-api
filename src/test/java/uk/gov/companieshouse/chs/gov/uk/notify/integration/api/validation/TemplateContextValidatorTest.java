@@ -34,15 +34,15 @@ class TemplateContextValidatorTest {
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
             "Unable to find a valid context for LetterTemplateKey"
-                    + "[appId=chips, id=unknown_letter]";
+                    + "[appId=chips, letterId=DUMMY, templateId=unknown_letter]";
     private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [company_name, deadline_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
     private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
             "Context variable(s) [address_line_1, address_line_2, address_line_3, "
                     + "company_name, deadline_date, extension_date, psc_full_name, "
                     + "reference, todays_date] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
 
     @InjectMocks
     private TemplateContextValidator validator;
@@ -74,7 +74,7 @@ class TemplateContextValidatorTest {
     void errorsWhereTemplateIsUnknown() {
 
         // Given
-        var letter = new LetterTemplateKey(CHIPS_APPLICATION_ID, "unknown_letter");
+        var letter = new LetterTemplateKey(CHIPS_APPLICATION_ID, "DUMMY", "unknown_letter");
         var context = new Context();
 
         // When and then
@@ -134,6 +134,6 @@ class TemplateContextValidatorTest {
     @Test
     @DisplayName("requiresTodaysDate returns false for non-configured letter templates")
     void requiresTodaysDateIsFalseForUnknownLetter() {
-        assertThat(validator.requiresTodaysDate(new LetterTemplateKey(CHIPS_APPLICATION_ID, "unknown_letter")), is(false));
+        assertThat(validator.requiresTodaysDate(new LetterTemplateKey(CHIPS_APPLICATION_ID, "DUMMY", "unknown_letter")), is(false));
     }
 }

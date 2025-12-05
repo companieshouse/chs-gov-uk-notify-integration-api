@@ -1,0 +1,69 @@
+<link th:fragment="stylesheet()" th:href="@{${common} + notify_letter_styles.css}" media="all"
+      rel="stylesheet" type="text/css" />
+
+<div th:fragment="notifyLetterLayout(content, letterTitle, referenceLabel, referenceValue)">
+    <!-- Headers -->
+    <div class="p1-header-left frame title"
+         th:with="classes = ${is_welsh_letter} ? 'content welsh-logo' : 'content logo'">
+        <div th:class="${classes}" th:insert="~{../common/logo}">
+        </div>
+    </div>
+    <div class="p1-header-centre">
+    </div>
+    <div class="p1-header-right frame title">
+        <div class="content" th:insert="${letterTitle}">
+        </div>
+    </div>
+    <div class="pages-2-onwards-header-left frame title">
+        <div class="content pages-2-onwards-logo" th:insert="~{../common/pages_2_onwards_logo}">
+        </div>
+    </div>
+    <!-- Footers -->
+    <div class="p1-footer-left frame title">
+        <div class="content page-1-footer-artwork" th:insert="~{../common/page_1_footer_artwork}">
+        </div>
+    </div>
+    <div class="pages-2-onwards-footer-left frame title">
+        <div class="content pages-2-onwards-footer-artwork" th:insert="~{../common/pages_2_onwards_footer_artwork}">
+        </div>
+    </div>
+    <!-- Content -->
+    <div class="frame address-and-date-ref-block">
+        <div class="frame column address">
+            <div class="content">
+                <table id="address-table">
+                    <tr th:text="${address_line_1}"></tr>
+                    <tr th:text="${address_line_2}"></tr>
+                    <tr th:text="${address_line_3}"></tr>
+                    <tr th:text="${address_line_4}" th:if="${address_line_4 != null}"></tr>
+                    <tr th:text="${address_line_5}" th:if="${address_line_5 != null}"></tr>
+                    <tr th:text="${address_line_6}" th:if="${address_line_6 != null}"></tr>
+                    <tr th:text="${address_line_7}" th:if="${address_line_7 != null}"></tr>
+                </table>
+            </div>
+        </div>
+        <div class="frame column date-and-ref">
+            <div class="content" th:with="date_label = ${is_welsh_letter} ? 'Dyddiad' : 'Date'">
+                <table id="date-and-reference-table">
+                    <tr class="date-and-reference-label">[[${date_label}]]:</tr>
+                    <tr>
+                        <td id="letter-date" th:if="${!is_welsh_letter}">
+                            [[${todays_date} ? ${todays_date} : ${triggering_event_date}]]
+                        </td>
+                        <td id="welsh-letter-date" th:if="${is_welsh_letter}">
+                            [[${welsh_todays_date} ? ${welsh_todays_date} : ${welsh_triggering_event_date}]]
+                        </td>
+                    </tr>
+                    <tr class="date-and-reference-spacing"></tr>
+                    <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
+                    <tr>[[${referenceValue}]]</tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="frame">
+        <div class="content">
+            <th:block th:replace="${content}"/>
+        </div>
+    </div>
+</div>
