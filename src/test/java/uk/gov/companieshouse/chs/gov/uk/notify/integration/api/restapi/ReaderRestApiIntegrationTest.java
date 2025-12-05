@@ -120,18 +120,27 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final int LETTER_3 = 3;
     private static final int LETTER_4 = 4;
 
-    private static final String VIEW_LETTER_BY_REFERENCE_URI =
-            "/gov-uk-notify-integration/letters/view/reference";
+    private static final String GET_LETTER_DETAILS_BY_REFERENCE_PATH =
+            "/gov-uk-notify-integration/letters/reference";
+    private static final String VIEW_LETTER_PDF_BY_REFERENCE =
+            "/gov-uk-notify-integration/letters/view_by_reference";
+    private static final String VIEW_LETTER_PDFS_BY_REFERENCE =
+            "/gov-uk-notify-integration/letters/view_by_reference/paginated_view/";
+    private static final String VIEW_LETTER_PDF =
+            "/gov-uk-notify-integration/letters/view";
+    private static final String VIEW_LETTER_PDFS =
+            "/gov-uk-notify-integration/letters/paginated_view/";
+
     private static final String VIEW_LETTERS_BY_REFERENCE_URI =
-        "/gov-uk-notify-integration/letters/view_by_reference/paginated_view/1?reference=reference";
+            VIEW_LETTER_PDFS_BY_REFERENCE + "1?reference=reference";
     private static final String VIEW_LETTER_BY_SELECTION_CRITERIA_URI =
-            "/gov-uk-notify-integration/letters/view?"
+            VIEW_LETTER_PDF + "?"
             + "letter_sending_date=2025-10-14"
             + "&psc_name=Joe Bloggs"
             + "&company_number=00006400"
             + "&template_id=new_psc_direction_letter_v1";
     private static final String VIEW_LETTERS_BY_SELECTION_CRITERIA_URI =
-            "/gov-uk-notify-integration/letters/paginated_view/1?"
+            VIEW_LETTER_PDFS + "1?"
                     + "letter_sending_date=2025-10-14"
                     + "&psc_name=Joe Bloggs"
                     + "&company_number=00006400"
@@ -243,7 +252,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view_by_reference"
+                get(VIEW_LETTER_PDF_BY_REFERENCE
                         + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
@@ -283,7 +292,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void getLetterDetailsWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                        get("/gov-uk-notify-integration/letters/reference?reference=reference")
+                        get(GET_LETTER_DETAILS_BY_REFERENCE_PATH + "?reference=reference")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .header(X_REQUEST_ID, CONTEXT_ID))
@@ -309,7 +318,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void viewLetterWithUserAuthIsForbidden(CapturedOutput log) throws Exception {
         mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view_by_reference"
+                get(VIEW_LETTER_PDF_BY_REFERENCE
                         + "?reference=letter with a calculated sending date")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
@@ -648,7 +657,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
 
         // When
-        mockMvc.perform(get("/gov-uk-notify-integration/letters/reference"
+        mockMvc.perform(get(GET_LETTER_DETAILS_BY_REFERENCE_PATH
                         + "?reference=" + REFERENCE_FOR_LETTER_SENT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -1210,7 +1219,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    String letterSendingDate,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view"
+        return mockMvc.perform(get(VIEW_LETTER_PDF
                         + "?psc_name=" + pscName
                         + "&company_number=" + companyNumber
                         + "&template_id=" + templateId
@@ -1231,7 +1240,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                                      int letterNumber,
                                                                      ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/paginated_view/"
+        return mockMvc.perform(get(VIEW_LETTER_PDFS
                         + letterNumber
                         + "?psc_name=" + pscName
                         + "&company_number=" + companyNumber
@@ -1249,7 +1258,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get("/gov-uk-notify-integration/letters/view_by_reference"
+        return mockMvc.perform(get(VIEW_LETTER_PDF_BY_REFERENCE
                         + "?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
@@ -1265,8 +1274,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
         return mockMvc.perform(
-                get("/gov-uk-notify-integration/letters/view_by_reference/paginated_view/"
-                        + letterNumber + "?reference=" + reference)
+                get(VIEW_LETTER_PDFS_BY_REFERENCE + letterNumber + "?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID)
