@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -32,6 +33,8 @@ class WelshDatesPublisherTest {
         publisher.publishWelshDates(personalisation);
 
         assertEquals("01 Ionawr 2024", personalisation.get("welsh_start_date"));
+        assertEquals("01 January 2024", personalisation.get("start_date"));
+
     }
 
     @Test
@@ -59,5 +62,9 @@ class WelshDatesPublisherTest {
 
         Map<String, Object> setVars = captor.getValue();
         assertEquals("02 Chwefror 2020", setVars.get("welsh_dob_date"));
+        // ensure other variables in the context were not added or changed
+        assertNull(setVars.get("name"));
+        verify(context, org.mockito.Mockito.never()).getVariable("name");
+
     }
 }

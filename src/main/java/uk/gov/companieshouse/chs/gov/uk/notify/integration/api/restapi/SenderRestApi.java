@@ -49,8 +49,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
             final LetterDispatcher letterDispatcher,
-            final Logger logger,
-            final WelshDatesPublisher welshDatesPublisher
+            final WelshDatesPublisher welshDatesPublisher,
+            final Logger logger
+
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
