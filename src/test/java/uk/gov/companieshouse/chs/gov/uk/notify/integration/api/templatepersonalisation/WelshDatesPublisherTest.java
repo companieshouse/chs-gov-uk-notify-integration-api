@@ -1,21 +1,14 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
@@ -39,21 +32,18 @@ class WelshDatesPublisherTest {
     }
 
     @Test
-    void publishWelshDates_contextSetsVariables(@Mock Context context) {
-        when(context.getVariableNames()).thenReturn(Set.of("dob_date", "name"));
-        when(context.getVariable("dob_date")).thenReturn("02 February 2020");
-        // name is not a _date so won't be used; no need to stub context.getVariable("name")
+    void publishWelshDates_contextSetsVariables() {
+
+        Context context = new Context();
+        context.setVariable("dob_date", "02 February 2020");
+        context.setVariable("name", "Hello");
 
         WelshDatesPublisher.publishWelshDates(context);
 
-        ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
-        verify(context).setVariables(captor.capture());
-
-        Map<String, Object> setVars = captor.getValue();
-        assertEquals("02 Chwefror 2020", setVars.get("welsh_dob_date"));
+        assertEquals("02 Chwefror 2020", context.getVariable("welsh_dob_date"));
         // ensure other variables in the context were not added or changed
-        assertNull(setVars.get("name"));
-        verify(context, never()).getVariable("name");
+        assertEquals("02 February 2020", context.getVariable("dob_date"));
+        assertEquals("Hello", context.getVariable("name"));
 
     }
 
