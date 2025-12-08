@@ -79,7 +79,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        WelshDatesPublisher.publishWelshDates(personalisationDetails);
+        try {
+            WelshDatesPublisher.publishWelshDates(personalisationDetails);
+        } catch (Exception e) {
+            logger.errorContext(xHeaderId, new Exception("Failed to publish Welsh dates: " + e.getMessage()),
+                    createLogMap(xHeaderId, "welsh_dates_error"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
         notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);

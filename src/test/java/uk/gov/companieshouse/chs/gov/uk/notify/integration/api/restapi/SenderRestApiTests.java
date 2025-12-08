@@ -32,8 +32,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
@@ -64,6 +66,11 @@ class SenderRestApiTests {
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
     private static final String VALID_REFERENCE = "valid-reference";
     private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
+    private static final Map<String, String> VALID_PERSONALISATION_WELSH_DATES = Map.of(
+            "name", "Test User",
+            "verification_due_date", "15 February 2024",
+            "welsh_verification_due_date", "15 Chwefror 2024"
+    );
     private static final String XHEADER = "1";
 
     @Test
@@ -91,6 +98,72 @@ class SenderRestApiTests {
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
+    }
+
+    @Test
+    void When_EmailContainsDateVariables_Expect_WelshDatesVariablesPopulated(){
+        EmailDetails emailDetails = new EmailDetails();
+        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        govUkEmailDetailsRequest.setSenderDetails(senderDetails
+                .emailAddress("john.doe@example.com")
+                .userId("9876543")
+                .name("John Doe")
+                .reference(VALID_REFERENCE)
+                .appId("chips.send_email"));
+        govUkEmailDetailsRequest.setEmailDetails(emailDetails
+                .templateId(VALID_TEMPLATE_ID)
+                .personalisationDetails(
+                        new JSONObject()
+                                .put("name", "Test User")
+                                .put("verification_due_date", "15 February 2024")
+                                .toString())
+        );
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
+
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
+
+        verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
+        verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES);
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+        Assertions.assertNotNull(response);
+
+    }
+
+    @Test
+    void When_EmailContainsBadDateVariables_Expect_DateNotParsedThrowsError(){
+        EmailDetails emailDetails = new EmailDetails();
+        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        govUkEmailDetailsRequest.setSenderDetails(senderDetails
+                .emailAddress("john.doe@example.com")
+                .userId("9876543")
+                .name("John Doe")
+                .reference(VALID_REFERENCE)
+                .appId("chips.send_email"));
+        govUkEmailDetailsRequest.setEmailDetails(emailDetails
+                .templateId(VALID_TEMPLATE_ID)
+                .personalisationDetails(
+                        new JSONObject()
+                                .put("name", "Test User")
+                                .put("verification_due_date", "15  2024")
+                                .toString())
+        );
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
+
+
+        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        Assertions.assertNotNull(response);
+
     }
 
     @Test
