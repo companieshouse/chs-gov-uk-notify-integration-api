@@ -32,7 +32,7 @@ class WelshDatesPublisherTest {
     }
 
     @Test
-    void publishWelshDates_contextSetsVariables() {
+    void publishWelshDates_addWelshDateToContext() {
 
         Context context = new Context();
         context.setVariable("dob_date", "02 February 2020");
