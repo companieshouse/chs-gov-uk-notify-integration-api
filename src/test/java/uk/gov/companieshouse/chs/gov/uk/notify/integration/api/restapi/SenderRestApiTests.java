@@ -74,7 +74,7 @@ class SenderRestApiTests {
     private static final String XHEADER = "1";
 
     @Test
-    void When_EmailRequestIsValid_Expect_EmailMessageIsSentSuccessfully(){
+    void whenEmailRequestIsValidExpectEmailMessageIsSentSuccessfully(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -86,56 +86,29 @@ class SenderRestApiTests {
                 .reference(VALID_REFERENCE)
                 .appId("chips.send_email"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
-        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
-                .emailAddress(VALID_EMAIL)
-                .name("john doe"));
-
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
-
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
-
-        assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Assertions.assertNotNull(response);
-    }
-
-    @Test
-    void When_EmailContainsDateVariables_Expect_WelshDatesVariablesPopulated(){
-        EmailDetails emailDetails = new EmailDetails();
-        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
-        SenderDetails senderDetails = new SenderDetails();
-        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
-        govUkEmailDetailsRequest.setSenderDetails(senderDetails
-                .emailAddress("john.doe@example.com")
-                .userId("9876543")
-                .name("John Doe")
-                .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
-        govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(
+                .templateId(VALID_TEMPLATE_ID).
+                personalisationDetails(
                         new JSONObject()
                                 .put("name", "Test User")
                                 .put("verification_due_date", "15 February 2024")
-                                .toString())
+                        .toString())
         );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
         when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
+
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
         verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
         verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
-
     }
 
     @Test
-    void When_EmailContainsBadDateVariables_Expect_DateNotParsedThrowsError(){
+    void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -167,7 +140,7 @@ class SenderRestApiTests {
     }
 
     @Test
-    void When_EmailRequestIsInValid_Expect_InternalSeverErrorResponse(){
+    void whenEmailRequestIsInValidExpectInternalSeverErrorResponse(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
