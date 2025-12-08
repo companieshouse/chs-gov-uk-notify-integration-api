@@ -84,7 +84,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID).
                 personalisationDetails(
@@ -118,7 +118,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
                 .personalisationDetails(
@@ -150,7 +150,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
                 .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
@@ -186,7 +186,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
