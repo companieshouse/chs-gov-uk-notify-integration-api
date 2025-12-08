@@ -25,7 +25,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
 
@@ -51,9 +50,6 @@ class SenderRestApiTests {
 
     @Mock
     private LetterDispatcher letterDispatcher;
-
-    @Mock
-    private WelshDatesPublisher welshDatesPublisher;
 
     // This allows us to see what is logged during unit test execution, assuming that is
     // thought useful, when the logger is injected. If what is logged is

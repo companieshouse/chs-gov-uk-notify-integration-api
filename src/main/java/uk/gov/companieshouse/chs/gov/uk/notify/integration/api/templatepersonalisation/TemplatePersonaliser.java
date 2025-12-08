@@ -48,20 +48,17 @@ public class TemplatePersonaliser {
     private final AbstractConfigurableTemplateResolver templateResolver;
     private final TemplateContextValidator validator;
     private final PathsPublisher pathsPublisher;
-    private final WelshDatesPublisher welshDatesPublisher;
 
     public TemplatePersonaliser(ITemplateEngine templateEngine,
                                 TemplateLookup templateLookup,
                                 AbstractConfigurableTemplateResolver templateResolver,
                                 TemplateContextValidator validator,
-                                PathsPublisher pathsPublisher,
-                                WelshDatesPublisher welshDatesPublisher) {
+                                PathsPublisher pathsPublisher) {
         this.templateEngine = templateEngine;
         this.templateLookup = templateLookup;
         this.templateResolver = templateResolver;
         this.validator = validator;
         this.pathsPublisher = pathsPublisher;
-        this.welshDatesPublisher = welshDatesPublisher;
     }
 
     /**
@@ -92,7 +89,7 @@ public class TemplatePersonaliser {
         validator.validateContextForTemplate(context, templateLookupKey);
 
         pathsPublisher.publishPathsViaContext(context, templateLookupKey);
-        welshDatesPublisher.publishWelshDates(context);
+        WelshDatesPublisher.publishWelshDates(context);
 
         var templateSpec = templateLookup.lookupTemplate(templateLookupKey);
         templateResolver.setPrefix(templateSpec.prefix());

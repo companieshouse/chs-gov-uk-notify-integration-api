@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Component;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 
@@ -17,7 +16,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterV
  * <code>_date</code>. It publishes each corresponding Welsh date to the context under the
  * name <code>welsh_&lt;date variable name&gt;</code>.
  */
-@Component
 public class WelshDatesPublisher {
 
     private static final String DATE_VARIABLE_NAME_SUFFIX = "_date";
@@ -38,18 +36,22 @@ public class WelshDatesPublisher {
                      new SimpleEntry<>("November",  "Tachwedd"),
                      new SimpleEntry<>("December",  "Rhagfyr"));
 
-    public void publishWelshDates(final Context context) {
+    private WelshDatesPublisher() {
+        // private constructor for static class so that it cannot be instantiated
+    }
+
+    public static void publishWelshDates(final Context context) {
         var welshDateVariables = extractWelshDates(context.getVariableNames(), context::getVariable);
         Map<String, Object> welshDateVariablesObject = new HashMap<>(welshDateVariables);
         context.setVariables(welshDateVariablesObject);
     }
 
-    public void publishWelshDates(final Map<String, String> personalisationDetails) {
+    public static void publishWelshDates(final Map<String, String> personalisationDetails) {
         var welshDateVariables = extractWelshDates(personalisationDetails.keySet(), personalisationDetails::get);
         personalisationDetails.putAll(welshDateVariables);
     }
 
-    private Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, ?> dateGetter) {
+    private static Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, ?> dateGetter) {
         return variableNames.stream()
                 .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
                 .collect(Collectors.toMap(

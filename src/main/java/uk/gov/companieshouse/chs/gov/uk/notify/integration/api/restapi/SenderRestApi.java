@@ -43,21 +43,17 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private final NotificationDatabaseService notificationDatabaseService;
     private final LetterDispatcher letterDispatcher;
     private final Logger logger;
-    private final WelshDatesPublisher welshDatesPublisher;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
             final LetterDispatcher letterDispatcher,
-            final WelshDatesPublisher welshDatesPublisher,
             final Logger logger
-
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
         this.letterDispatcher = letterDispatcher;
         this.logger = logger;
-        this.welshDatesPublisher = welshDatesPublisher;
     }
 
     @Override
@@ -83,7 +79,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        welshDatesPublisher.publishWelshDates(personalisationDetails);
+        WelshDatesPublisher.publishWelshDates(personalisationDetails);
 
         logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
         notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
