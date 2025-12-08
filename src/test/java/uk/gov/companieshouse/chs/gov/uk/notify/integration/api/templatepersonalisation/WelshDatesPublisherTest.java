@@ -41,7 +41,6 @@ class WelshDatesPublisherTest {
         WelshDatesPublisher.publishWelshDates(context);
 
         assertEquals("02 Chwefror 2020", context.getVariable("welsh_dob_date"));
-        // ensure other variables in the context were not added or changed
         assertEquals("02 February 2020", context.getVariable("dob_date"));
         assertEquals("Hello", context.getVariable("name"));
 
