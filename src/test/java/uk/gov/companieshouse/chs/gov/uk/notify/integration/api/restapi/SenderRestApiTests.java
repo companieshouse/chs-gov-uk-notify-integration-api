@@ -65,8 +65,7 @@ class SenderRestApiTests {
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
     private static final String VALID_REFERENCE = "valid-reference";
-    private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
-    private static final Map<String, String> VALID_PERSONALISATION_WELSH_DATES = Map.of(
+    private static final Map<String, String> VALID_PERSONALISATION = Map.of(
             "name", "Test User",
             "verification_due_date", "15 February 2024",
             "welsh_verification_due_date", "15 Chwefror 2024"
@@ -97,12 +96,12 @@ class SenderRestApiTests {
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
 
-        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
+        when(govUKNotifyEmailFacade.sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
         verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
-        verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION_WELSH_DATES);
+        verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
     }
@@ -125,7 +124,8 @@ class SenderRestApiTests {
                         new JSONObject()
                                 .put("name", "Test User")
                                 .put("verification_due_date", "15  2024")
-                                .toString())
+                                .toString()
+                )
         );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
@@ -153,7 +153,13 @@ class SenderRestApiTests {
                 .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+                .personalisationDetails(
+                        new JSONObject()
+                                .put("name", "Test User")
+                                .put("verification_due_date", "15 February 2024")
+                        .toString()
+                )
+        );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
