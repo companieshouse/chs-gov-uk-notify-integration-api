@@ -145,9 +145,21 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("Send Welsh CSIDVDEFLET successfully, saving letter PDF for troubleshooting in the process")
+    void sendWelshCSIDVDEFLETSuccessfully(CapturedOutput log) throws Exception {
+        sendAndDeleteWelshLetter("send-csidvdeflet-request", log);
+    }
+
+    @Test
     @DisplayName("Send IDVPSCDEFAULT successfully, saving letter PDF for troubleshooting in the process")
     void sendIDVPSCDEFAULTSuccessfully(CapturedOutput log) throws Exception {
         sendLetter("send-idvpscdefault-request", log);
+    }
+
+    @Test
+    @DisplayName("Send Welsh IDVPSCDEFAULT successfully, saving letter PDF for troubleshooting in the process")
+    void sendWelshIDVPSCDEFAULTSuccessfully(CapturedOutput log) throws Exception {
+        sendAndDeleteWelshLetter("send-idvpscdefault-request", log);
     }
 
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
