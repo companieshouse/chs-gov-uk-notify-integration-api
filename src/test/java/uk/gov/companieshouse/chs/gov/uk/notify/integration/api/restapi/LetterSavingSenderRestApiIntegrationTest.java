@@ -90,8 +90,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfContent();
     }
 
-    @ParameterizedTest(name = "{0}")
-    @DisplayName("Send English letters successfully, saving letter PDF for troubleshooting in the process")
+    @ParameterizedTest(name = "Send English letter request json: {0}")
     @ValueSource(strings = {
             "send-new-psc-direction-letter-request",
             "send-transitional-non-director-psc-information-letter-request",
@@ -106,8 +105,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         deleteLetterPdf(requestName);
     }
 
-    @ParameterizedTest(name = "{0}")
-    @DisplayName("Send Welsh letters successfully, saving letter PDF for troubleshooting in the process")
+    @ParameterizedTest(name = "Send Welsh letter request json: {0}")
     @ValueSource(strings = {
             "send-new-psc-direction-letter-request",
             "send-transitional-non-director-psc-information-letter-request",
