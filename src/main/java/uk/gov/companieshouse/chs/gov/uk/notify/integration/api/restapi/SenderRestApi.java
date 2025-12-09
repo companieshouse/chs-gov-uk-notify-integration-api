@@ -124,8 +124,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        var letterId = letterDetails.getLetterId();
         var templateId = letterDetails.getTemplateId();
-        var postage = determinePostage(appId, templateId);
+        var postage = determinePostage(appId, letterId, templateId);
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
@@ -134,6 +135,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                     postage,
                     reference,
                     appId,
+                    letterId,
                     templateId,
                     address,
                     personalisationDetails,
@@ -154,8 +156,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
     }
 
-    private Postage determinePostage(final String appId, final String templateId) {
-        var letterTemplateKey = new LetterTemplateKey(appId, templateId);
+    private Postage determinePostage(final String appId, final String letterId, final String templateId) {
+        var letterTemplateKey = new LetterTemplateKey(appId, letterId, templateId);
         if (SECOND_CLASS_LETTERS.contains(letterTemplateKey)) {
             return Postage.SECOND_CLASS;
         } else {

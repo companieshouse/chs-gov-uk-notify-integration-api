@@ -244,6 +244,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
                         fetcher.fetchLetter(
                                 pscName,
                                 companyNumber,
+                                letterId,
                                 templateId,
                                 letterSendingDate,
                                 contextId)));

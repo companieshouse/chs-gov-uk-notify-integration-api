@@ -89,7 +89,8 @@ public class TestUtils {
         return createSampleLetterRequestWithReference("Address line 1", reference);
     }
 
-    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId, String templateId) {
+    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId,
+            String letterId, String templateId) {
         SenderDetails senderDetails = new SenderDetails(appId, "test-reference");
         Address address = new Address()
                 .addressLine1("Test Address Line 1")
@@ -101,6 +102,7 @@ public class TestUtils {
                 .name("Test Recipient")
                 .physicalAddress(address);
         LetterDetails letterDetails = new LetterDetails(templateId, "Dear {{name}}");
+        letterDetails.setLetterId(letterId);
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)

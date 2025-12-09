@@ -103,7 +103,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "letter personalisation details.";
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "missing for LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -117,29 +117,29 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=unknown_application, id=direction_letter_v1]";
+                    + "LetterTemplateKey[appId=unknown_application, letterId=null, templateId=direction_letter_v1]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=chips, id=new_letter]";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=new_letter]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
     "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
-            + "(template: \"unknown_directory/chips/direction_letter_v1.html\") "
+            + "(template: \"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\") "
             + "[cause: java.io.FileNotFoundException: ClassLoader resource "
-            + "\"unknown_directory/chips/direction_letter_v1.html\" could not be resolved]";
+            + "\"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\" could not be resolved]";
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
     private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
     private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
-                    + "creating SVG image assets/templates/letters/common/warning.svg: "
+                    + "creating SVG image assets/templates/old_letters/common/warning.svg: "
                     + "Thrown by test. [cause: null]";
     private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
-                    + "assets/templates/letters/common/warning.svg [cause: null]";
+                    + "assets/templates/old_letters/common/warning.svg [cause: null]";
     private static final String PDFX_CONFORMANCE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
                     + "This PdfXConformanceException could indicate that a font, style or "
@@ -583,10 +583,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send letter cannot find letter template")
     void sendLetterCannotFindTemplate(CapturedOutput log) throws Exception {
 
+        String requestBody = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
         // Given, when and then
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
         postSendLetterRequest(mockMvc,
-                getValidSendLetterRequestBody(),
+                requestBody,
                 status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -667,9 +668,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @ParameterizedTest(name = "Send letter with economy postage for {0}")
-    @CsvSource({ "CSIDVDEFLET_v1,send-csidvdeflet-request",
-            "IDVPSCDEFAULT_v1,send-idvpscdefault-request" })
-    void sendLetterWithEconomyPostage(String letterType, String reference, CapturedOutput log)
+    @CsvSource({ "CSIDVDEFLET,v1.0,send-csidvdeflet-request",
+            "IDVPSCDEFAULT,v1.0,send-idvpscdefault-request" })
+    void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, CapturedOutput log)
             throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -680,7 +681,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String csidvdefletRequest = resourceToString("/fixtures/" + reference + ".json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
-                eq("chips"), eq(letterType), any(), any(), any());
+                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(reference),
                 any());
     }
@@ -691,7 +692,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
             "second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
             "transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" })
-    void sendLetterWithSecondClassPostage(String letterType, String reference, String fixture)
+    void sendLetterWithSecondClassPostage(String templateId, String reference, String fixture)
             throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -703,7 +704,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
 
         verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
-                eq("chips"), eq(letterType), any(), any(), any());
+                eq("chips"), eq(null), eq(templateId), any(), any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
                 any());
     }

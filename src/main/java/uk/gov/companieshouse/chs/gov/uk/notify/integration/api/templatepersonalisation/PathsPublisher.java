@@ -15,16 +15,23 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 public class PathsPublisher {
 
     private static final String ROOT_RESOURCE_PATH = "assets/templates/letters/";
-    private static final String COMMON_RESOURCE_PATH = ROOT_RESOURCE_PATH + "common/";
+    private static final String OLD_ROOT_RESOURCE_PATH = "assets/templates/old_letters/";
 
     public void publishPathsViaContext(final Context context,
                                        final LetterTemplateKey templateLookupKey) {
-
-        context.setVariable(ROOT_RESOURCE_PATH_VARIABLE, ROOT_RESOURCE_PATH);
-        context.setVariable(LETTER_RESOURCE_PATH_VARIABLE,
-                ROOT_RESOURCE_PATH + templateLookupKey.appId() + "/");
-        context.setVariable(COMMON_RESOURCE_PATH_VARIABLE, COMMON_RESOURCE_PATH);
-
+        var letterId = templateLookupKey.letterId();
+        String rootPath = ROOT_RESOURCE_PATH;
+        if (letterId == null || letterId.isBlank()) {
+            // old letters
+            rootPath = OLD_ROOT_RESOURCE_PATH;
+            context.setVariable(LETTER_RESOURCE_PATH_VARIABLE,
+                    rootPath + templateLookupKey.appId() + "/");
+        } else {
+            context.setVariable(LETTER_RESOURCE_PATH_VARIABLE,
+                    rootPath + templateLookupKey.appId() + "/" + templateLookupKey.letterId() + "/" + templateLookupKey.templateId() + "/");
+        }
+        context.setVariable(ROOT_RESOURCE_PATH_VARIABLE, rootPath);
+        context.setVariable(COMMON_RESOURCE_PATH_VARIABLE, rootPath + "common/");
     }
 
 }

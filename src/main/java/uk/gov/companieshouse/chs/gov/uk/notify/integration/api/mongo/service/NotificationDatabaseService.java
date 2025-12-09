@@ -93,12 +93,14 @@ public class NotificationDatabaseService {
     public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
+            final String letterId,
             final String templateId,
             final LocalDate letterSendingDate) {
         var nextDay = letterSendingDate.plusDays(1);
         return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
+                letterId,
                 templateId,
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX);

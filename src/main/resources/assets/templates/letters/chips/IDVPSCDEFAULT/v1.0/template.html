@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <link th:replace="~{../../../common/notify_letter_layout :: stylesheet()}">
+    <link th:href="@{${letter} + style.css}" media="all" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div id="english_letter">
+    <section th:replace="~{../../../common/notify_letter_layout :: notifyLetterLayout(
+        ~{content_en},
+        ~{title_en},
+        'Company number',
+        ${company_number})}">
+    </section>
+</div>
+
+</body>
+</html>
