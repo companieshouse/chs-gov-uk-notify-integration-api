@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +34,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -88,80 +92,33 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfContent();
     }
 
-    @Test
-    @DisplayName("Send New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteLetter("send-new-psc-direction-letter-request", log);
+    @ParameterizedTest
+    @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
+    @MethodSource("letterTestCases")
+    void sendLetterParameterized(String requestName, boolean isWelsh, CapturedOutput log) throws Exception {
+        if (isWelsh) {
+            sendAndDeleteWelshLetter(requestName, log);
+        } else {
+            sendAndDeleteLetter(requestName, log);
+        }
     }
 
-    @Test
-    @DisplayName("Send Welsh New PSC Direction letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshNewPscDirectionLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteWelshLetter("send-new-psc-direction-letter-request", log);
+    private static Stream<Arguments> letterTestCases() {
+        return Stream.of(
+                Arguments.of("send-new-psc-direction-letter-request", false),
+                Arguments.of("send-new-psc-direction-letter-request", true),
+                Arguments.of("send-transitional-non-director-psc-information-letter-request", false),
+                Arguments.of("send-transitional-non-director-psc-information-letter-request", true),
+                Arguments.of("send-extension-acceptance-letter-request", false),
+                Arguments.of("send-extension-acceptance-letter-request", true),
+                Arguments.of("send-second-extension-acceptance-letter-request", false),
+                Arguments.of("send-second-extension-acceptance-letter-request", true),
+                Arguments.of("send-csidvdeflet-request", false),
+                Arguments.of("send-csidvdeflet-request", true),
+                Arguments.of("send-idvpscdefault-request", false),
+                Arguments.of("send-idvpscdefault-request", true)
+        );
     }
-
-    @Test
-    @DisplayName("Send Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendTransitionalPscInformationLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteLetter("send-transitional-non-director-psc-information-letter-request",
-                log);
-    }
-
-    @Test
-    @DisplayName("Send Welsh Transitional Non-director PSC Information letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshTransitionalPscInformationLetterSuccessfully(CapturedOutput log)
-            throws Exception {
-        sendAndDeleteWelshLetter("send-transitional-non-director-psc-information-letter-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteLetter("send-extension-acceptance-letter-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Welsh Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteWelshLetter("send-extension-acceptance-letter-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteLetter("send-second-extension-acceptance-letter-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Welsh Second Extension Acceptance letter successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshSecondExtensionAcceptanceLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteWelshLetter("send-second-extension-acceptance-letter-request", log);
-    }
-
-    @Test
-    @DisplayName("Send CSIDVDEFLET successfully, saving letter PDF for troubleshooting in the process")
-    void sendCSIDVDEFLETSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-csidvdeflet-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Welsh CSIDVDEFLET successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshCSIDVDEFLETSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteWelshLetter("send-csidvdeflet-request", log);
-    }
-
-    @Test
-    @DisplayName("Send IDVPSCDEFAULT successfully, saving letter PDF for troubleshooting in the process")
-    void sendIDVPSCDEFAULTSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-idvpscdefault-request", log);
-    }
-
-    @Test
-    @DisplayName("Send Welsh IDVPSCDEFAULT successfully, saving letter PDF for troubleshooting in the process")
-    void sendWelshIDVPSCDEFAULTSuccessfully(CapturedOutput log) throws Exception {
-        sendAndDeleteWelshLetter("send-idvpscdefault-request", log);
-    }
-
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
 
         // Given
