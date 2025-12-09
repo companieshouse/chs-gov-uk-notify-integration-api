@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,8 +34,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -92,33 +90,38 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfContent();
     }
 
-    @ParameterizedTest
-    @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
-    @MethodSource("letterTestCases")
-    void sendLetterParameterized(String requestName, boolean isWelsh, CapturedOutput log) throws Exception {
-        if (isWelsh) {
-            sendAndDeleteWelshLetter(requestName, log);
-        } else {
-            sendAndDeleteLetter(requestName, log);
-        }
+    @ParameterizedTest(name = "{0}")
+    @DisplayName("Send English letters successfully, saving letter PDF for troubleshooting in the process")
+    @ValueSource(strings = {
+            "send-new-psc-direction-letter-request",
+            "send-transitional-non-director-psc-information-letter-request",
+            "send-extension-acceptance-letter-request",
+            "send-second-extension-acceptance-letter-request",
+            "send-csidvdeflet-request",
+            "send-idvpscdefault-request"
+    })
+    void sendAndDeleteLetter(final String requestName, final CapturedOutput log) throws
+            Exception {
+        sendLetter(requestName, log);
+        deleteLetterPdf(requestName);
     }
 
-    private static Stream<Arguments> letterTestCases() {
-        return Stream.of(
-                Arguments.of("send-new-psc-direction-letter-request", false),
-                Arguments.of("send-new-psc-direction-letter-request", true),
-                Arguments.of("send-transitional-non-director-psc-information-letter-request", false),
-                Arguments.of("send-transitional-non-director-psc-information-letter-request", true),
-                Arguments.of("send-extension-acceptance-letter-request", false),
-                Arguments.of("send-extension-acceptance-letter-request", true),
-                Arguments.of("send-second-extension-acceptance-letter-request", false),
-                Arguments.of("send-second-extension-acceptance-letter-request", true),
-                Arguments.of("send-csidvdeflet-request", false),
-                Arguments.of("send-csidvdeflet-request", true),
-                Arguments.of("send-idvpscdefault-request", false),
-                Arguments.of("send-idvpscdefault-request", true)
-        );
+    @ParameterizedTest(name = "{0}")
+    @DisplayName("Send Welsh letters successfully, saving letter PDF for troubleshooting in the process")
+    @ValueSource(strings = {
+            "send-new-psc-direction-letter-request",
+            "send-transitional-non-director-psc-information-letter-request",
+            "send-extension-acceptance-letter-request",
+            "send-second-extension-acceptance-letter-request",
+            "send-csidvdeflet-request",
+            "send-idvpscdefault-request"
+    })
+    void sendAndDeleteWelshLetter(final String requestName, final CapturedOutput log) throws
+            Exception {
+        sendWelshLetter(requestName, log);
+        deleteLetterPdf(requestName);
     }
+
     private void sendLetter(final String requestName, final CapturedOutput log) throws Exception {
 
         // Given
@@ -154,18 +157,6 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(getExpectedSavingLetterLogMessage(requestName)), is(true));
 
         verifyLetterPdfSaved(requestName);
-    }
-
-    private void sendAndDeleteLetter(final String requestName, final CapturedOutput log) throws
-            Exception {
-        sendLetter(requestName, log);
-        deleteLetterPdf(requestName);
-    }
-
-    private void sendAndDeleteWelshLetter(final String requestName, final CapturedOutput log) throws
-            Exception {
-        sendWelshLetter(requestName, log);
-        deleteLetterPdf(requestName);
     }
 
     private void deleteLetterPdf(final String requestName) throws Exception {
