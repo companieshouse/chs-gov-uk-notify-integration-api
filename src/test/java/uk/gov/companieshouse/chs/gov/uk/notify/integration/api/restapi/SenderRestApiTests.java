@@ -70,6 +70,7 @@ class SenderRestApiTests {
             "verification_due_date", "15 February 2024",
             "welsh_verification_due_date", "15 Chwefror 2024"
     );
+    private static final String REQUEST_BODY_PERSONALISATION = new JSONObject().put("name", "Test User").put("verification_due_date", "15 February 2024").toString();
     private static final String XHEADER = "1";
 
     @Test
@@ -86,11 +87,7 @@ class SenderRestApiTests {
                 .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID).
-                personalisationDetails(
-                        new JSONObject()
-                                .put("name", "Test User")
-                                .put("verification_due_date", "15 February 2024")
-                        .toString())
+                personalisationDetails(REQUEST_BODY_PERSONALISATION)
         );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
@@ -153,12 +150,7 @@ class SenderRestApiTests {
                 .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(
-                        new JSONObject()
-                                .put("name", "Test User")
-                                .put("verification_due_date", "15 February 2024")
-                        .toString()
-                )
+                .personalisationDetails(REQUEST_BODY_PERSONALISATION)
         );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
