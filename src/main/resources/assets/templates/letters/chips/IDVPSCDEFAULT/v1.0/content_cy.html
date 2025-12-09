@@ -1,0 +1,58 @@
+<p class="subject-line">Datganiad gwiriad hunaniaeth hwyr ar gyfer eich rôl fel person sydd â rheolaeth arwyddocaol (PRhA) o [[${company_name}]]</p>
+
+<br/>
+<br/>
+<br/>
+
+<p class="emphasis">Nid ydych wedi cyflwyno datganiad i Dŷ'r Cwmnïau i gadarnhau eich hunaniaeth.<br/>Roedd hyn yn ddyledus erbyn <span id="welsh-verification-due-date">[[${welsh_verification_due_date}]]</span>.</p>
+
+<p>Mae hwn yn ofyniad cyfreithiol newydd o dan Ddeddf Troseddau Economaidd a Thryloywder Corfforaethol 2023. Rhaid i bob <span th:if="${is_llp == 'yes'}">aelod o bartneriaeth atebolrwydd cyfyngedig (PAC) a PRhA gwblhau gwiriad hunaniaeth a chyflwyno datganiad i Dŷ'r Cwmnïau ar gyfer pob rôl ym mhob PAC</span><span th:if="${is_llp == 'no'}">cyfarwyddwyr cwmni a PRhA cwblhau gwiriad hunaniaeth a chyflwyno datganiad i Dŷ'r Cwmnïau ar gyfer pob rôl ym mhob cwmni</span>.</p>
+
+<p>Mae eich dyddiad cau wedi mynd heibio ac ni ellir ei ymestyn oherwydd ei fod yn ofyniad cyfreithiol i gwblhau gwiriad hunaniaeth.</p>
+
+<div class="grey-bg-block">
+    <div class="grey-warning-block">
+        <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
+        <div class="grey-warning-block-text">
+            <span>
+                <strong>Rhaid i chi gyflwyno'ch datganiad gwiriad hunaniaeth neu wneud achos erbyn <span id="welsh-action-due-date">[[${welsh_action_due_date}]]</span>.</strong> Mae cyfarwyddiadau ar gefn y llythyr hwn.
+            </span><br/><br/>
+            <span>Os nad ydych yn ffeilio'r datganiad, efallai y byddwch yn cyflawni</span><br/>
+            <span>trosedd. Efallai y byddwch yn wynebu erlyniad neu gosb ariannol.</span>
+        </div>
+    </div>
+</div>
+
+<p class="subject-line" style="page-break-before: always">Beth sydd angen i chi ei wneud</p>
+<p class="subject-line-spacer"></p>
+
+<table>
+    <tr>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">Cam 1. Cwblhau gwiriad hunaniaeth </p>
+            <p class="verification-requirements-text">I gael gwybodaeth am sut i wneud hyn, chwiliwch ar-lein am 'Cwblhau gwiriad hunaniaeth ar gyfer Tŷ'r Cwmnïau', neu ewch i: <span class="emphasis">gov.uk/guidance/verifying-your-identity-for-companies-house.cy</span></p>
+            <p class="verification-requirements-text">Ar ôl i chi gwblhau gwiriad hunaniaeth, byddwch yn cael cod adnabod unigryw, o'r enw cod personol Tŷ'r Cwmnïau.</p>
+            <p class="verification-requirements-text">Os oes gennych god personol eisoes, nid oes angen i chi gwblhau gwiriad hunaniaeth eto.</p>
+            <p class="verification-requirements-text">Bydd angen eich cod personol arnoch ar gyfer cam 2.</p>
+        </td>
+        <td class="verification-requirements-spacer"></td>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">Cam 2. Cyflwyno eich datganiad gwiriad hunaniaeth i Dŷ'r Cwmnïau</p>
+            <p class="verification-requirements-text">Chwiliwch ar-lein am y gwasanaeth 'Darparu manylion gwiriad hunaniaeth ar gyfer person sydd â rheolaeth arwyddocaol', neu ewch i:<br/><span class="emphasis">gov.uk/guidance/provide-psc-verification</span></p>
+            <p class="verification-requirements-text">Darparu eich cod personol. Mae hyn er mwyn i ni allu cysylltu eich hunaniaeth sydd wedi'i gwirio â'r enw PRhA ar ein cofnodion. Gofynnir i chi hefyd dicio datganiad sy'n cadarnhau eich bod wedi cwblhau gwiriad hunaniaeth.</p>
+            <p class="verification-requirements-text">Mae angen i chi wneud hyn hyd yn oed os ydych chi eisoes wedi ei wneud ar gyfer rolau eraill sydd gennych chi yn y <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span>, neu mewn cwmnïau eraill.</p>
+        </td>
+    </tr>
+</table>
+
+<p class="small-heading">Sut i wneud achos</p>
+
+<p>Os oes amgylchiadau eithriadol yr hoffech i ni eu hystyried cyn i ni fynd ymlaen â chamau gorfodi, rhaid i chi ysgrifennu atom erbyn [[${welsh_action_due_date}]]. Gelwir hyn yn gwneud achos.</p>
+
+<p>I wneud achos, ewch i <span class="emphasis">https://www.gov.uk/government/publications/make-a-representation-for-not-filing-an-identity-verification-statement</span>.</p>
+
+<p>Os ydym yn derbyn eich achos, byddwn yn oedi camau gorfodi am gyfnod cyfyngedig fel y gallwch ffeilio'r datganiad. Byddwch yn parhau i fod yn ddiffygiol a bydd y camau gorfodi yn ailddechrau os na fyddwch yn cyflwyno'r datganiad.</p>
+
+<p class="small-heading">Gwiriwch y gofrestr</p>
+
+<p>Os nad ydych bellach yn PRhA o'r <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> neu os oes angen cywiro eich manylion ar y gofrestr, rhaid i'r <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> gyflwyno ffeilio i ddiweddaru ei gofnod.</p>
