@@ -1,1 +1,2 @@
+# Description/reason for this version
 This is the first version of the IDVPSCDEFAULT template in the new folder structure. Its content matches [CSIDVDEFLET_v1.1](/src/main/resources/assets/templates/old_letters/chips/IDVPSCDEFAULT_v1.1.html) in the old structure
