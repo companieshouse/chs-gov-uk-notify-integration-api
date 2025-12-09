@@ -32,8 +32,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
@@ -63,11 +65,16 @@ class SenderRestApiTests {
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
     private static final String VALID_REFERENCE = "valid-reference";
-    private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
+    private static final Map<String, String> VALID_PERSONALISATION = Map.of(
+            "name", "Test User",
+            "verification_due_date", "15 February 2024",
+            "welsh_verification_due_date", "15 Chwefror 2024"
+    );
+    private static final String REQUEST_BODY_PERSONALISATION = new JSONObject().put("name", "Test User").put("verification_due_date", "15 February 2024").toString();
     private static final String XHEADER = "1";
 
     @Test
-    void When_EmailRequestIsValid_Expect_EmailMessageIsSentSuccessfully(){
+    void whenEmailRequestIsValidExpectEmailMessageIsSentSuccessfully(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -77,10 +84,11 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+                .templateId(VALID_TEMPLATE_ID).
+                personalisationDetails(REQUEST_BODY_PERSONALISATION)
+        );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
@@ -89,12 +97,14 @@ class SenderRestApiTests {
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
+        verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
+        verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
     }
 
     @Test
-    void When_EmailRequestIsInValid_Expect_InternalSeverErrorResponse(){
+    void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -104,10 +114,44 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+                .personalisationDetails(
+                        new JSONObject()
+                                .put("name", "Test User")
+                                .put("verification_due_date", "15  2024")
+                                .toString()
+                )
+        );
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
+
+
+        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        Assertions.assertNotNull(response);
+
+    }
+
+    @Test
+    void whenEmailRequestIsInValidExpectInternalSeverErrorResponse(){
+        EmailDetails emailDetails = new EmailDetails();
+        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        govUkEmailDetailsRequest.setSenderDetails(senderDetails
+                .emailAddress("john.doe@example.com")
+                .userId("9876543")
+                .name("John Doe")
+                .reference(VALID_REFERENCE)
+                .appId("chips"));
+        govUkEmailDetailsRequest.setEmailDetails(emailDetails
+                .templateId(VALID_TEMPLATE_ID)
+                .personalisationDetails(REQUEST_BODY_PERSONALISATION)
+        );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
@@ -140,7 +184,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
