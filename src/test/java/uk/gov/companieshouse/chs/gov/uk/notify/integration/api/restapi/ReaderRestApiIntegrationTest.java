@@ -1245,6 +1245,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         return mockMvc.perform(get(VIEW_LETTER_PDF
                         + "?psc_name=" + pscName
                         + "&company_number=" + companyNumber
+                        + (letterId!=null ? "&letter_id=" + letterId : "")
                         + "&template_id=" + templateId
                         + "&letter_sending_date="+ letterSendingDate)
                         .contentType(MediaType.APPLICATION_JSON)
