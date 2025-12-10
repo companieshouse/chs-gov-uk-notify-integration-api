@@ -232,6 +232,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
+        logMap.put("letter_id", letterId);
         logMap.put("template_id", templateId);
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         LOGGER.info("Starting viewLetterPdf process", logMap);

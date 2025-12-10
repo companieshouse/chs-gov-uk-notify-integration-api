@@ -572,16 +572,20 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // When and then
         var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
-            COMPANY_NUMBER,
+                COMPANY_NUMBER,
                 NULL_LETTER_ID,
-            TEMPLATE_ID,
-            LETTER_SENDING_DATE,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE,
         status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                                PSC_NAME, COMPANY_NUMBER, TEMPLATE_ID, LETTER_SENDING_DATE)),
+                                PSC_NAME,
+                                COMPANY_NUMBER,
+                                NULL_LETTER_ID,
+                                TEMPLATE_ID,
+                                LETTER_SENDING_DATE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
@@ -641,6 +645,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
+                                NULL_LETTER_ID,
                                 TEMPLATE_ID,
                                 LETTER_SENDING_DATE)),
                 is(true));
@@ -780,6 +785,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                 getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                         COMPANY_NUMBER,
+                        NULL_LETTER_ID,
                         TEMPLATE_ID,
                         LETTER_SENDING_DATE)),
                 is(true));
@@ -1222,6 +1228,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         getExpectedViewLetterInvocationLogMessage(
                                 pscName,
                                 companyNumber,
+                                letterId,
                                 templateId,
                                 letterSendingDate)),
                 is(true));
@@ -1362,6 +1369,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static String getExpectedViewLetterInvocationLogMessage(String pscName,
                                                                     String companyNumber,
+                                                                    String letterId,
                                                                     String templateId,
                                                                     String letterSendingDate) {
         return   "{\"letter_sending_date\":\"" + letterSendingDate + "\","
@@ -1369,6 +1377,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"psc_name\":\"" + pscName + "\","
                 + "\"action\":\"view_letter_pdf\","
                 + "\"template_id\":\"" + templateId + "\","
+                + (letterId != null ? "\"letter_id\":\"" + letterId + "\"," : "")
                 + "\"message\":\"Starting viewLetterPdf process\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
