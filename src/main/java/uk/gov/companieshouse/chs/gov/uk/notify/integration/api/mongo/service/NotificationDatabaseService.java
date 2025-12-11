@@ -110,6 +110,7 @@ public class NotificationDatabaseService {
     public Page<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
+            final String letterId,
             final String templateId,
             final LocalDate letterSendingDate,
             final int letterNumber) {
@@ -117,6 +118,7 @@ public class NotificationDatabaseService {
         return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
                 pscName,
                 companyNumber,
+                letterId,
                 templateId,
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX,

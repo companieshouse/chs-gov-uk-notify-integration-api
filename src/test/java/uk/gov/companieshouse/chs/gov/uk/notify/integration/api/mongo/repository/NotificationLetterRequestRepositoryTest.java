@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -180,6 +179,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         return requestRepository.findByNameCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
+                null, // TODO DEEP-546 is this acceptable?
                 "template-456",
                 LocalDate.now().toString(),
                 LocalDate.now().plusDays(1).toString(),
@@ -190,6 +190,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         return requestRepository.findByNameCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
+                null, // TODO DEEP-546 is this acceptable?
                 "unknown_template",
                 LocalDate.now().toString(),
                 LocalDate.now().plusDays(1).toString(),

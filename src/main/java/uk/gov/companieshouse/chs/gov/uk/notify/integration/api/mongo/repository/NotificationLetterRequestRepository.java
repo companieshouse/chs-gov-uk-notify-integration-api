@@ -44,12 +44,16 @@ public interface NotificationLetterRequestRepository extends
 
     @Query(value = """
             {$and: [
-                {'request.letterDetails.personalisationDetails':
-                 {$regex: '"psc_name": "?0"'}},
+               {$or: [
+                    {'request.letterDetails.personalisationDetails':
+                     {$regex: '"psc_name": "?0"'}},
+                    {'request.letterDetails.letterId': ?2},
+                 ]
+                },
                 {'request.letterDetails.personalisationDetails':
                  {$regex: '"company_number": "?1"'}},
-                {'request.letterDetails.templateId': '?2'},
-                {'request.createdAt': { $gte: { $date: '?3'}, $lt: { $date: '?4'} }}
+                {'request.letterDetails.templateId': '?3'},
+                {'request.createdAt': { $gte: { $date: '?4'}, $lt: { $date: '?5'} }}
             ]}
             """,
             sort = "{ 'request.createdAt' : 1 }"
@@ -57,6 +61,7 @@ public interface NotificationLetterRequestRepository extends
     Page<NotificationLetterRequest> findByNameCompanyTemplateDate(
             String pscName,
             String companyNumber,
+            String letterId,
             String templateId,
             String letterSendingDate,
             String letterSendingDateNextDay,

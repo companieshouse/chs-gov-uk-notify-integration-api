@@ -171,6 +171,7 @@ public class SentLetterFetcher {
     public FetchedLetter fetchLetter(
             final String pscName,
             final String companyNumber,
+            final String letterId,
             final String templateId,
             final LocalDate letterSendingDate,
             final int letterNumber,
@@ -179,7 +180,7 @@ public class SentLetterFetcher {
 
         validateLetterNumber(letterNumber);
         var page = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
-                pscName, companyNumber, templateId, letterSendingDate, letterNumber);
+                pscName, companyNumber, letterId, templateId, letterSendingDate, letterNumber);
         var letter = getLetter(page, letterNumber);
         var reference = letter.getSenderDetails().getReference();
         var html = getHtml(letter, reference, contextId);

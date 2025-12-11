@@ -222,11 +222,11 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     @Override
     public ResponseEntity<Object> viewLetterPdf(
-            final String pscName,
             final String companyNumber,
             final String templateId,
             final LocalDate letterSendingDate,
             final String contextId,
+            final String pscName,
             final String letterId) {
 
         var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
@@ -257,16 +257,18 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
     @Override
     public ResponseEntity<Object> viewLetterPdfs(
-            final String pscName,
             final String companyNumber,
             final String templateId,
             final LocalDate letterSendingDate,
             final Integer letterNumber,
-            final String contextId) {
+            final String contextId,
+            final String pscName,
+            final String letterId) {
 
         var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
+        logMap.put("letter_id", letterId);
         logMap.put("template_id", templateId);
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         logMap.put("letter", letterNumber);
@@ -276,6 +278,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
             var fetchedLetter = fetcher.fetchLetter(
                     pscName,
                     companyNumber,
+                    letterId,
                     templateId,
                     letterSendingDate,
                     letterNumber,
