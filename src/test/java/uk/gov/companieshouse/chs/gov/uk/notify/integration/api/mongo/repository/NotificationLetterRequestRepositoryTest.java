@@ -27,6 +27,8 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
+    private static final String NULL_LETTER_ID = null;
+
     private static final Pageable LETTER_1 = PageRequest.of(0, 1);
     private static final Pageable LETTER_2 = PageRequest.of(1, 1);
     private static final Pageable LETTER_3 = PageRequest.of(2, 1);
@@ -171,26 +173,29 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         saveThreeLettersWithReferences();
 
-        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(PageRequest.of(0, 1));
+        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(
+                PageRequest.of(0, 1));
         assertThat(firstLetter.isEmpty(), is(true));
     }
 
-    private Page<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDate(Pageable letter) {
+    private Page<NotificationLetterRequest>
+    findByPscNameOrLetterAndCompanyTemplateDate(Pageable letter) {
         return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
-                null, // TODO DEEP-546 is this acceptable?
+                NULL_LETTER_ID,
                 "template-456",
                 LocalDate.now().toString(),
                 LocalDate.now().plusDays(1).toString(),
                 letter);
     }
 
-    private Page<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
+    private Page<NotificationLetterRequest>
+    findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
         return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
-                null, // TODO DEEP-546 is this acceptable?
+                NULL_LETTER_ID,
                 "unknown_template",
                 LocalDate.now().toString(),
                 LocalDate.now().plusDays(1).toString(),
