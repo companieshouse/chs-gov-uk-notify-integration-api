@@ -76,4 +76,3 @@ locals {
 
   eric_environment_filename = "eric.env"
 }
-
