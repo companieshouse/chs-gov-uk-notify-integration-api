@@ -90,14 +90,14 @@ public class NotificationDatabaseService {
     }
 
     @Transactional( readOnly = true )
-    public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+    public List<NotificationLetterRequest> getLettersByPscNameOrLetterAndCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
             final String letterId,
             final String templateId,
             final LocalDate letterSendingDate) {
         var nextDay = letterSendingDate.plusDays(1);
-        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+        return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
                 letterId,
@@ -107,7 +107,7 @@ public class NotificationDatabaseService {
     }
 
     @Transactional( readOnly = true )
-    public Page<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+    public Page<NotificationLetterRequest> getLettersByPscNameOrLetterAndCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
             final String letterId,
@@ -115,7 +115,7 @@ public class NotificationDatabaseService {
             final LocalDate letterSendingDate,
             final int letterNumber) {
         var nextDay = letterSendingDate.plusDays(1);
-        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+        return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
                 letterId,

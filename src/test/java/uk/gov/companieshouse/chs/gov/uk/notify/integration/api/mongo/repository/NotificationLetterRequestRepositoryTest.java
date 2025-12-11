@@ -144,10 +144,10 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         saveThreeLettersWithReferences();
 
-        var firstLetter = findByNameCompanyTemplateDate(LETTER_1);
-        var secondLetter = findByNameCompanyTemplateDate(LETTER_2);
-        var lastLetter = findByNameCompanyTemplateDate(LETTER_3);
-        var noLetter = findByNameCompanyTemplateDate(LETTER_4);
+        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_1);
+        var secondLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_2);
+        var lastLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_3);
+        var noLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_4);
 
         assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
         assertThat(firstLetter.stream().
@@ -171,12 +171,12 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         saveThreeLettersWithReferences();
 
-        var firstLetter = findByNameCompanyTemplateDateWithWrongTemplateId(PageRequest.of(0, 1));
+        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(PageRequest.of(0, 1));
         assertThat(firstLetter.isEmpty(), is(true));
     }
 
-    private Page<NotificationLetterRequest> findByNameCompanyTemplateDate(Pageable letter) {
-        return requestRepository.findByNameCompanyTemplateDate(
+    private Page<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDate(Pageable letter) {
+        return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
                 null, // TODO DEEP-546 is this acceptable?
@@ -186,8 +186,8 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
                 letter);
     }
 
-    private Page<NotificationLetterRequest> findByNameCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
-        return requestRepository.findByNameCompanyTemplateDate(
+    private Page<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
+        return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
                 null, // TODO DEEP-546 is this acceptable?

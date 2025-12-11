@@ -34,7 +34,7 @@ public interface NotificationLetterRequestRepository extends
             ]}
             """
     )
-    List<NotificationLetterRequest> findByNameCompanyTemplateDate(
+    List<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDate(
               String pscName,
               String companyNumber,
               String letterId,
@@ -58,7 +58,7 @@ public interface NotificationLetterRequestRepository extends
             """,
             sort = "{ 'request.createdAt' : 1 }"
     )
-    Page<NotificationLetterRequest> findByNameCompanyTemplateDate(
+    Page<NotificationLetterRequest> findByPscNameOrLetterAndCompanyTemplateDate(
             String pscName,
             String companyNumber,
             String letterId,

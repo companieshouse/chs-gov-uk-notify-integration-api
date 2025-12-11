@@ -179,7 +179,7 @@ public class SentLetterFetcher {
             throws IOException {
 
         validateLetterNumber(letterNumber);
-        var page = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
+        var page = notificationDatabaseService.getLettersByPscNameOrLetterAndCompanyTemplateDate(
                 pscName, companyNumber, letterId, templateId, letterSendingDate, letterNumber);
         var letter = getLetter(page, letterNumber);
         var reference = letter.getSenderDetails().getReference();
@@ -241,7 +241,7 @@ public class SentLetterFetcher {
                                                               final String letterId,
                                                               final String templateId,
                                                               final LocalDate letterSendingDate) {
-        var letters = notificationDatabaseService.getLettersByNameCompanyTemplateDate(
+        var letters = notificationDatabaseService.getLettersByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
                 letterId,
