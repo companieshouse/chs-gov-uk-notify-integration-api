@@ -100,7 +100,8 @@ public class NotificationDatabaseService {
         return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
-                letterId,
+                // prevents null letter ID matching on all non-compliance letters
+                letterId == null ? "" : letterId,
                 templateId,
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX);
@@ -118,7 +119,8 @@ public class NotificationDatabaseService {
         return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
-                letterId,
+                // prevents null letter ID matching on all non-compliance letters
+                letterId == null ? "" : letterId,
                 templateId,
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX,

@@ -1141,6 +1141,48 @@
 					"response": []
 				},
 				{
+					"name": "view letter without reference, with null letter ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view?letter_sending_date=2025-12-12&psc_name=Joe Bloggs&company_number=00006400&template_id=new_psc_direction_letter_v1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letters",
+								"view"
+							],
+							"query": [
+								{
+									"key": "letter_sending_date",
+									"value": "2025-12-12"
+								},
+								{
+									"key": "psc_name",
+									"value": "Joe Bloggs"
+								},
+								{
+									"key": "company_number",
+									"value": "00006400"
+								},
+								{
+									"key": "template_id",
+									"value": "new_psc_direction_letter_v1"
+								},
+								{
+									"key": "letter_id",
+									"value": "CSIDVDEFLET",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "view letters without reference",
 					"request": {
 						"method": "GET",
@@ -1172,6 +1214,91 @@
 								{
 									"key": "template_id",
 									"value": "transitional_non_director_psc_information_letter_v1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "view letters without reference, with letter ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/paginated_view/{{letter}}?letter_sending_date=2025-12-09&psc_name=any value can be placed here&company_number=15130506&template_id=v1.0&letter_id=CSIDVDEFLET",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letters",
+								"paginated_view",
+								"{{letter}}"
+							],
+							"query": [
+								{
+									"key": "letter_sending_date",
+									"value": "2025-12-09"
+								},
+								{
+									"key": "psc_name",
+									"value": "any value can be placed here"
+								},
+								{
+									"key": "company_number",
+									"value": "15130506"
+								},
+								{
+									"key": "template_id",
+									"value": "v1.0"
+								},
+								{
+									"key": "letter_id",
+									"value": "CSIDVDEFLET"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "view letters without reference, with null letter ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/gov-uk-notify-integration/letters/paginated_view/{{letter}}?letter_sending_date=2025-12-12&psc_name=Joe Bloggs&company_number=00006400&template_id=new_psc_direction_letter_v1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"gov-uk-notify-integration",
+								"letters",
+								"paginated_view",
+								"{{letter}}"
+							],
+							"query": [
+								{
+									"key": "letter_sending_date",
+									"value": "2025-12-12"
+								},
+								{
+									"key": "psc_name",
+									"value": "Joe Bloggs"
+								},
+								{
+									"key": "company_number",
+									"value": "00006400"
+								},
+								{
+									"key": "template_id",
+									"value": "new_psc_direction_letter_v1"
+								},
+								{
+									"key": "letter_id",
+									"value": "CSIDVDEFLET",
+									"disabled": true
 								}
 							]
 						}

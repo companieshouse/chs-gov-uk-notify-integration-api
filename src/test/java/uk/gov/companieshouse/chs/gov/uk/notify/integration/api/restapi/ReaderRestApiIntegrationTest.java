@@ -756,6 +756,19 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("Reports letter cannot be found if PSC name does not match and letter ID is null")
+    void unableToViewLetterAsPscNameNotMatchedWhenLetterIdIsNull(CapturedOutput log)
+            throws Exception {
+        implementLetterNotFoundTest(
+                log,
+                PSC_NAME + " additional text",
+                COMPANY_NUMBER,
+                NULL_LETTER_ID,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
     @DisplayName("Reports letter cannot be found if company number does not match")
     void unableToViewLetterAsCompanyNumberNotMatched(CapturedOutput log) throws Exception {
         implementLetterNotFoundTest(
