@@ -105,7 +105,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String NULL_LETTER_ID = null;
     private static final String VALID_LETTER_ID = "CSIDVDEFLET";
     private static final String TEMPLATE_ID = "new_psc_direction_letter_v1";
+    private static final String CSIDVDEFLET_TEMPLATE_ID = "v1.0";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
+    private static final String CSIDVDEFLET_LETTER_SENDING_DATE = "2025-10-03";
     private static final String NOT_LETTER_SENDING_DATE = "1999-12-30";
     private static final String UNPARSEABLE_LETTER_SENDING_DATE = "8 April 2025";
 
@@ -566,7 +568,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+                REFERENCE_FOR_LETTER_SENT);
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
 
         // When and then
@@ -602,8 +604,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var page1 = getPageText(document, 1);
 
         // Check reference in letter PDF.
-        assertThat(page1, containsString(
-                "Reference:\n" + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER));
+        assertThat(page1, containsString("Reference:\n" + REFERENCE_FOR_LETTER_SENT));
 
         // Check letter sending date in letter PDF is the calculated date provided
         var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
@@ -613,6 +614,62 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var calculatedDate = personalisationDetails.get("idv_start_date");
         assertThat(page1, containsString("Date:\n" + calculatedDate));
     }
+
+    @Test
+    @DisplayName("View letter PDF identified by letter ID, company number, letter type and sending date successfully")
+    void viewLetterByLetterIdCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        var requestBody = getValidCsidvdefletLetterRequestBody();
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                VALID_LETTER_ID,
+                CSIDVDEFLET_TEMPLATE_ID,
+                CSIDVDEFLET_LETTER_SENDING_DATE,
+                status().isOk()).andReturn().getResponse().getContentAsByteArray();
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                PSC_NAME,
+                                COMPANY_NUMBER,
+                                VALID_LETTER_ID,
+                                CSIDVDEFLET_TEMPLATE_ID,
+                                CSIDVDEFLET_LETTER_SENDING_DATE)),
+                is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter with psc name "
+                        + PSC_NAME + ", companyNumber "
+                        + COMPANY_NUMBER + ", letterId "
+                        + VALID_LETTER_ID + ", templateId "
+                        + CSIDVDEFLET_TEMPLATE_ID + ", letter sending date "
+                        + CSIDVDEFLET_LETTER_SENDING_DATE + ".";
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+
+        var document = Loader.loadPDF(letterPdf);
+
+        // Substitutions all occur on page 1.
+        var page1 = getPageText(document, 1);
+
+        // Check company number in letter PDF.
+        assertThat(page1, containsString(
+                "Company number:\n" + COMPANY_NUMBER));
+
+        // Check letter sending date in letter PDF is the original sending date.
+        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
+        var originalSendingDate = request.getCreatedAt()
+                .format(DATE_FORMATTER);
+        assertThat(page1, containsString("Date:\n" + originalSendingDate));
+    }
+
 
     @Test
     @DisplayName("View letter identified by PSC name, company number, letter type and sending date reports IOException loading letter PDF with a 500 response")
@@ -952,7 +1009,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                            PSC_NAME, COMPANY_NUMBER, TEMPLATE_ID, LETTER_SENDING_DATE, LETTER_1)),
+                                PSC_NAME,
+                                COMPANY_NUMBER,
+                                NULL_LETTER_ID,
+                                TEMPLATE_ID,
+                                LETTER_SENDING_DATE,
+                                LETTER_1)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
@@ -960,6 +1022,43 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         + COMPANY_NUMBER + ", templateId "
                         + TEMPLATE_ID + ", letter sending date "
                         + LETTER_SENDING_DATE + ", letter number "
+                        + LETTER_1 + ".";
+        assertThat(log.getAll().contains(expectedLogMessage), is(true));
+    }
+
+    @Test
+    @DisplayName("View letter PDFs identified by letter ID, company number, letter type and sending date successfully")
+    void viewLettersByLetterIdCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        sendCsidvdefletLetter();
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                VALID_LETTER_ID,
+                CSIDVDEFLET_TEMPLATE_ID,
+                CSIDVDEFLET_LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isOk());
+
+        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
+        assertThat(log.getAll().contains(
+                        getExpectedViewLetterInvocationLogMessage(
+                                PSC_NAME,
+                                COMPANY_NUMBER,
+                                VALID_LETTER_ID,
+                                CSIDVDEFLET_TEMPLATE_ID,
+                                CSIDVDEFLET_LETTER_SENDING_DATE,
+                                LETTER_1)),
+                is(true));
+        var expectedLogMessage =
+                "Responding with regenerated letter PDF to view for letter with psc name "
+                        + PSC_NAME + ", companyNumber "
+                        + COMPANY_NUMBER + ", templateId "
+                        + CSIDVDEFLET_TEMPLATE_ID + ", letter sending date "
+                        + CSIDVDEFLET_LETTER_SENDING_DATE + ", letter number "
                         + LETTER_1 + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
     }
@@ -1033,6 +1132,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getExpectedViewLetterInvocationLogMessage(
                         PSC_NAME,
                         COMPANY_NUMBER,
+                        NULL_LETTER_ID,
                         TEMPLATE_ID,
                         LETTER_SENDING_DATE,
                         LETTER_1)),
@@ -1065,6 +1165,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
+                                NULL_LETTER_ID,
                                 TEMPLATE_ID,
                                 LETTER_SENDING_DATE,
                                 LETTER_1)),
@@ -1100,6 +1201,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
+                                NULL_LETTER_ID,
                                 TEMPLATE_ID,
                                 LETTER_SENDING_DATE,
                                 LETTER_1)),
@@ -1188,6 +1290,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
         postSendLetterRequest(mockMvc, getValidSendDirectionLetterRequestBody(),
                 status().isCreated());
+    }
+
+    private void sendCsidvdefletLetter() throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        postSendLetterRequest(mockMvc, getValidCsidvdefletLetterRequestBody(), status().isCreated());
     }
 
 
@@ -1343,6 +1453,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 UTF_8);
     }
 
+    private static String getValidCsidvdefletLetterRequestBody() throws IOException {
+        return resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
+    }
+
     private static String getExpectedViewLetterInvocationLogMessage(String reference) {
         return   "{\"reference\":\"" + reference + "\","
                 + "\"action\":\"view_letter_pdf\","
@@ -1384,6 +1498,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static String getExpectedViewLetterInvocationLogMessage(String pscName,
                                                                     String companyNumber,
+                                                                    String letterId,
                                                                     String templateId,
                                                                     String letterSendingDate,
                                                                     int letterNumber) {
@@ -1393,6 +1508,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"letter\":" + letterNumber + ","
                 + "\"action\":\"view_letter_pdfs\","
                 + "\"template_id\":\"" + templateId + "\","
+                + (letterId != null ? "\"letter_id\":\"" + letterId + "\"," : "")
                 + "\"message\":\"Starting viewLetterPdfs process\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
