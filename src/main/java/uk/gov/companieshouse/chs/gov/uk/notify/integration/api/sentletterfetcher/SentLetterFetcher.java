@@ -190,6 +190,7 @@ public class SentLetterFetcher {
                     "Responding with regenerated letter PDF to view for letter with "
                             + queryParameters(pscName,
                                               companyNumber,
+                                              letterId,
                                               templateId,
                                               letterSendingDate,
                                               letterNumber),
@@ -272,11 +273,13 @@ public class SentLetterFetcher {
 
     private String queryParameters(final String pscName,
                                    final String companyNumber,
+                                   final String letterId,
                                    final String templateId,
                                    final LocalDate letterSendingDate,
                                    final int letterNumber) {
         return "psc name " + pscName
                 + ", companyNumber " + companyNumber
+                + ", letterId " + letterId
                 + ", templateId " + templateId
                 + ", letter sending date " + letterSendingDate
                 + ", letter number " + letterNumber + ".";

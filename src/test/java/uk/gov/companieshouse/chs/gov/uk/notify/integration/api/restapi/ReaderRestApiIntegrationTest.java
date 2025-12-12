@@ -1019,7 +1019,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
-                        + COMPANY_NUMBER + ", templateId "
+                        + COMPANY_NUMBER + ", letterId "
+                        + NULL_LETTER_ID + ", templateId "
                         + TEMPLATE_ID + ", letter sending date "
                         + LETTER_SENDING_DATE + ", letter number "
                         + LETTER_1 + ".";
@@ -1056,7 +1057,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
-                        + COMPANY_NUMBER + ", templateId "
+                        + COMPANY_NUMBER + ", letterId "
+                        + VALID_LETTER_ID + ", templateId "
                         + CSIDVDEFLET_TEMPLATE_ID + ", letter sending date "
                         + CSIDVDEFLET_LETTER_SENDING_DATE + ", letter number "
                         + LETTER_1 + ".";
