@@ -21,6 +21,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -65,16 +66,24 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
 
-        Map<String, ?> personalisationDetails;
+        Map<String, String> personalisationDetails;
         try {
             logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
                     govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
-                    new TypeReference<Map<String, Object>>() {
+                    new TypeReference<Map<String, String>>() {
                     }
             );
         } catch (JsonProcessingException e) {
             logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            WelshDatesPublisher.publishWelshDates(personalisationDetails);
+        } catch (Exception e) {
+            logger.errorContext(xHeaderId, new Exception("Failed to publish Welsh dates: " + e.getMessage()),
+                    createLogMap(xHeaderId, "welsh_dates_error"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 

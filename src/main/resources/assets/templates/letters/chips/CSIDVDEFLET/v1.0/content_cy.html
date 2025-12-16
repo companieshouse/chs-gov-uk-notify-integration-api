@@ -1,0 +1,71 @@
+<p class="subject-line">Datganiad cadarnhau a datganiadau gwiriad hunaniaeth <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">cyfarwyddwr </span> hwyr ar gyfer <span class="subject-line">[[${company_name}]]</span></p>
+<br/>
+<div class="grey-bg-block">
+    <div class="grey-title">
+        Nid ydych wedi cyflwyno'r datganiadau canlynol i Dŷ'r Cwmnïau:
+    </div>
+    <ul class="grey-list">
+        <li>datganiad cadarnhau sy'n ddyledus erbyn <span id="welsh-verification-due-date">[[${welsh_verification_due_date}]]</span></li>
+        <li>datganiadau gwiriad hunaniaeth ar gyfer pob <span th:if="${is_llp == 'yes'}">aelod cofrestredig partneriaeth atebolrwydd cyfyngedig (PAC)</span><span th:if="${is_llp == 'no'}">cyfarwyddwyr cofrestredig cwmni</span></li>
+    </ul>
+    <div class="grey-warning-block">
+        <img class="black-warning-img" th:src="@{${common} + warning_black.svg}" alt="Warning"/>
+        <div class="grey-warning-block-text">
+            <span>
+                <strong>Rhaid i chi ffeilio'ch datganiad cadarnhau a gwiriad hunaniaeth hwyr neu wneud achos.</strong> Mae cyfarwyddiadau ar gefn y llythyr hwn.
+            </span>
+        </div>
+    </div>
+</div>
+
+
+
+<p class="small-heading">Os nad ydych <span th:if="${is_llp == 'yes'}">chi'n </span><span th:if="${is_llp == 'no'}">yn</span> ffeilio'r datganiadau, efallai y byddwn yn cymryd camau gorfodi heb rybudd pellach</p>
+
+<p>Gall hyn gynnwys erlyniad neu gosbau ariannol i'r <span th:if="${is_llp == 'yes'}">PAC a'i aelodau</span><span th:if="${is_llp == 'no'}">cwmni a'i gyfarwyddwyr</span>.</p>
+
+<div class="black-warning-block">
+    <img class="white-warning-img" th:src="@{${common} + warning_white.svg}" alt="Warning"/>
+    <div class="black-warning-block-text">
+        <span>
+            <strong>Efallai y bydd y <span th:if="${is_llp == 'yes'}">PAC a'i aelodau</span><span th:if="${is_llp == 'no'}">cwmni a'i gyfarwyddwyr</span> yn cyflawni trosedd am fethu â ffeilio datganiad cadarnhau.</strong>
+            Mae unrhyw <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">gyfarwyddwr</span> sy'n parhau i weithredu fel <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">cyfarwyddwr</span> heb gwblhau gwiriad hunaniaeth hefyd yn cyflawni trosedd. Mae'r <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> yn cyflawni trosedd am fethu â chywiro hyn.
+        </span>
+    </div>
+</div>
+
+<p>I gael arweiniad ar eich dyletswyddau wrth redeg <span th:if="${is_llp == 'yes'}">PAC, ewch i: <br/><span class="emphasis">gov.uk/guidance/set-up-and-run-a-limited-liability-partnership-llp</span></span><span th:if="${is_llp == 'no'}">cwmni, ewch i: <span class="emphasis">gov.uk/guidance/being-a-company-director</span></span></p>
+
+<p class="subject-line" style="page-break-before: always">Beth sydd angen i chi ei wneud</p>
+<p class="subject-line-spacer"></p>
+
+<table>
+    <tr>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">Cam 1. Rhaid i bob <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">cyfarwyddwr</span> gwblhau gwiriad hunaniaeth</p>
+            <p class="verification-requirements-text">I gael gwybodaeth am sut i wneud hyn, chwiliwch ar-lein am 'Cwblhau gwiriad hunaniaeth ar gyfer Tŷ'r Cwmnïau', neu ewch i:<br/><span class="emphasis">gov.uk/guidance/verifying-your-identity-for-companies-house.cy</span></p>
+            <p class="verification-requirements-text">Ar ôl i <span th:if="${is_llp == 'yes'}">chi gwblhau gwiriad hunaniaeth, mi fyddwch</span><span th:if="${is_llp == 'no'}">bob cyfarwyddwr gwblhau gwiriad, byddant</span> yn cael cod adnabod unigryw, o'r enw cod personol Tŷ'r Cwmnïau.</p>
+            <p class="verification-requirements-text">Os oes gennych god personol eisoes, nid oes angen i chi gwblhau gwiriad hunaniaeth eto.</p>
+            <p class="verification-requirements-text">Bydd angen <span th:if="${is_llp == 'yes'}">eich cod personol</span><span th:if="${is_llp == 'no'}">cod personol pob cyfarwyddwr</span> arnoch ar gyfer cam 2.</p>
+        </td>
+        <td class="verification-requirements-spacer"></td>
+        <td class="verification-requirements">
+            <p class="verification-requirements-heading">Cam 2. Ffeilio'r datganiad cadarnhau a'r datganiad gwiriad</p>
+            <p class="verification-requirements-text">Yn y datganiad cadarnhau, bydd angen i chi ddarparu cod personol Tŷ'r Cwmnïau ar gyfer pob <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">cyfarwyddwr</span> i gyflwyno eu datganiadau gwiriad hunaniaeth.</p>
+            <p class="verification-requirements-text">Mae angen i chi wneud hyn hyd yn oed os yw <span th:if="${is_llp == 'yes'}">aelod</span><span th:if="${is_llp == 'no'}">cyfarwyddwr</span> eisoes wedi darparu eu cod personol a'i ddatganiad ar gyfer rolau eraill yn y <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> hwn, neu mewn cwmnïau eraill.</p>
+            <p class="verification-requirements-text">I ffeilio'ch datganiad cadarnhau, chwiliwch GOV.UK am 'ffeilio’ch datganiad cadarnhau gyda Thŷ'r Cwmnïau' neu ewch i:<br/><span class="emphasis">https://www.gov.uk/ffeilio-datganiad-cadarnhau-gyda-thyr-cwmniau</span></p>
+        </td>
+    </tr>
+</table>
+
+<p class="small-heading">Sut i wneud achos</p>
+
+<p>Os oes amgylchiadau eithriadol yr hoffech i ni eu hystyried cyn i ni fynd ymlaen â chamau gorfodi, rhaid i chi ysgrifennu atom erbyn <span id="welsh-action-due-date">[[${welsh_action_due_date}]]</span>. Gelwir hyn yn gwneud achos.</p>
+
+<p>I wneud achos, ewch i <span class="emphasis">https://www.gov.uk/government/publications/make-a-representation-for-not-filing-an-identity-verification-statement</span></p>
+
+<p>Os ydym yn derbyn eich achos, byddwn yn oedi camau gorfodi am gyfnod cyfyngedig fel y gallwch ffeilio'r datganiadau. Bydd y <span th:if="${is_llp == 'yes'}">PAC a'i aelodau</span><span th:if="${is_llp == 'no'}">cwmni a'i gyfarwyddwyr</span> yn parhau i fod yn ddiffygiol a byddwn yn ailddechrau camau gorfodi os na fyddwch yn llwyddo i ffeilio'r datganiadau.</p>
+
+<p class="small-heading">Os nad oes angen y <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> arnoch bellach</p>
+
+<p>Os nad yw'ch <span th:if="${is_llp == 'yes'}">PAC</span><span th:if="${is_llp == 'no'}">cwmni</span> yn masnachu a'ch bod am ei dileu oddi ar y gofrestr, ewch i:<br/><span class="emphasis"><span th:if="${is_llp == 'yes'}">gov.uk/government/publications/striking-off-or-dissolving-a-limited-liability-partnership</span><span th:if="${is_llp == 'no'}">gov.uk/closing-a-limited-company</span></span></p>
