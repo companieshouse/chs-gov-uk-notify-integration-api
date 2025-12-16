@@ -101,6 +101,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             "authorised as api key (internal user)";
 
     private static final String PSC_NAME = "ANDREWPHILLIPLONGNAME BARROW";
+    private static final String NULL_PSC_NAME = null;
     private static final String COMPANY_NUMBER = "00006400";
     private static final String NULL_LETTER_ID = null;
     private static final String VALID_LETTER_ID = "CSIDVDEFLET";
@@ -756,6 +757,56 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
+    @DisplayName("Rejects view letter request if neither a PSC name nor a letter ID have been provided")
+    void unableToViewLetterAsNeitherPscNameNorLetterIdProvided(CapturedOutput log) throws Exception {
+        implementBadRequestViewLetterTest(
+                log,
+                NULL_PSC_NAME,
+                COMPANY_NUMBER,
+                NULL_LETTER_ID,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Rejects view letter request if neither a PSC name nor a letter ID have been populated")
+    void unableToViewLetterAsNeitherPscNameNorLetterIdPopulated(CapturedOutput log) throws Exception {
+        implementBadRequestViewLetterTest(
+                log,
+                /* PSC name */"    ",
+                COMPANY_NUMBER,
+                /* letter ID */" ",
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE);
+    }
+
+    @Test
+    @DisplayName("Rejects view letters request if neither a PSC name nor a letter ID have been provided")
+    void unableToViewLettersAsNeitherPscNameNorLetterIdProvided(CapturedOutput log) throws Exception {
+        implementBadRequestViewLettersTest(
+                log,
+                NULL_PSC_NAME,
+                COMPANY_NUMBER,
+                NULL_LETTER_ID,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE,
+                LETTER_1);
+    }
+
+    @Test
+    @DisplayName("Rejects view letters request if neither a PSC name nor a letter ID have been populated")
+    void unableToViewLettersAsNeitherPscNameNorLetterIdPopulated(CapturedOutput log) throws Exception {
+        implementBadRequestViewLettersTest(
+                log,
+                /* PSC name */"    ",
+                COMPANY_NUMBER,
+                /* letter ID */" ",
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE,
+                LETTER_1);
+    }
+
+    @Test
     @DisplayName("Reports letter cannot be found if PSC name does not match and letter ID is null")
     void unableToViewLetterAsPscNameNotMatchedWhenLetterIdIsNull(CapturedOutput log)
             throws Exception {
@@ -1367,6 +1418,70 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     }
 
+    private void implementBadRequestViewLetterTest(CapturedOutput log,
+                                                   String pscName,
+                                                   String companyNumber,
+                                                   String letterId,
+                                                   String templateId,
+                                                   String letterSendingDate) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_LETTER_SENT);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                pscName,
+                companyNumber,
+                letterId,
+                templateId,
+                letterSendingDate,
+                status().isBadRequest())
+                .andExpect(content().string(getExpectedBadRequestErrorMessage(pscName, letterId)));
+        assertThat(log.getAll().contains(getExpectedBadRequestErrorMessage(pscName, letterId)),
+                is(true));
+
+    }
+
+    private void implementBadRequestViewLettersTest(CapturedOutput log,
+                                                    String pscName,
+                                                    String companyNumber,
+                                                    String letterId,
+                                                    String templateId,
+                                                    String letterSendingDate,
+                                                    int letterNumber) throws Exception {
+
+        // Given
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithReference(
+                getValidSendDirectionLetterRequestBody(),
+                REFERENCE_FOR_LETTER_SENT);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                pscName,
+                companyNumber,
+                letterId,
+                templateId,
+                letterSendingDate,
+                letterNumber,
+                status().isBadRequest())
+                .andExpect(content().string(getExpectedBadRequestErrorMessage(pscName, letterId)));
+        assertThat(log.getAll().contains(getExpectedBadRequestErrorMessage(pscName, letterId)),
+                is(true));
+
+    }
+
 
     private ResultActions viewLetterPdfByPscCompanyLetterTypeAndDate(String pscName,
                                                    String companyNumber,
@@ -1375,8 +1490,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    String letterSendingDate,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
-        return mockMvc.perform(get(VIEW_LETTER_PDF
-                        + "?psc_name=" + pscName
+        return mockMvc.perform(get(VIEW_LETTER_PDF + "?"
+                        + (pscName != null ? "&psc_name=" + pscName : "")
                         + "&company_number=" + companyNumber
                         + (letterId!=null ? "&letter_id=" + letterId : "")
                         + "&template_id=" + templateId
@@ -1399,9 +1514,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                                      ResultMatcher expectedResponseStatus)
             throws Exception {
         return mockMvc.perform(get(VIEW_LETTER_PDFS
-                        + letterNumber
-                        + "?psc_name=" + pscName
-                        + "&company_number=" + companyNumber
+                        + letterNumber + "?"
+                        + (pscName != null ? "psc_name=" + pscName + "&" : "")
+                        + "company_number=" + companyNumber
                         + (letterId!=null ? "&letter_id=" + letterId : "")
                         + "&template_id=" + templateId
                         + "&letter_sending_date="+ letterSendingDate)
@@ -1538,6 +1653,11 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                + ", letterId " + letterId
                + ", templateId " + templateId
                + ", letter sending date " + letterSendingDate + ".";
+    }
+
+    private static String getExpectedBadRequestErrorMessage(String pscName, String letterId) {
+        return "Error in chs-gov-uk-notify-integration-api: PSC name [" + pscName
+                + "] and/or letter ID [" + letterId + "] cannot be null or blank.";
     }
 
 }

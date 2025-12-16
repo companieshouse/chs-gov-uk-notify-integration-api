@@ -24,6 +24,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher.SentLetterFetcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.ViewLetterValidator;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
@@ -41,11 +42,14 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
     private final SentLetterFetcher fetcher;
+    private final ViewLetterValidator validator;
 
     public ReaderRestApi(final NotificationDatabaseService notificationDatabaseService,
-                         final SentLetterFetcher fetcher) {
+                         final SentLetterFetcher fetcher,
+                         final ViewLetterValidator validator) {
         this.notificationDatabaseService = notificationDatabaseService;
         this.fetcher = fetcher;
+        this.validator = validator;
     }
 
     @Override
@@ -237,6 +241,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         LOGGER.info("Starting viewLetterPdf process", logMap);
 
+        validator.validateViewLetterInputs(pscName, letterId);
+
         try {
             return ResponseEntity
                 .ok()
@@ -273,6 +279,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         logMap.put("letter", letterNumber);
         LOGGER.info("Starting viewLetterPdfs process", logMap);
+
+        validator.validateViewLetterInputs(pscName, letterId);
 
         try {
             var fetchedLetter = fetcher.fetchLetter(
