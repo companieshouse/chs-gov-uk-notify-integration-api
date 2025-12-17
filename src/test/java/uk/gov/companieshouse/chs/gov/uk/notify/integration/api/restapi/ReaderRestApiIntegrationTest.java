@@ -57,7 +57,6 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 
@@ -357,18 +356,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        postSendLetterRequest(mockMvc,
-                getSendLetterRequestWithReference(
-                getValidSendLetterRequestBody(), REFERENCE_SHARED_BY_MULTIPLE_LETTERS),
-                status().isCreated());
-        postSendLetterRequest(mockMvc,
-                getSendLetterRequestWithReference(
-                getValidSendLetterRequestBody(), REFERENCE_SHARED_BY_MULTIPLE_LETTERS),
-                status().isCreated());
+        sendLetterWithReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS);
+        sendLetterWithReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS);
 
         // When and then
         viewLetterPdfByReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS,
@@ -395,14 +384,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterWithCalculatedLetterSendingDate(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        var requestBody = sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
         // When and then
         var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
@@ -495,14 +477,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -527,14 +502,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -563,14 +531,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("View letter PDF identified by PSC name, company number, letter type and sending date successfully")
     void viewLetterByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_LETTER_SENT);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        var requestBody = sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
 
         // When and then
         var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -677,14 +638,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -717,13 +671,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void getLetterDetailsByReferenceSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(), REFERENCE_FOR_LETTER_SENT);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
 
         // When
         mockMvc.perform(get(GET_LETTER_DETAILS_BY_REFERENCE_PATH
@@ -881,16 +829,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1339,7 +1280,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
     }
 
-    private void sendLetterWithReference(String reference) throws Exception {
+    private String sendLetterWithReference(String reference) throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
@@ -1347,6 +1288,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         var requestBody = getSendLetterRequestWithReference(
                 getValidSendDirectionLetterRequestBody(), reference);
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        return requestBody;
     }
 
     private void sendLetter() throws Exception {
@@ -1375,14 +1317,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                              String letterSendingDate) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1426,14 +1361,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    String letterSendingDate) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_LETTER_SENT);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1458,14 +1386,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                     int letterNumber) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(),
-                REFERENCE_FOR_LETTER_SENT);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
