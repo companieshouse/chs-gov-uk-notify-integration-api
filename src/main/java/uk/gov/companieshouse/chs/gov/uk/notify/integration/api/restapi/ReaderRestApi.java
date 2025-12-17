@@ -38,6 +38,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     // Filename element separator. Constant name made short for intelligibility of code composing
     // filenames.
     private static final String SEP = "-";
+    private static final String LETTER_ID = "letter_id";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private final NotificationDatabaseService notificationDatabaseService;
@@ -141,7 +142,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
     ) {
 
         Map<String, Object> logMap = createLogMap(xRequestId, "get_letter_by_id");
-        logMap.put("letter_id", id);
+        logMap.put(LETTER_ID, id);
         LOGGER.info("Retrieving letter notification by ID: " + id, logMap);
 
         Optional<NotificationLetterRequest> letterRequest = notificationDatabaseService.getLetter(id);
@@ -236,7 +237,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
-        logMap.put("letter_id", letterId);
+        logMap.put(LETTER_ID, letterId);
         logMap.put("template_id", templateId);
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         LOGGER.info("Starting viewLetterPdf process", logMap);
@@ -274,7 +275,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
         logMap.put("psc_name", pscName);
         logMap.put("company_number", companyNumber);
-        logMap.put("letter_id", letterId);
+        logMap.put(LETTER_ID, letterId);
         logMap.put("template_id", templateId);
         logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
         logMap.put("letter", letterNumber);
