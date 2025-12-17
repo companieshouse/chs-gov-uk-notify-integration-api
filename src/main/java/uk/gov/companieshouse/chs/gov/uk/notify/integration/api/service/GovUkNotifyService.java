@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -52,9 +51,10 @@ public class GovUkNotifyService {
         } catch (NotificationClientException e) {
             Map<String, Object> logData = Map.of(
                     "recipient", recipient,
-                    "templateId", templateId
+                    "templateId", templateId,
+                    "reference", reference
             );
-            LOGGER.error("Failed to send email", e, new HashMap<>(logData));
+            LOGGER.error("Failed to send email", e, logData);
             return new EmailResp(false, null);
         }
     }
@@ -72,13 +72,13 @@ public class GovUkNotifyService {
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
-            var logData = Map.of("reference", reference);
-            LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
+            Map<String, Object> logData = Map.of("reference", reference);
+            LOGGER.error("Failed to send letter", nce, logData);
             try {
                 var response = buildLetterResponseForError(nce, reference);
                 return new LetterResp(false, response);
             } catch (JsonProcessingException jpe) {
-                LOGGER.error("Failed to build error response", jpe, new HashMap<>(logData));
+                LOGGER.error("Failed to build error response", jpe, logData);
             }
             return new LetterResp(false, null);
         }

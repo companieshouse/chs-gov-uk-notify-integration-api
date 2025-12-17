@@ -184,10 +184,16 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private String getReference(final String requestName) throws IOException {
-        var request = objectMapper.readValue(
-                getSendLetterRequestBody(requestName),
+        var request = objectMapper.readValue(getSendLetterRequestBody(requestName),
                 GovUkLetterDetailsRequest.class);
-        return request.getSenderDetails().getReference();
+        if (request.getLetterDetails().getLetterId() == null
+                || request.getLetterDetails().getLetterId().isBlank()) {
+            // Old letters do not have letter IDs and use just the reference
+            return request.getSenderDetails().getReference();
+        }
+        return request.getSenderDetails().getAppId() + "-"
+                + request.getLetterDetails().getLetterId() + "-"
+                + request.getSenderDetails().getReference();
     }
 
     private void verifyLetterPdfContent() throws IOException {

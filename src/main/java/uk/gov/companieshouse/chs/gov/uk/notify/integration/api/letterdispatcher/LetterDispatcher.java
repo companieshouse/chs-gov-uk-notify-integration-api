@@ -58,7 +58,14 @@ public class LetterDispatcher {
                 address,
                 personalisationDetailsString,
                 contextId);
-        return sendLetterPdf(postage, reference, contextId, letter);
+        String govNofifyReference;
+        if (letterId == null || letterId.isBlank()) {
+            // Old letters do not have letter IDs and expect just the reference
+            govNofifyReference = reference;
+        } else {
+            govNofifyReference = appId + "-" + letterId + "-" + reference;
+        }
+        return sendLetterPdf(postage, govNofifyReference, contextId, letter);
     }
 
     private String personaliseLetter(

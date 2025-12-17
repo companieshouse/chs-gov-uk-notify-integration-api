@@ -667,45 +667,56 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
-    @ParameterizedTest(name = "Send letter with economy postage for {0}")
-    @CsvSource({ "CSIDVDEFLET,v1.0,send-csidvdeflet-request",
-            "IDVPSCDEFAULT,v1.0,send-idvpscdefault-request" })
-    void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, CapturedOutput log)
+    @ParameterizedTest(name = "Send letter with economy postage for {0} {1}")
+    @CsvSource({ "CSIDVDEFLET,v1.0,4221479,send-csidvdeflet-request",
+            "IDVPSCDEFAULT,v1.0,8574996,send-idvpscdefault-request" })
+    void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, String filename)
             throws Exception {
+        final String govNotifyReference = "chips-" + letterType + "-" + reference;
+
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                eq(reference), any(InputStream.class), eq("economy")))
+                eq(govNotifyReference), any(InputStream.class), eq("economy")))
                 .thenReturn(responseReceived);
 
-        String csidvdefletRequest = resourceToString("/fixtures/" + reference + ".json", UTF_8);
+        String csidvdefletRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
         verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
                 eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(reference),
+        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(govNotifyReference),
                 any());
     }
 
-    @ParameterizedTest(name = "Send letter with second class postage for {0}")
-    @CsvSource({ "direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
-            "new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
-            "extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
-            "second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
-            "transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" })
-    void sendLetterWithSecondClassPostage(String templateId, String reference, String fixture)
+    @ParameterizedTest(name = "Send letter with second class postage for {0} {1}")
+    @CsvSource(value = {
+            "null,direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
+            "null,new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
+            "null,extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
+            "null,second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
+            "null,transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" }, nullValues = {
+                    "null" })
+    void sendLetterWithSecondClassPostage(String letterType, String templateId, String reference, String filename)
             throws Exception {
+        String govNotifyReference;
+        if (letterType == null || letterType.isBlank()) {
+            // Old letters do not have letter IDs and use just the reference
+            govNotifyReference = reference;
+        } else  {
+            govNotifyReference = "chips-" + letterType + "-" + reference;
+        }
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                eq(reference), any(InputStream.class), eq("second")))
+                eq(govNotifyReference), any(InputStream.class), eq("second")))
                 .thenReturn(responseReceived);
 
-        String otherRequest = resourceToString("/fixtures/" + fixture + ".json", UTF_8);
+        String otherRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
 
         verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
-                eq("chips"), eq(null), eq(templateId), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
+                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(govNotifyReference),
                 any());
     }
 
