@@ -757,7 +757,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Rejects view letter request if neither a PSC name nor a letter ID have been provided")
+    @DisplayName("Rejects view letter request if neither the PSC name nor the letter ID have been provided")
     void unableToViewLetterAsNeitherPscNameNorLetterIdProvided(CapturedOutput log) throws Exception {
         implementBadRequestViewLetterTest(
                 log,
@@ -769,7 +769,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Rejects view letter request if neither a PSC name nor a letter ID have been populated")
+    @DisplayName("Rejects view letter request if neither the PSC name nor the letter ID have been populated")
     void unableToViewLetterAsNeitherPscNameNorLetterIdPopulated(CapturedOutput log) throws Exception {
         implementBadRequestViewLetterTest(
                 log,
@@ -781,7 +781,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Rejects view letters request if neither a PSC name nor a letter ID have been provided")
+    @DisplayName("Rejects view letters request if neither the PSC name nor the letter ID have been provided")
     void unableToViewLettersAsNeitherPscNameNorLetterIdProvided(CapturedOutput log) throws Exception {
         implementBadRequestViewLettersTest(
                 log,
@@ -794,7 +794,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     @Test
-    @DisplayName("Rejects view letters request if neither a PSC name nor a letter ID have been populated")
+    @DisplayName("Rejects view letters request if neither the PSC name nor the letter ID have been populated")
     void unableToViewLettersAsNeitherPscNameNorLetterIdPopulated(CapturedOutput log) throws Exception {
         implementBadRequestViewLettersTest(
                 log,
