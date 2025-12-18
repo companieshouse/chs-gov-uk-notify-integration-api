@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +48,6 @@ class LetterDispatcherTest {
 
     @Test
     void sendLetter() throws IOException {
-        // Arrange
         Postage postage = Postage.FIRST_CLASS;
         String reference = "ref";
         String appId = "app";
@@ -67,7 +66,7 @@ class LetterDispatcherTest {
                 new LetterTemplateKey(appId, letterId, templateId), reference,
                 personalisationDetailsMap, address)).thenReturn(personalisedLetter);
 
-        InputStream pdfStream = new ByteArrayInputStream(new byte[] {});
+        InputStream pdfStream = new ByteArrayInputStream(new byte[0]);
         when(pdfGenerator.generatePdfFromHtml(personalisedLetter, govNotifyReference))
                 .thenReturn(pdfStream);
 
@@ -75,18 +74,15 @@ class LetterDispatcherTest {
         when(govUkNotifyService.sendLetter(postage, govNotifyReference, pdfStream))
                 .thenReturn(letterResp);
 
-        // Act
         GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, reference,
                 appId, letterId, templateId, address, personalisationDetails, contextId);
 
-        // Assert
-        assertEquals(letterResp, result);
+        assertSame(letterResp, result);
         verify(notificationDatabaseService).storeResponse(letterResp);
     }
 
     @Test
     void sendOldLetter() throws IOException {
-        // Arrange
         Postage postage = Postage.ECONOMY;
         String reference = "ref";
         String appId = "app";
@@ -105,7 +101,7 @@ class LetterDispatcherTest {
                 new LetterTemplateKey(appId, letterId, templateId), reference,
                 personalisationDetailsMap, address)).thenReturn(personalisedLetter);
 
-        InputStream pdfStream = new ByteArrayInputStream(new byte[] {});
+        InputStream pdfStream = new ByteArrayInputStream(new byte[0]);
         when(pdfGenerator.generatePdfFromHtml(personalisedLetter, govNotifyReference))
                 .thenReturn(pdfStream);
 
@@ -113,12 +109,10 @@ class LetterDispatcherTest {
         when(govUkNotifyService.sendLetter(postage, govNotifyReference, pdfStream))
                 .thenReturn(letterResp);
 
-        // Act
         GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, reference,
                 appId, letterId, templateId, address, personalisationDetails, contextId);
 
-        // Assert
-        assertEquals(letterResp, result);
+        assertSame(letterResp, result);
         verify(notificationDatabaseService).storeResponse(letterResp);
     }
 }
