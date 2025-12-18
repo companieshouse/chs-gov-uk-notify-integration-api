@@ -1,14 +1,16 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.UUID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -16,8 +18,6 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
-
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 
 @Service
@@ -49,11 +49,8 @@ public class GovUkNotifyService {
             SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
             return new EmailResp(response != null && response.getNotificationId() != null, response);
         } catch (NotificationClientException e) {
-            Map<String, Object> logData = Map.of(
-                    "recipient", recipient,
-                    "templateId", templateId,
-                    "reference", reference
-            );
+            Map<String, Object> logData = createLogData(reference);
+            logData.putAll(Map.of("recipient", recipient, "templateId", templateId));
             LOGGER.error("Failed to send email", e, logData);
             return new EmailResp(false, null);
         }
@@ -72,7 +69,7 @@ public class GovUkNotifyService {
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
-            Map<String, Object> logData = Map.of("reference", reference);
+            Map<String, Object> logData = createLogData(reference);
             LOGGER.error("Failed to send letter", nce, logData);
             try {
                 var response = buildLetterResponseForError(nce, reference);
@@ -111,5 +108,9 @@ public class GovUkNotifyService {
         return response;
     }
 
-
+    private Map<String, Object> createLogData(String reference) {
+        var logDate = new HashMap<String, Object>();
+        logDate.put("reference", reference);
+        return logDate;
+    }
 }

@@ -28,7 +28,7 @@ import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
-public class LetterDispatcherTest {
+class LetterDispatcherTest {
 
     @Mock
     private GovUkNotifyService govUkNotifyService;
