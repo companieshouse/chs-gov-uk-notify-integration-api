@@ -227,7 +227,7 @@ public class SentLetterFetcher {
 
     private GovUkLetterDetailsRequest getLetter(final Page<NotificationLetterRequest> page,
                                                 final int letterNumber) {
-        page.stream().skip(letterNumber - 1L);
+
         var request = page.stream().findFirst();
         if (request.isEmpty()) {
             throw new LetterNotFoundException(
