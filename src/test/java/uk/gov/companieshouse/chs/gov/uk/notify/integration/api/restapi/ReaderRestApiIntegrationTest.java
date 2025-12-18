@@ -14,6 +14,8 @@ import org.apache.pdfbox.Loader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -150,6 +152,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "&psc_name=Joe Bloggs"
                     + "&company_number=00006400"
                     + "&template_id=new_psc_direction_letter_v1";
+
+    private static final String OTHER_PERSONALISATIONS =
+            "{ \"idv_start_date\": \"30 June 2025\", "
+                    + "\"psc_appointment_date\": \"24 June 2025\", "
+                    + "\"idv_verification_due_date\": \"14 July 2025\",  "
+                    + "\"company_name\": \"Tŷ'r Cwmnïau\", ";
 
     @Autowired
     private MockMvc mockMvc;
@@ -1235,6 +1243,57 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         checkCorrectLetterIsReturned("Reference 4", LETTER_4);
     }
 
+    @ParameterizedTest
+    @DisplayName("View letter PDF identified by PSC name, company number, etc, where personalisation details spacing varies")
+    @ValueSource(strings={
+            "\"psc_name\": \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\": \"00006400\"",
+            "\"psc_name\":\"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\":\"00006400\"",
+            "\"psc_name\":   \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\": \"00006400\"",
+            "\"psc_name\": \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\":    \"00006400\""
+    })
+    void viewLetterByLetterIdCompanyLetterTypeAndDateWithVariousPersonalisationsSpacings(
+            String personalisationDetails)
+            throws Exception {
+
+        // Given
+        sendLetterWithPersonalisations(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                NULL_LETTER_ID,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE,
+                status().isOk());
+    }
+
+    @ParameterizedTest
+    @DisplayName("View letters PDF identified by PSC name, company number, etc, where personalisation details spacing varies")
+    @ValueSource(strings={
+            "\"psc_name\": \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\": \"00006400\"",
+            "\"psc_name\":\"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\":\"00006400\"",
+            "\"psc_name\":   \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\": \"00006400\"",
+            "\"psc_name\": \"ANDREWPHILLIPLONGNAME BARROW\", \"company_number\":    \"00006400\""
+    })
+    void viewLettersByLetterIdCompanyLetterTypeAndDateWithVariousPersonalisationsSpacings(
+            String personalisationDetails)
+            throws Exception {
+
+        // Given
+        sendLetterWithPersonalisations(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+
+        // When and then
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
+                PSC_NAME,
+                COMPANY_NUMBER,
+                NULL_LETTER_ID,
+                TEMPLATE_ID,
+                LETTER_SENDING_DATE,
+                LETTER_1,
+                status().isOk());
+    }
+
     private void checkCorrectLetterIsReturned(String referenceExpected,
                                               int letterNumber) throws Exception {
         var letter =  viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1289,6 +1348,16 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getValidSendDirectionLetterRequestBody(), reference);
         postSendLetterRequest(mockMvc, requestBody, status().isCreated());
         return requestBody;
+    }
+
+    private void sendLetterWithPersonalisations(String personalisationDetails) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+        var requestBody = getSendLetterRequestWithPersonalisations(
+                getValidSendDirectionLetterRequestBody(), personalisationDetails);
+        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
     }
 
     private void sendLetter() throws Exception {
@@ -1491,6 +1560,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws IOException {
         var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
         request.getSenderDetails().setReference(reference);
+        return objectMapper.writeValueAsString(request);
+    }
+
+    private String getSendLetterRequestWithPersonalisations(String requestBody,
+                                                            String personalisationDetails)
+            throws IOException {
+        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
+        request.getLetterDetails().setPersonalisationDetails(personalisationDetails);
         return objectMapper.writeValueAsString(request);
     }
 
