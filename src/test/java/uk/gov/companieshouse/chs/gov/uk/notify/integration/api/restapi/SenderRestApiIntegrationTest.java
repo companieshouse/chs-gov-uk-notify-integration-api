@@ -59,6 +59,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
@@ -672,7 +673,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             "IDVPSCDEFAULT,v1.0,8574996,send-idvpscdefault-request" })
     void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, String filename)
             throws Exception {
-        final String govNotifyReference = "chips-" + letterType + "-" + reference;
+        final String govNotifyReference = String.join("-", "chips", letterType, reference);
 
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -699,11 +700,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithSecondClassPostage(String letterType, String templateId, String reference, String filename)
             throws Exception {
         String govNotifyReference;
-        if (letterType == null || letterType.isBlank()) {
+        if (StringUtils.isBlank(letterType)) {
             // Old letters do not have letter IDs and use just the reference
             govNotifyReference = reference;
         } else  {
-            govNotifyReference = "chips-" + letterType + "-" + reference;
+            govNotifyReference = String.join("-", "chips", letterType, reference);
         }
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));

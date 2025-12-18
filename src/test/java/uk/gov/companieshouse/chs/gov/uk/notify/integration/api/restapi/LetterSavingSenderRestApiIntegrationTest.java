@@ -42,6 +42,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
@@ -186,14 +187,13 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private String getReference(final String requestName) throws IOException {
         var request = objectMapper.readValue(getSendLetterRequestBody(requestName),
                 GovUkLetterDetailsRequest.class);
-        if (request.getLetterDetails().getLetterId() == null
-                || request.getLetterDetails().getLetterId().isBlank()) {
+        if (StringUtils.isBlank(request.getLetterDetails().getLetterId())) {
             // Old letters do not have letter IDs and use just the reference
             return request.getSenderDetails().getReference();
         }
-        return request.getSenderDetails().getAppId() + "-"
-                + request.getLetterDetails().getLetterId() + "-"
-                + request.getSenderDetails().getReference();
+        return String.join("-", request.getSenderDetails().getAppId(),
+                request.getLetterDetails().getLetterId(),
+                request.getSenderDetails().getReference());
     }
 
     private void verifyLetterPdfContent() throws IOException {
