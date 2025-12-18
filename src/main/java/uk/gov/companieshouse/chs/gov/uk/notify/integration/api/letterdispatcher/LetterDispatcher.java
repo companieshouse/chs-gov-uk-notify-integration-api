@@ -58,14 +58,14 @@ public class LetterDispatcher {
                 address,
                 personalisationDetailsString,
                 contextId);
-        String govNofifyReference;
+        String govNotifyReference;
         if (letterId == null || letterId.isBlank()) {
             // Old letters do not have letter IDs and expect just the reference
-            govNofifyReference = reference;
+            govNotifyReference = reference;
         } else {
-            govNofifyReference = appId + "-" + letterId + "-" + reference;
+            govNotifyReference = appId + "-" + letterId + "-" + reference;
         }
-        return sendLetterPdf(postage, govNofifyReference, contextId, letter);
+        return sendLetterPdf(postage, govNotifyReference, contextId, letter);
     }
 
     private String personaliseLetter(
