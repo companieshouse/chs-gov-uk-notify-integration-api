@@ -47,7 +47,7 @@ class LetterDispatcherTest {
     private LetterDispatcher letterDispatcher;
 
     @Test
-    void testSendLetter_success() throws IOException {
+    void sendLetter() throws IOException {
         // Arrange
         Postage postage = Postage.FIRST_CLASS;
         String reference = "ref";
@@ -85,7 +85,7 @@ class LetterDispatcherTest {
     }
 
     @Test
-    void testSendOldLetter_success() throws IOException {
+    void sendOldLetter() throws IOException {
         // Arrange
         Postage postage = Postage.ECONOMY;
         String reference = "ref";
