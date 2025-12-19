@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -58,7 +59,14 @@ public class LetterDispatcher {
                 address,
                 personalisationDetailsString,
                 contextId);
-        return sendLetterPdf(postage, reference, contextId, letter);
+        String govNotifyReference;
+        if (StringUtils.isBlank(letterId)) {
+            // Old letters do not have letter IDs and expect just the reference
+            govNotifyReference = reference;
+        } else {
+            govNotifyReference = String.join("-", appId, letterId, reference);
+        }
+        return sendLetterPdf(postage, govNotifyReference, contextId, letter);
     }
 
     private String personaliseLetter(
