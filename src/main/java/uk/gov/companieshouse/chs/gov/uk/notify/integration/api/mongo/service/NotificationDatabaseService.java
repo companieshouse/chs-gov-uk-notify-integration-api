@@ -3,6 +3,8 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -81,20 +83,48 @@ public class NotificationDatabaseService {
     }
 
     @Transactional( readOnly = true )
-    public List<NotificationLetterRequest> getLettersByNameCompanyTemplateDate(
+    public Page<NotificationLetterRequest> getLetterByReference(final String reference,
+                                                                final int letterNumber) {
+        return notificationLetterRequestRepository.findByReference(reference,
+                PageRequest.of(letterNumber - 1, 1));
+    }
+
+    @Transactional( readOnly = true )
+    public List<NotificationLetterRequest> getLettersByPscNameOrLetterAndCompanyTemplateDate(
             final String pscName,
             final String companyNumber,
             final String letterId,
             final String templateId,
             final LocalDate letterSendingDate) {
         var nextDay = letterSendingDate.plusDays(1);
-        return notificationLetterRequestRepository.findByNameCompanyTemplateDate(
+        return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 pscName,
                 companyNumber,
-                letterId,
+                // prevents null letter ID matching on all non-compliance letters
+                letterId == null ? "" : letterId,
                 templateId,
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX);
+    }
+
+    @Transactional( readOnly = true )
+    public Page<NotificationLetterRequest> getLettersByPscNameOrLetterAndCompanyTemplateDate(
+            final String pscName,
+            final String companyNumber,
+            final String letterId,
+            final String templateId,
+            final LocalDate letterSendingDate,
+            final int letterNumber) {
+        var nextDay = letterSendingDate.plusDays(1);
+        return notificationLetterRequestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
+                pscName,
+                companyNumber,
+                // prevents null letter ID matching on all non-compliance letters
+                letterId == null ? "" : letterId,
+                templateId,
+                letterSendingDate + UTC_TIMEZONE_SUFFIX,
+                nextDay + UTC_TIMEZONE_SUFFIX,
+                PageRequest.of(letterNumber - 1, 1));
     }
 
     @Transactional( readOnly = true )
