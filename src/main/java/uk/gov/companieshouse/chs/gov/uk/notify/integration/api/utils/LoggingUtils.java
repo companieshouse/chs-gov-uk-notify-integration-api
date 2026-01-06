@@ -5,6 +5,9 @@ import uk.gov.companieshouse.logging.util.DataMap;
 
 public class LoggingUtils {
 
+    public static final String VIEW_LETTER_PDF = "view_letter_pdf";
+    public static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
+
     private LoggingUtils() {
     }
 
