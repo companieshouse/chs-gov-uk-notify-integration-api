@@ -21,14 +21,24 @@ class TemplateLookupTest {
     }
 
     @Test
+    @DisplayName("Template look up behaves as expected for old letters")
+    void behavesAsExpectedForOldLetters() {
+        LetterTemplateKey lookupKey =
+                new LetterTemplateKey("the_client_app", null, "the_letter");
+        var locator = templateLookup.lookupTemplate(lookupKey);
+        assertThat(locator.prefix(),
+                is("assets/templates/old_letters/" + lookupKey.appId() + "/"));
+        assertThat(locator.filename(), is(lookupKey.templateId()));
+    }
+
+    @Test
     @DisplayName("Template look up behaves as expected")
     void behavesAsExpected() {
         LetterTemplateKey lookupKey =
-                new LetterTemplateKey("the_client_app", "the_letter");
+                new LetterTemplateKey("the_client_app", "the_letter", "the_template");
         var locator = templateLookup.lookupTemplate(lookupKey);
         assertThat(locator.prefix(),
-                is(templateLookup.getLetterTemplatesRootDirectory() + lookupKey.appId() + "/"));
-        assertThat(locator.filename(), is(lookupKey.id()));
+                is("assets/templates/letters/" + lookupKey.appId() + "/" + lookupKey.letterId() + "/" + lookupKey.templateId() + "/"));
+        assertThat(locator.filename(), is("template.html"));
     }
-
 }

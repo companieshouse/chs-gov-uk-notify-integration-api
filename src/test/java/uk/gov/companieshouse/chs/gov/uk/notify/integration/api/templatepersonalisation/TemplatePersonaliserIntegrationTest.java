@@ -37,7 +37,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +48,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
-@Tag("integration-test")
 @SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
 class TemplatePersonaliserIntegrationTest {
 
@@ -106,7 +104,7 @@ class TemplatePersonaliserIntegrationTest {
 
     private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
             "Context variable(s) [extension_request_date] missing for LetterTemplateKey"
-                    + "[appId=chips, id=extension_acceptance_letter_v1].";
+                    + "[appId=chips, letterId=null, templateId=extension_acceptance_letter_v1].";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -162,8 +160,8 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter1_v1");
-        var templateSpec2 = new LetterTemplateKey("app2", "letter1_v1");
+        var templateSpec1 = new LetterTemplateKey("app1", "letter1", "v1");
+        var templateSpec2 = new LetterTemplateKey("app2", "letter1", "v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 
@@ -190,7 +188,7 @@ class TemplatePersonaliserIntegrationTest {
         // Given
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("mock_assets/");
 
-        var templateSpec1 = new LetterTemplateKey("app1", "letter2_v1");
+        var templateSpec1 = new LetterTemplateKey("app1", "letter2", "v1");
         doNothing().when(templateContextValidator).validateContextForTemplate(
                 any(Context.class), any(LetterTemplateKey.class));
 
@@ -480,6 +478,73 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
+    @DisplayName("Generate Welsh CSIDVDEFLET Company HTML successfully")
+    void generateWelshCSIDVDEFLETSuccessfully() {
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                new LetterTemplateKey("chips", "CSIDVDEFLET", "v1.0"),
+                "123456789",
+                Map.of(
+                        IS_LLP, "no",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"
+                ),
+                ADDRESS));
+
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#welsh-action-due-date"),
+                is(
+                        WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER), "test")
+                )
+        );
+        assertThat(
+                getText(letter, "#welsh-verification-due-date"),
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+        );
+    }
+
+    @Test
+    @DisplayName("Generate Welsh CSIDVDEFLET LLP HTML successfully")
+    void generateWelshCSIDVDEFLETLLPSuccessfully() {
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                new LetterTemplateKey("chips", "CSIDVDEFLET", "v1.0"),
+                "123456789",
+                Map.of(
+                        IS_LLP, "yes",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"
+                ),
+                ADDRESS));
+
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#welsh-action-due-date"),
+                is(
+                        WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER), "test")
+                )
+        );
+        assertThat(
+                getText(letter, "#welsh-verification-due-date"),
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+        );
+        String letterHtml = letter.html();
+        assertThat(letterHtml.contains("PAC"), is(true));
+        assertThat(letterHtml.contains("aelod"), is(true));
+        assertThat(letterHtml.contains("cyfarwyddwyr"), is(false));
+        assertThat(letterHtml.contains("gyfarwyddwyr"), is(false));
+    }
+
+    @Test
     @DisplayName("Generate English IDVPSCDEFAULT HTML successfully")
     void generateEnglishIDVPSCDEFAULTSuccessfully() {
 
@@ -551,6 +616,73 @@ class TemplatePersonaliserIntegrationTest {
             assertThat(letterHtml.contains("LLP"), is(true));
             assertThat(letterHtml.contains("limited liability partnership"), is(true));
         }
+    }
+
+    @Test
+    @DisplayName("Generate Welsh IDVPSCDEFAULT Company HTML successfully")
+    void generateWelshIDVPSCDEFAULTSuccessfully() {
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                new LetterTemplateKey("chips", "IDVPSCDEFAULT", "v1.0"),
+                "123456789",
+                Map.of(
+                        IS_LLP, "no",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"
+                ),
+                ADDRESS));
+
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#welsh-action-due-date"),
+                is(
+                        WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER), "test")
+                )
+        );
+        assertThat(
+                getText(letter, "#welsh-verification-due-date"),
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+        );
+    }
+
+    @Test
+    @DisplayName("Generate Welsh IDVPSCDEFAULT LLP HTML successfully")
+    void generateWelshIDVPSCDEFAULTLLPSuccessfully() {
+        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                new LetterTemplateKey("chips", "IDVPSCDEFAULT", "v1.0"),
+                "123456789",
+                Map.of(
+                        IS_LLP, "yes",
+                        VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                        COMPANY_NUMBER, TOKEN_VALUE,
+                        COMPANY_NAME, TOKEN_VALUE,
+                        IS_WELSH, "true"
+                ),
+                ADDRESS));
+
+        verifyLetterIsBilingualEnglishAndWelsh(letter);
+        verifyWelshLetterDateIsTodaysDate(letter);
+        assertThat(
+                getText(letter, "#welsh-action-due-date"),
+                is(
+                        WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
+                                plusDays(28).
+                                format(DATE_FORMATTER), "test")
+                )
+        );
+        assertThat(
+                getText(letter, "#welsh-verification-due-date"),
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+        );
+        String letterHtml = letter.html();
+        assertThat(letterHtml.contains("PAC"), is(true));
+        assertThat(letterHtml.contains("aelod"), is(true));
+        assertThat(letterHtml.contains("cyfarwyddwyr"), is(false));
+        assertThat(letterHtml.contains("gyfarwyddwyr"), is(false));
     }
 
     private static void verifyWelshImagesInLetter(final Document letter) {

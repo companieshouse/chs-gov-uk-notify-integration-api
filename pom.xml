@@ -23,7 +23,7 @@
         <structured-logging.version>3.0.37</structured-logging.version>
         <log4j-version>2.24.2</log4j-version>
         <rest-service-common-library-version>2.0.2</rest-service-common-library-version>
-        <private-api-sdk-java.version>4.0.369</private-api-sdk-java.version>
+        <private-api-sdk-java.version>4.0.429</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.10</api-security-java-version>
         <web-security-java.version>3.1.6</web-security-java.version>
@@ -34,7 +34,6 @@
         <google-http-client.version>1.45.0</google-http-client.version>
         <api-helper-java.version>3.0.1</api-helper-java.version>
         <flapdoodle.version>4.16.1</flapdoodle.version>
-        <email-producer-java.version>3.0.3</email-producer-java.version>
         <logback-classic.version>1.5.19</logback-classic.version>
         <junit-jupiter-engine-version>5.11.4</junit-jupiter-engine-version>
         <mockito-junit-jupiter-version>5.15.2</mockito-junit-jupiter-version>
@@ -53,9 +52,7 @@
         <spring-context.version>6.2.8</spring-context.version>
         <spring-web.version>6.2.8</spring-web.version>
         <tomcat-embed.version>11.0.14</tomcat-embed.version>
-        <!-- CVE-2024-11407 -->
         <grpc-context.version>1.73.0</grpc-context.version>
-        <!-- CVE-2025-53864 -->
         <gson.version>2.13.1</gson.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -23,16 +23,19 @@ import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
@@ -62,11 +65,16 @@ class SenderRestApiTests {
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
     private static final String VALID_REFERENCE = "valid-reference";
-    private static final Map<String, String> VALID_PERSONALISATION = Map.of("name", "Test User");
+    private static final Map<String, String> VALID_PERSONALISATION = Map.of(
+            "name", "Test User",
+            "verification_due_date", "15 February 2024",
+            "welsh_verification_due_date", "15 Chwefror 2024"
+    );
+    private static final String REQUEST_BODY_PERSONALISATION = new JSONObject().put("name", "Test User").put("verification_due_date", "15 February 2024").toString();
     private static final String XHEADER = "1";
 
     @Test
-    void When_EmailRequestIsValid_Expect_EmailMessageIsSentSuccessfully(){
+    void whenEmailRequestIsValidExpectEmailMessageIsSentSuccessfully(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -76,10 +84,11 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
-                .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+                .templateId(VALID_TEMPLATE_ID).
+                personalisationDetails(REQUEST_BODY_PERSONALISATION)
+        );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
@@ -88,12 +97,14 @@ class SenderRestApiTests {
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
+        verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
+        verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);
     }
 
     @Test
-    void When_EmailRequestIsInValid_Expect_InternalSeverErrorResponse(){
+    void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
         EmailDetails emailDetails = new EmailDetails();
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -103,10 +114,44 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference(VALID_REFERENCE)
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setEmailDetails(emailDetails
                 .templateId(VALID_TEMPLATE_ID)
-                .personalisationDetails(new JSONObject().put("name", "Test User").toString()));
+                .personalisationDetails(
+                        new JSONObject()
+                                .put("name", "Test User")
+                                .put("verification_due_date", "15  2024")
+                                .toString()
+                )
+        );
+        govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
+                .emailAddress(VALID_EMAIL)
+                .name("john doe"));
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
+
+
+        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        Assertions.assertNotNull(response);
+
+    }
+
+    @Test
+    void whenEmailRequestIsInValidExpectInternalSeverErrorResponse(){
+        EmailDetails emailDetails = new EmailDetails();
+        RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
+        SenderDetails senderDetails = new SenderDetails();
+        GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
+        govUkEmailDetailsRequest.setSenderDetails(senderDetails
+                .emailAddress("john.doe@example.com")
+                .userId("9876543")
+                .name("John Doe")
+                .reference(VALID_REFERENCE)
+                .appId("chips"));
+        govUkEmailDetailsRequest.setEmailDetails(emailDetails
+                .templateId(VALID_TEMPLATE_ID)
+                .personalisationDetails(REQUEST_BODY_PERSONALISATION)
+        );
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
@@ -120,10 +165,7 @@ class SenderRestApiTests {
 
     }
 
-    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
-    @CsvSource({
-            "null, valid"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidation() {
         GovUkEmailDetailsRequest request =  new GovUkEmailDetailsRequest();
 
@@ -132,10 +174,7 @@ class SenderRestApiTests {
         );
     }
 
-    @ParameterizedTest(name = "When request is {0}, null exception should be thrown")
-    @CsvSource({
-            "null, valid"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidationMissingDetails() {
         RecipientDetailsEmail recipientDetailsEmail = new RecipientDetailsEmail();
         SenderDetails senderDetails = new SenderDetails();
@@ -145,7 +184,7 @@ class SenderRestApiTests {
                 .userId("9876543")
                 .name("John Doe")
                 .reference("ref")
-                .appId("chips.send_email"));
+                .appId("chips"));
         govUkEmailDetailsRequest.setRecipientDetails(recipientDetailsEmail
                 .emailAddress(VALID_EMAIL)
                 .name("john doe"));
@@ -155,10 +194,7 @@ class SenderRestApiTests {
         );
     }
 
-    @ParameterizedTest(name = "When request is {0}, exception should be thrown")
-    @CsvSource({
-            "null, null"
-    })
+    @Test
     void testGovUkEmailDetailsRequestValidationMissingHeader() {
         GovUkEmailDetailsRequest govUkEmailDetailsRequest = new GovUkEmailDetailsRequest();
         assertThrowsExactly(NullPointerException.class, () ->
@@ -166,34 +202,54 @@ class SenderRestApiTests {
         );
     }
 
-    @Test
-    void sendLetter_shouldReturnCreated_whenEconomyPostage() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "CSIDVDEFLET_v1");
-        Mockito.when(letterDispatcher.sendLetter(eq("economy"), any(), any(), any(), any(), any(), any()))
+    @ParameterizedTest
+    @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1" })
+    void sendLetter_shouldReturnCreated_defaultPostage(String templateId) throws Exception {
+        String contextId = "context1234";
+        String letterId = "letterId";
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
+
+        var senderDetails = req.getSenderDetails();
+        var letterDetails = req.getLetterDetails();
+        Mockito.when(letterDispatcher.sendLetter(Postage.ECONOMY, senderDetails.getReference(),
+                senderDetails.getAppId(), letterDetails.getLetterId(),
+                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context1234");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, contextId);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("economy"), any(), any(), any(), any(), any(), any());
     }
 
-    @Test
-    void sendLetter_shouldReturnCreated_whenSecondClassPostage() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(eq("second"), any(), any(), any(), any(), any(), any()))
+    @ParameterizedTest
+    @ValueSource(strings = { LetterTemplateKey.DIRECTION_LETTER,
+            LetterTemplateKey.NEW_PSC_DIRECTION_LETTER,
+            LetterTemplateKey.TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER,
+            LetterTemplateKey.EXTENSION_ACCEPTANCE_LETTER,
+            LetterTemplateKey.SECOND_EXTENSION_ACCEPTANCE_LETTER })
+    void sendLetter_shouldReturnCreated_whenSecondClassPostage(String templateId) throws Exception {
+        String contextId = "context5678";
+        String letterId = null;
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
+
+        var senderDetails = req.getSenderDetails();
+        var letterDetails = req.getLetterDetails();
+        Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, senderDetails.getReference(),
+                senderDetails.getAppId(), letterDetails.getLetterId(),
+                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        Mockito.verify(letterDispatcher).sendLetter(eq("second"), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
@@ -203,8 +259,8 @@ class SenderRestApiTests {
 
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
-        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any()))
+        GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");

@@ -12,7 +12,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,10 +44,12 @@ import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,6 +59,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
@@ -67,16 +69,16 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@Tag("integration-test")
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
+@ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class, MockitoExtension.class})
 class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String REQUEST_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
@@ -102,7 +104,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "letter personalisation details.";
     private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "missing for LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -116,29 +118,29 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=unknown_application, id=direction_letter_v1]";
+                    + "LetterTemplateKey[appId=unknown_application, letterId=null, templateId=direction_letter_v1]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=chips, id=new_letter]";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=new_letter]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
     "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
-            + "(template: \"unknown_directory/chips/direction_letter_v1.html\") "
+            + "(template: \"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\") "
             + "[cause: java.io.FileNotFoundException: ClassLoader resource "
-            + "\"unknown_directory/chips/direction_letter_v1.html\" could not be resolved]";
+            + "\"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\" could not be resolved]";
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
     private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
-                    + "LetterTemplateKey[appId=chips, id=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
     private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
-                    + "creating SVG image assets/templates/letters/common/warning.svg: "
+                    + "creating SVG image assets/templates/old_letters/common/warning.svg: "
                     + "Thrown by test. [cause: null]";
     private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
-                    + "assets/templates/letters/common/warning.svg [cause: null]";
+                    + "assets/templates/old_letters/common/warning.svg [cause: null]";
     private static final String PDFX_CONFORMANCE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
                     + "This PdfXConformanceException could indicate that a font, style or "
@@ -582,10 +584,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send letter cannot find letter template")
     void sendLetterCannotFindTemplate(CapturedOutput log) throws Exception {
 
+        String requestBody = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
         // Given, when and then
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
         postSendLetterRequest(mockMvc,
-                getValidSendLetterRequestBody(),
+                requestBody,
                 status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -665,53 +668,57 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyNoLetterResponsesAreStored();
     }
 
-    @Test
-    @DisplayName("Send letter with postage economy for CSIDVDEFLET_v1 or IDVPSCDEFAULT_v1")
-    void sendLetterWithEconomyPostage(CapturedOutput log) throws Exception {
+    @ParameterizedTest(name = "Send letter with economy postage for {0} {1}")
+    @CsvSource({ "CSIDVDEFLET,v1.0,4221479,send-csidvdeflet-request",
+            "IDVPSCDEFAULT,v1.0,8574996,send-idvpscdefault-request" })
+    void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, String filename)
+            throws Exception {
+        final String govNotifyReference = String.join("-", "chips", letterType, reference);
+
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString()))
+                eq(govNotifyReference), any(InputStream.class), eq("economy")))
                 .thenReturn(responseReceived);
 
-        String csidvdefletRequest = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
+        String csidvdefletRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("CSIDVDEFLET_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
-        );
-
-        // Reset mocks to verify second call independently
-        reset(letterDispatcher, govUkNotifyService);
-
-        String idvpscdefaultRequest = resourceToString("/fixtures/send-idvpscdefault-request.json", UTF_8);
-        postSendLetterRequest(mockMvc, idvpscdefaultRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any(), eq("IDVPSCDEFAULT_v1"), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.ECONOMY_POSTAGE), any(), any()
-        );
-
-
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
+                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(govNotifyReference),
+                any());
     }
 
-    @Test
-    @DisplayName("Send letter postage second class for all other templates")
-    void sendLetterWithSecondClassPostage(CapturedOutput log) throws Exception {
+    @ParameterizedTest(name = "Send letter with second class postage for {0} {1}")
+    @CsvSource(value = {
+            "null,direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
+            "null,new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
+            "null,extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
+            "null,second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
+            "null,transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" }, nullValues = {
+                    "null" })
+    void sendLetterWithSecondClassPostage(String letterType, String templateId, String reference, String filename)
+            throws Exception {
+        String govNotifyReference;
+        if (StringUtils.isBlank(letterType)) {
+            // Old letters do not have letter IDs and use just the reference
+            govNotifyReference = reference;
+        } else  {
+            govNotifyReference = String.join("-", "chips", letterType, reference);
+        }
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString()))
+                eq(govNotifyReference), any(InputStream.class), eq("second")))
                 .thenReturn(responseReceived);
 
-        String otherRequest = resourceToString("/fixtures/send-letter-request.json", UTF_8);
+        String otherRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(
-                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any(), any(), any(), any(), any());
-        verify(govUkNotifyService).sendLetter(
-                eq(GovUkNotifyService.SECOND_CLASS_POSTAGE), any(), any()
-        );
+
+        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
+                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(govNotifyReference),
+                any());
     }
 
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
@@ -754,7 +761,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedResponse.getResponse(), is(notNullValue()));
         assertThat(storedResponse.getResponse().getNotificationId(), is(NIL_UUID));
         assertThat(storedResponse.getResponse().getReference().isPresent(), is(true));
-        assertThat(storedResponse.getResponse().getReference().get(), is("send-letter-request"));
+        assertThat(storedResponse.getResponse().getReference().get(), is("send-direction-letter-request"));
         assertThat(storedResponse.getResponse().getData(), is(notNullValue()));
         var data = storedResponse.getResponse().getData();
         assertThat(data.get("data"), is(notNullValue()));

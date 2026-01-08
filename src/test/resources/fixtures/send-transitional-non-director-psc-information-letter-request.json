@@ -1,7 +1,7 @@
 {
   "sender_details": {
     "app_id": "chips",
-    "reference": "send-transitional-non-director-psc-information-letter-request",
+    "reference": "PSCDIR/00006400",
     "name": "name",
     "user_id": "user_id",
     "email_address": "jbloggs@jbloggs.com"

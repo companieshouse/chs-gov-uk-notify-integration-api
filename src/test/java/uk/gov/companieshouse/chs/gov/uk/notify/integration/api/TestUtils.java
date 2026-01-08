@@ -37,6 +37,13 @@ public class TestUtils {
     private static final String X_REQUEST_ID = "X-Request-ID";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
+    private static final String PERSONALISATION_DETAILS =
+            "{ \"idv_start_date\": \"30 June 2025\", "
+                    + "\"psc_appointment_date\": \"24 June 2025\", "
+                    + "\"idv_verification_due_date\": \"14 July 2025\", "
+                    + "\"psc_name\": \"Joe Bloggs\", "
+                    + "\"company_name\": \"Tŷ'r Cwmnïau\","
+                    + "\"company_number\": \"00006400\"}";
 
     public static GovUkLetterDetailsRequest createSampleLetterRequest(String addressLine1) {
         SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
@@ -49,7 +56,7 @@ public class TestUtils {
         RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
                 .name("Test Recipient")
                 .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", "Dear {{name}}");
+        LetterDetails letterDetails = new LetterDetails("template-456", PERSONALISATION_DETAILS);
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)
@@ -69,7 +76,7 @@ public class TestUtils {
         RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
                 .name("Test Recipient")
                 .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", "Dear {{name}}");
+        LetterDetails letterDetails = new LetterDetails("template-456", PERSONALISATION_DETAILS);
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)
@@ -78,7 +85,12 @@ public class TestUtils {
                 .createdAt(OffsetDateTime.now());
     }
 
-    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId, String templateId) {
+    public static GovUkLetterDetailsRequest createLetterWithReference(String reference) {
+        return createSampleLetterRequestWithReference("Address line 1", reference);
+    }
+
+    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId,
+            String letterId, String templateId) {
         SenderDetails senderDetails = new SenderDetails(appId, "test-reference");
         Address address = new Address()
                 .addressLine1("Test Address Line 1")
@@ -90,6 +102,7 @@ public class TestUtils {
                 .name("Test Recipient")
                 .physicalAddress(address);
         LetterDetails letterDetails = new LetterDetails(templateId, "Dear {{name}}");
+        letterDetails.setLetterId(letterId);
 
         return new GovUkLetterDetailsRequest()
                 .senderDetails(senderDetails)
@@ -173,7 +186,7 @@ public class TestUtils {
     }
 
     public static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-letter-request.json", UTF_8);
+        return resourceToString("/fixtures/send-direction-letter-request.json", UTF_8);
     }
 
     public static ResultActions postSendLetterRequest(MockMvc mockMvc,

@@ -1,15 +1,16 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -18,18 +19,9 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
 
 @Service
 public class GovUkNotifyService {
-
-    /*
-     * These POSTAGE constants should be removed in the future and postage should be
-     * read from the request object.
-     */
-    public static final String SECOND_CLASS_POSTAGE = "second";
-    public static final String ECONOMY_POSTAGE = "economy";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
@@ -57,11 +49,9 @@ public class GovUkNotifyService {
             SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
             return new EmailResp(response != null && response.getNotificationId() != null, response);
         } catch (NotificationClientException e) {
-            Map<String, Object> logData = Map.of(
-                    "recipient", recipient,
-                    "templateId", templateId
-            );
-            LOGGER.error("Failed to send email", e, new HashMap<>(logData));
+            Map<String, Object> logData = createLogData(reference);
+            logData.putAll(Map.of("recipient", recipient, "templateId", templateId));
+            LOGGER.error("Failed to send email", e, logData);
             return new EmailResp(false, null);
         }
     }
@@ -71,21 +61,21 @@ public class GovUkNotifyService {
     }
 
     public LetterResp sendLetter(
-            @NotBlank String postage,
+            @NotNull Postage postage,
             @NotBlank String reference,
             @NotNull InputStream precompiledPdf) {
         try {
-            var response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
+            var response = client.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage.toString());
             return new LetterResp(response != null && response.getNotificationId() != null,
                     response);
         } catch (NotificationClientException nce) {
-            var logData = Map.of("reference", reference);
-            LOGGER.error("Failed to send letter", nce, new HashMap<>(logData));
+            Map<String, Object> logData = createLogData(reference);
+            LOGGER.error("Failed to send letter", nce, logData);
             try {
                 var response = buildLetterResponseForError(nce, reference);
                 return new LetterResp(false, response);
             } catch (JsonProcessingException jpe) {
-                LOGGER.error("Failed to build error response", jpe, new HashMap<>(logData));
+                LOGGER.error("Failed to build error response", jpe, logData);
             }
             return new LetterResp(false, null);
         }
@@ -118,5 +108,9 @@ public class GovUkNotifyService {
         return response;
     }
 
-
+    private Map<String, Object> createLogData(String reference) {
+        var logDate = new HashMap<String, Object>();
+        logDate.put("reference", reference);
+        return logDate;
+    }
 }

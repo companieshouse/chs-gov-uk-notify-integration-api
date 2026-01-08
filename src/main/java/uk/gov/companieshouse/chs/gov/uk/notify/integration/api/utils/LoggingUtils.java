@@ -7,6 +7,9 @@ import uk.gov.service.notify.SendEmailResponse;
 
 public class LoggingUtils {
 
+    public static final String VIEW_LETTER_PDF = "view_letter_pdf";
+    public static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
+
     private LoggingUtils() {
     }
 
