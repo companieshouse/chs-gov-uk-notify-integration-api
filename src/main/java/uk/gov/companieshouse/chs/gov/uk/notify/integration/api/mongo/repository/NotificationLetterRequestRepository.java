@@ -23,12 +23,12 @@ public interface NotificationLetterRequestRepository extends
             {$and: [
                {$or: [
                     {'request.letterDetails.personalisationDetails':
-                     {$regex: '"psc_name": "?0"'}},
+                     {$regex: '"psc_name": *"?0"'}},
                     {'request.letterDetails.letterId': ?2},
                  ]
                 },
                 {'request.letterDetails.personalisationDetails':
-                 {$regex: '"company_number": "?1"'}},
+                 {$regex: '"company_number": *"?1"'}},
                 {'request.letterDetails.templateId': '?3'},
                 {'request.createdAt': { $gte: { $date: '?4'}, $lt: { $date: '?5'} }}
             ]}
@@ -46,12 +46,12 @@ public interface NotificationLetterRequestRepository extends
             {$and: [
                {$or: [
                     {'request.letterDetails.personalisationDetails':
-                     {$regex: '"psc_name": "?0"'}},
+                     {$regex: '"psc_name": *"?0"'}},
                     {'request.letterDetails.letterId': ?2},
                  ]
                 },
                 {'request.letterDetails.personalisationDetails':
-                 {$regex: '"company_number": "?1"'}},
+                 {$regex: '"company_number": *"?1"'}},
                 {'request.letterDetails.templateId': '?3'},
                 {'request.createdAt': { $gte: { $date: '?4'}, $lt: { $date: '?5'} }}
             ]}
