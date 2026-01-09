@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -32,12 +33,14 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     /**
      * Set of letters that should be sent using second class postage
      */
-    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = Set.of(
-            LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
-            LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-            LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-            LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-            LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1);
+    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = new HashSet<>();
+    static {
+        SECOND_CLASS_LETTERS.addAll(Set.of(
+                LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
+                LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
+                LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1));
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.IDVPSCEXT_TEMPLATES);
+    }
 
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;

@@ -25,9 +25,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
@@ -73,6 +71,7 @@ class TemplatePersonaliserIntegrationTest {
             .addressLine4("Line 4");
 
     private static final String TOKEN_VALUE = "Token value";
+    private static final String REFERENCE = "reference";
 
     private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
     private static final String VALID_IDV_START_DATE = "30 June 2025";
@@ -103,8 +102,7 @@ class TemplatePersonaliserIntegrationTest {
             "welsh_pages_2_onwards_footer_artwork.svg";
 
     private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
-            "Context variable(s) [extension_request_date] missing for LetterTemplateKey"
-                    + "[appId=chips, letterId=null, templateId=extension_acceptance_letter_v1].";
+            "Context variable(s) [extension_request_date] missing for %s.";
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -293,108 +291,93 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     @Test
-    @DisplayName("Generate English Extension Acceptance Letter HTML successfully")
-    void generateEnglishExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate English Extension Acceptance Letters HTML successfully")
+    void generateEnglishExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                "English Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test
-    @DisplayName("Generate English Extension Acceptance Letter HTML with missing extension_request_date fails correctly")
-    void generateEnglishExtensionAcceptanceLetterHtmlWithMissingExtensionRequestDateFailsCorrectly()
-    {
+    @DisplayName("Generate English Extension Acceptance Letters HTML with missing extension_request_date fails correctly")
+    void generateEnglishExtensionAcceptanceLettersHtmlWithMissingExtensionRequestDateFailsCorrectly() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
+                    VALID_IDV_VERIFICATION_DUE_DATE,
+                    COMPANY_NUMBER, TOKEN_VALUE,
+                    COMPANY_NAME, TOKEN_VALUE,
+                    PSC_NAME, TOKEN_VALUE);
+            var validationError = assertThrows(LetterValidationException.class,
+                    () -> templatePersonalisation.personaliseLetterTemplate(
+                            templateKey,
+                            REFERENCE,
+                            personalisationDetails,
+                            ADDRESS));
 
-        // Given and when
-        var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
-                VALID_IDV_VERIFICATION_DUE_DATE,
-                COMPANY_NUMBER, TOKEN_VALUE,
-                COMPANY_NAME, TOKEN_VALUE,
-                PSC_NAME, TOKEN_VALUE);
-        var validationError = assertThrows(LetterValidationException.class,
-                () -> templatePersonalisation.personaliseLetterTemplate(
-                        CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                        "English Extension Acceptance Letter",
-                        personalisationDetails,
-                        ADDRESS));
-
-        assertThat(validationError.getMessage(), is(EXPECTED_VALIDATION_ERROR_MESSAGE));
+            String expectedErrorMessage = String.format(EXPECTED_VALIDATION_ERROR_MESSAGE,
+                    templateKey);
+            assertThat(validationError.getMessage(), is(expectedErrorMessage));
+        }
     }
 
     @Test
-    @DisplayName("Generate Welsh Extension Acceptance Letter HTML successfully")
-    void generateWelshExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate Welsh Extension Acceptance Letters HTML successfully")
+    void generateWelshExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                "Welsh Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-        verifyWelshLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+            verifyWelshLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test
-    @DisplayName("Generate English Second Extension Acceptance Letter HTML successfully")
-    void generateEnglishSecondExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate Welsh Second Extension Acceptance Letters HTML successfully")
+    void generateWelshSecondExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                "English Second Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-    }
-
-    @Test
-    @DisplayName("Generate Welsh Second Extension Acceptance Letter HTML successfully")
-    void generateWelshSecondExtensionAcceptanceLetterHtmlSuccessfully() {
-
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                "Welsh Second Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-        verifyWelshLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+            verifyWelshLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test

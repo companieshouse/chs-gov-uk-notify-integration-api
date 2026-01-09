@@ -17,9 +17,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -210,8 +208,7 @@ public class TemplatePersonaliser {
                                                        LetterTemplateKey templateLookupKey) {
         if (templateLookupKey.equals(CHIPS_NEW_PSC_DIRECTION_LETTER_1)) {
             context.setVariable(TRIGGERING_EVENT_DATE, personalisationDetails.get(IDV_START_DATE));
-        } else if (templateLookupKey.equals(CHIPS_EXTENSION_ACCEPTANCE_LETTER_1)
-                || templateLookupKey.equals(CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1)) {
+        } else if (LetterTemplateKey.IDVPSCEXT_TEMPLATES.contains(templateLookupKey)) {
             context.setVariable(TRIGGERING_EVENT_DATE,
                     personalisationDetails.get(EXTENSION_REQUEST_DATE));
         }

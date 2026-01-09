@@ -226,8 +226,8 @@ class SenderRestApiTests {
     @ValueSource(strings = { LetterTemplateKey.DIRECTION_LETTER,
             LetterTemplateKey.NEW_PSC_DIRECTION_LETTER,
             LetterTemplateKey.TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER,
-            LetterTemplateKey.EXTENSION_ACCEPTANCE_LETTER,
-            LetterTemplateKey.SECOND_EXTENSION_ACCEPTANCE_LETTER })
+            "extension_acceptance_letter_v1",
+            "second_extension_acceptance_letter_v1" })
     void sendLetter_shouldReturnCreated_whenSecondClassPostage(String templateId) throws Exception {
         String contextId = "context5678";
         String letterId = null;

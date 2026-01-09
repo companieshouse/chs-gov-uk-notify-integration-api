@@ -19,9 +19,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import com.google.common.collect.Sets;
@@ -80,30 +78,6 @@ public class TemplateContextValidator {
                               COMPANY_NUMBER,
                               PSC_NAME
                       )
-              ),
-              new AbstractMap.SimpleEntry<>(
-                      CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                      Set.of(
-                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                              EXTENSION_REQUEST_DATE,
-                              IDV_VERIFICATION_DUE_DATE,
-                              REFERENCE,
-                              COMPANY_NAME,
-                              COMPANY_NUMBER,
-                              PSC_NAME
-                      )
-              ),
-              new AbstractMap.SimpleEntry<>(
-                      CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                      Set.of(
-                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                              EXTENSION_REQUEST_DATE,
-                              IDV_VERIFICATION_DUE_DATE,
-                              REFERENCE,
-                              COMPANY_NAME,
-                              COMPANY_NUMBER,
-                              PSC_NAME
-                      )
               )));
         for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             VALID_CONTEXTS.put(key, Set.of(
@@ -127,6 +101,17 @@ public class TemplateContextValidator {
                     TODAYS_DATE,
                     ACTION_DUE_DATE,
                     IS_LLP
+            ));
+        }
+        for (LetterTemplateKey key : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            VALID_CONTEXTS.put(key, Set.of(
+                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                    EXTENSION_REQUEST_DATE,
+                    IDV_VERIFICATION_DUE_DATE,
+                    REFERENCE,
+                    COMPANY_NAME,
+                    COMPANY_NUMBER,
+                    PSC_NAME
             ));
         }
     }
