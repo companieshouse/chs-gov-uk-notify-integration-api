@@ -1,0 +1,32 @@
+.transitional-non-director-psc-information-letter-title {
+    display: block;
+    height: 20mm;
+    width: 61mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 5.2mm;
+    line-height: 5.7mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 3mm;
+    padding-top: 4mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}
+.welsh-transitional-non-director-psc-information-letter-title {
+    display: block;
+    height: 20mm;
+    width: 61mm; /* was 70 then 64mm */
+    font-family: Arial, sans-serif;
+    font-weight:bold;
+    font-size: 4.8mm;
+    line-height: 5.3mm;
+    color: white;
+    padding-left: 4mm;
+    padding-right: 3mm;
+    padding-bottom: 4mm;
+    padding-top: 3mm;
+    background-color: black;
+    border-radius: 1.2mm;
+}

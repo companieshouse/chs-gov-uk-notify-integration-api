@@ -7,5 +7,7 @@ Each folder will also contain version numbers starting with v1.0
 |-------------|-----------------------|
 |CSIDVDEFLET  |Overdue confirmation statement and director identity verification statements |
 |IDVPSCDEFAULT|Overdue identity verification statement for your role as a person with significant control (PSC) |
+|IDVPSCDIRNEW |Inform new PSCs that they need to verify their identity |
 |IDVPSCEXT1   |Acceptance of a first extension of the identity verification deadline for a PSC |
 |IDVPSCEXT2   |Acceptance of a second extension of the identity verification deadline for a PSC |
+|IDVPSCDIRTRAN |Inform existing PSCs that they need to verify their identity |

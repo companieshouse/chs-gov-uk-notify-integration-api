@@ -25,8 +25,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -203,91 +201,95 @@ class TemplatePersonaliserIntegrationTest {
     @Test
     @DisplayName("Generate English New PSC Direction Letter HTML successfully")
     void generateEnglishNewPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                            IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                "English New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
-                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsIdvStartDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsIdvStartDate(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate Welsh New PSC Direction Letter HTML successfully")
     void generateWelshNewPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                            IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                "Welsh New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
-                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyWelshDatesInLetter(letter);
-        verifyEnglishDatesInLetter(letter);
-        verifyWelshImagesInLetter(letter);
-        verifyEnglishImagesInLetter(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyWelshDatesInLetter(letter);
+            verifyEnglishDatesInLetter(letter);
+            verifyWelshImagesInLetter(letter);
+            verifyEnglishImagesInLetter(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate English Transitional Non-director PSC Information Letter HTML successfully")
     void generateEnglishTransitionalPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            TODAYS_DATE, EXPECTED_TODAYS_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                "English Transitional Non-director PSC Information Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsTodaysDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate Welsh Transitional Non-director PSC Information Letter HTML successfully")
     void generateWelshTransitionalPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            TODAYS_DATE, EXPECTED_TODAYS_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                "Welsh Transitional Non-director PSC Information Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsTodaysDate(letter);
-        verifyWelshLetterDateIsTodaysDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            verifyWelshLetterDateIsTodaysDate(letter);
+        }
     }
 
     @Test

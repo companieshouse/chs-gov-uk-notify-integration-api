@@ -35,10 +35,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
      */
     private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = new HashSet<>();
     static {
-        SECOND_CLASS_LETTERS.addAll(Set.of(
-                LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
-                LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1));
+        SECOND_CLASS_LETTERS.add(LetterTemplateKey.CHIPS_DIRECTION_LETTER_1);
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES);
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES);
         SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.IDVPSCEXT_TEMPLATES);
     }
 
