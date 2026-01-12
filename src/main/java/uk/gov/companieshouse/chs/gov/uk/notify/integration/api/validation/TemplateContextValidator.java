@@ -19,11 +19,8 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 
 import com.google.common.collect.Sets;
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,45 +37,15 @@ public class TemplateContextValidator {
     
     static {
         VALID_CONTEXTS = new HashMap<>();
-        VALID_CONTEXTS.putAll(Map.ofEntries(
-              new AbstractMap.SimpleEntry<>(
-                      CHIPS_DIRECTION_LETTER_1,
-                      Set.of(
-                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                              TODAYS_DATE,
-                              REFERENCE,
-                              COMPANY_NAME,
-                              PSC_FULL_NAME,
-                              DEADLINE_DATE,
-                              EXTENSION_DATE
-                      )
-              ),
-              new AbstractMap.SimpleEntry<>(
-                      CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                      Set.of(
-                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                              IDV_START_DATE,
-                              PSC_APPOINTMENT_DATE,
-                              IDV_VERIFICATION_DUE_DATE,
-                              REFERENCE,
-                              COMPANY_NAME,
-                              COMPANY_NUMBER,
-                              PSC_NAME
-                      )
-              ),
-              new AbstractMap.SimpleEntry<>(
-                      CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                      Set.of(
-                              ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                              TODAYS_DATE,
-                              IDV_START_DATE,
-                              IDV_VERIFICATION_DUE_DATE,
-                              REFERENCE,
-                              COMPANY_NAME,
-                              COMPANY_NUMBER,
-                              PSC_NAME
-                      )
-              )));
+        VALID_CONTEXTS.put(CHIPS_DIRECTION_LETTER_1, Set.of(
+                ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                TODAYS_DATE,
+                REFERENCE,
+                COMPANY_NAME,
+                PSC_FULL_NAME,
+                DEADLINE_DATE,
+                EXTENSION_DATE
+        ));
         for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             VALID_CONTEXTS.put(key, Set.of(
                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
@@ -107,6 +74,30 @@ public class TemplateContextValidator {
             VALID_CONTEXTS.put(key, Set.of(
                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
                     EXTENSION_REQUEST_DATE,
+                    IDV_VERIFICATION_DUE_DATE,
+                    REFERENCE,
+                    COMPANY_NAME,
+                    COMPANY_NUMBER,
+                    PSC_NAME
+            ));
+        }
+        for (LetterTemplateKey key : LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES) {
+            VALID_CONTEXTS.put(key, Set.of(
+                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                    IDV_START_DATE,
+                    PSC_APPOINTMENT_DATE,
+                    IDV_VERIFICATION_DUE_DATE,
+                    REFERENCE,
+                    COMPANY_NAME,
+                    COMPANY_NUMBER,
+                    PSC_NAME
+            ));
+        }
+        for (LetterTemplateKey key : LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES) {
+            VALID_CONTEXTS.put(key, Set.of(
+                    ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                    TODAYS_DATE,
+                    IDV_START_DATE,
                     IDV_VERIFICATION_DUE_DATE,
                     REFERENCE,
                     COMPANY_NAME,

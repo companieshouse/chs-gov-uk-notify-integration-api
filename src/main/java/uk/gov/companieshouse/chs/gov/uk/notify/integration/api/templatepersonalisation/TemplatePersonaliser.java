@@ -17,7 +17,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -206,7 +205,7 @@ public class TemplatePersonaliser {
     private void populateLetterWithTriggeringEventDate(Context context,
                                                        Map<String, String> personalisationDetails,
                                                        LetterTemplateKey templateLookupKey) {
-        if (templateLookupKey.equals(CHIPS_NEW_PSC_DIRECTION_LETTER_1)) {
+        if (LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES.contains(templateLookupKey)) {
             context.setVariable(TRIGGERING_EVENT_DATE, personalisationDetails.get(IDV_START_DATE));
         } else if (LetterTemplateKey.IDVPSCEXT_TEMPLATES.contains(templateLookupKey)) {
             context.setVariable(TRIGGERING_EVENT_DATE,

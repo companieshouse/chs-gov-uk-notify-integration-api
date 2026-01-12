@@ -235,7 +235,9 @@ class SenderRestApiTests {
             "null,extension_acceptance_letter_v1",
             "null,second_extension_acceptance_letter_v1",
             "IDVPSCEXT1,v1.0",
-            "IDVPSCEXT2,v1.0"}, nullValues = { "null" })
+            "IDVPSCEXT2,v1.0",
+            "IDV_NEW_DIRECTIONS_LETTER,v1.0",
+            "IDV_TRANSITIONAL_DIRECTIONS_LETTER,v1.0"}, nullValues = { "null" })
     void sendLetter_shouldReturnCreated_whenSecondClassPostage(String letterId, String templateId) throws Exception {
         String contextId = "context5678";
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);

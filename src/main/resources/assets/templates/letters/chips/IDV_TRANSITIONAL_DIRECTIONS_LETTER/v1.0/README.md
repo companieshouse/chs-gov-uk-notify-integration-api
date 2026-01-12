@@ -1,0 +1,2 @@
+# Description/reason for this version
+This is the first version of the IDV_TRANSITIONAL_DIRECTIONS_LETTER template in the new folder structure. Its content matches [transitional_non_director_psc_information_letter_v1](/src/main/resources/assets/templates/old_letters/chips/transitional_non_director_psc_information_letter_v1.html) in the old structure with the exception of using the company number as a letter reference.
