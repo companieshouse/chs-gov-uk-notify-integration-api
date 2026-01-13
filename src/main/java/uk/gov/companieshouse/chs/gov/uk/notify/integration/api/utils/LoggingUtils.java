@@ -13,8 +13,6 @@ public class LoggingUtils {
     private LoggingUtils() {
     }
 
-    // TODO DEEP-490? action, reference and notificationId should all be
-    // structured logging DataMap members.
     private static final String ACTION = "action";
     private static final String REFERENCE = "reference";
     private static final String NOTIFICATION_ID = "notification_id";
