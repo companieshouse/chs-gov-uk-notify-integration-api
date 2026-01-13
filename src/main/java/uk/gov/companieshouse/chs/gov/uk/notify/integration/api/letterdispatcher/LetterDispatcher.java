@@ -109,7 +109,7 @@ public class LetterDispatcher {
                             precompiledPdf);
 
             logger.debugContext( contextId, "Storing letter response in database",
-                    createLogMap(contextId, "store_letter_response"));
+                    createLogMap(contextId, response.response()));
             notificationDatabaseService.storeResponse(response);
 
             return response;
