@@ -30,13 +30,18 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.ACTION;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.NOTIFICATION_ID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.STORE_LETTER_RESPONSE;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.lowagie.text.pdf.PdfWriter;
 import com.lowagie.text.pdf.PdfXConformanceException;
@@ -220,6 +225,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
+        verifyLetterResponseLoggedCorrectly(log);
         verifyLetterPdfSent(capturedFileSignature);
     }
 
@@ -746,6 +752,19 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var storedResponse = notificationLetterResponseRepository.findAll().getFirst().getResponse();
         // Unfortunately SendLetter does not implement equals() and hashCode().
         assertThat(storedResponse.toString(), is(receivedResponse.toString()));
+    }
+
+    private void verifyLetterResponseLoggedCorrectly(CapturedOutput log)
+            throws JsonProcessingException {
+        var message = log.getAll().lines().filter(s -> s.contains(STORE_LETTER_RESPONSE));
+        var nodes = objectMapper.readTree(message.collect(Collectors.joining()));
+        assertThat(nodes.get("context").asText(), is(REQUEST_ID));
+        var data = nodes.get("data");
+        // TODO DEEP-490 Currently duplicates the context ID - Can this be removed?
+        assertThat(data.get("request_id").asText(), is(REQUEST_ID));
+        assertThat(data.get(ACTION).asText(), is(STORE_LETTER_RESPONSE));
+        assertThat(data.get(REFERENCE).asText(), is("send-letter-request"));
+        assertThat(data.get(NOTIFICATION_ID).asText(), is("71f6e354-eabc-4ea1-8352-6a21c00a49ca"));
     }
 
     private void verifyNoLetterResponsesAreStored() {

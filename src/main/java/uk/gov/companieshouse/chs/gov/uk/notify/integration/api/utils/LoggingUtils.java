@@ -10,15 +10,15 @@ public class LoggingUtils {
     public static final String VIEW_LETTER_PDF = "view_letter_pdf";
     public static final String VIEW_LETTER_PDFS = "view_letter_pdfs";
 
+    public static final String ACTION = "action";
+    public static final String REFERENCE = "reference";
+    public static final String NOTIFICATION_ID = "notification_id";
+
+    public static final String STORE_LETTER_RESPONSE = "store_letter_response";
+    public static final String STORE_EMAIL_RESPONSE = "store_response";
+
     private LoggingUtils() {
     }
-
-    private static final String ACTION = "action";
-    private static final String REFERENCE = "reference";
-    private static final String NOTIFICATION_ID = "notification_id";
-
-    private static final String STORE_LETTER_RESPONSE = "store_letter_response";
-    private static final String STORE_EMAIL_RESPONSE = "store_response";
 
     public static Map<String, Object> createLogMap(final String requestId, final String action) {
         var logMap = new DataMap.Builder()
