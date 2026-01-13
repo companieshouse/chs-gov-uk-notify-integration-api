@@ -29,9 +29,16 @@ public class LoggingUtils {
         return logMap;
     }
 
-    public static Map<String, Object> createLogMap(final String requestId,
-                                                   final LetterResponse notifyResponse) {
-        var logMap = createLogMap(requestId, STORE_LETTER_RESPONSE);
+    public static Map<String, Object> createLogMap(final String action) {
+        var logMap = new DataMap.Builder()
+                .build()
+                .getLogMap();
+        logMap.put(ACTION, action);
+        return logMap;
+    }
+
+    public static Map<String, Object> createLogMap(final LetterResponse notifyResponse) {
+        var logMap = createLogMap(STORE_LETTER_RESPONSE);
         if (notifyResponse != null) {
             logMap.put(REFERENCE, notifyResponse.getReference().orElse("[no reference supplied]"));
             logMap.put(NOTIFICATION_ID, notifyResponse.getNotificationId());
@@ -39,9 +46,8 @@ public class LoggingUtils {
         return logMap;
     }
 
-    public static Map<String, Object> createLogMap(final String requestId,
-                                                   final SendEmailResponse notifyResponse) {
-        var logMap = createLogMap(requestId, STORE_EMAIL_RESPONSE);
+    public static Map<String, Object> createLogMap(final SendEmailResponse notifyResponse) {
+        var logMap = createLogMap(STORE_EMAIL_RESPONSE);
         if (notifyResponse != null) {
             logMap.put(REFERENCE, notifyResponse.getReference().orElse("[no reference supplied]"));
             logMap.put(NOTIFICATION_ID, notifyResponse.getNotificationId());

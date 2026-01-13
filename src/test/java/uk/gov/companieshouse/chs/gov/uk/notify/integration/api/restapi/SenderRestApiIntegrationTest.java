@@ -760,8 +760,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var nodes = objectMapper.readTree(message.collect(Collectors.joining()));
         assertThat(nodes.get("context").asText(), is(REQUEST_ID));
         var data = nodes.get("data");
-        // TODO DEEP-490 Currently duplicates the context ID - Can this be removed?
-        assertThat(data.get("request_id").asText(), is(REQUEST_ID));
         assertThat(data.get(ACTION).asText(), is(STORE_LETTER_RESPONSE));
         assertThat(data.get(REFERENCE).asText(), is("send-letter-request"));
         assertThat(data.get(NOTIFICATION_ID).asText(), is("71f6e354-eabc-4ea1-8352-6a21c00a49ca"));
