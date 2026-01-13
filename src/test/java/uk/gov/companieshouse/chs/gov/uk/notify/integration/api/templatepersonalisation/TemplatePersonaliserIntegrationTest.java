@@ -10,21 +10,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_LLP;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -48,7 +45,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 class TemplatePersonaliserIntegrationTest {
 
     private static final String LETTER_TITLE =
-            "Verify your identity —Person with significant control";
+            "Default letter— overdue identity verification statement";
 
     private static final Map<String, String> PERSONALISATION_DETAILS =
             Map.of("company_name", "Amazon");
@@ -102,6 +99,9 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
             "Context variable(s) [extension_request_date] missing for %s.";
 
+    private static final LetterTemplateKey LETTER_TEMPLATE_KEY = new LetterTemplateKey("chips",
+            "IDVPSCDEFAULT", "v1.0");
+
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
 
@@ -117,12 +117,14 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_DIRECTION_LETTER_1,
+                LETTER_TEMPLATE_KEY,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Joe Bloggs",
+                Map.of(PSC_NAME, "Joe Bloggs",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
-                        DEADLINE_DATE, "18 August 2025",
-                        EXTENSION_DATE, "1 September 2025"),
+                        COMPANY_NUMBER, "12345678",
+                        IS_LLP, "false",
+                        ACTION_DUE_DATE, "18 March 2025",
+                        VERIFICATION_DUE_DATE, "28 February 2025"),
                 ADDRESS));
 
         // Then
@@ -136,17 +138,20 @@ class TemplatePersonaliserIntegrationTest {
     void generateLetterHtmlSuccessfullyWithShorterAddress() {
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_DIRECTION_LETTER_1,
+                LETTER_TEMPLATE_KEY,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Joe Bloggs",
+                Map.of(PSC_NAME, "Joe Bloggs",
                         COMPANY_NAME, "Tŷ'r Cwmnïau",
-                        DEADLINE_DATE, "18 August 2025",
-                        EXTENSION_DATE, "1 September 2025"),
+                        COMPANY_NUMBER, "12345678",
+                        IS_LLP, "false",
+                        ACTION_DUE_DATE, "18 March 2025",
+                        VERIFICATION_DUE_DATE, "28 February 2025"),
                 SHORTER_ADDRESS));
 
         // Then
         verifyLetterPersonalised(letter);
         verifyLetterAddressedWithShorterAddress(letter);
+        verifyLetterDateIsTodaysDate(letter);
     }
 
     @Test
@@ -733,12 +738,10 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
-        assertThat(getText(letter, ".direction-letter-title"), is(LETTER_TITLE));
-        assertThat(getText(letter, ".close-packed-top .emphasis"), is("Joe Bloggs"));
-        assertThat(getText(letter, "p .subject-line"), is("Tŷ'r Cwmnïau".toUpperCase()));
-        assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("the reference"));
-        assertThat(getText(letter, "#deadline-date"), is("18 August 2025"));
-        assertThat(getText(letter, "#extension-date"), is("1 September 2025"));
+        assertThat(getText(letter, ".IDVPSCDEFAULT-title"), is(LETTER_TITLE));
+        assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("12345678"));
+        assertThat(getText(letter, "#verification-due-date"), is("28 February 2025"));
+        assertThat(getText(letter, "#action-due-date"), is("18 March 2025"));
     }
 
     private static void verifyLetterAddressed(final Document letter) {

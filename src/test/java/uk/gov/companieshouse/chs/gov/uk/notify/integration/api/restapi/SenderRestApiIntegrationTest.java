@@ -24,23 +24,21 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfXConformanceException;
+import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
-
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.PdfXConformanceException;
-import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -102,9 +100,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: No company name found in the "
                     + "letter personalisation details.";
-    private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -112,13 +107,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "start field name";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
             " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
-                    + "line: 1, column: 137]";
+                    + "line: 1, column: 227]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=unknown_application, letterId=null, templateId=direction_letter_v1]";
+                    + "LetterTemplateKey[appId=unknown_application, letterId=null, templateId=new_psc_direction_letter_v1]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
                     + "LetterTemplateKey[appId=chips, letterId=null, templateId=new_letter]";
@@ -133,7 +128,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
-                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=new_psc_direction_letter_v1].";
     private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
                     + "creating SVG image assets/templates/old_letters/common/warning.svg: "
@@ -146,7 +141,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "This PdfXConformanceException could indicate that a font, style or "
                     + "stylesheet cannot be found.";
     private static final String INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Format of date 'idv_start_date' "
+            "Error in chs-gov-uk-notify-integration-api: Format of date 'triggering_event_date' "
                     + "'Monday, 30 June 2025' is incorrect.";
     private static final String INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' found in "
@@ -234,22 +229,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
-
-        verifyLetterDetailsRequestStored();
-        verifyNoLetterResponsesAreStored();
-    }
-
-    @Test
-    @DisplayName("Send letter without providing the psc full name in the personalisation details")
-    void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
-
-        // Given, when and then
-        postSendLetterRequest(mockMvc,
-                getRequestWithoutPscFullName(),
-                status().isBadRequest())
-                .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
-
-        assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
 
         verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
@@ -638,7 +617,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given, when and then
         postSendLetterRequest(mockMvc,
-                getRequestWithIncorrectlyFormattedIdvStartDate(),
+                getRequestWithIncorrectlyFormattedDate(),
                 status().isBadRequest())
                 .andExpect(content().string(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE));
 
@@ -691,7 +670,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @ParameterizedTest(name = "Send letter with second class postage for {0} {1}")
     @CsvSource(value = {
-            "null,direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
             "null,new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
             "null,extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
             "null,second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
@@ -761,7 +739,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedResponse.getResponse(), is(notNullValue()));
         assertThat(storedResponse.getResponse().getNotificationId(), is(NIL_UUID));
         assertThat(storedResponse.getResponse().getReference().isPresent(), is(true));
-        assertThat(storedResponse.getResponse().getReference().get(), is("send-direction-letter-request"));
+        assertThat(storedResponse.getResponse().getReference().get(), is("PSCDIR/00006400"));
         assertThat(storedResponse.getResponse().getData(), is(notNullValue()));
         var data = storedResponse.getResponse().getData();
         assertThat(data.get("data"), is(notNullValue()));
@@ -778,10 +756,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private String getRequestWithoutCompanyName() throws IOException {
         return getRequestWithoutPersonalisation(COMPANY_NAME);
-    }
-
-    private String getRequestWithoutPscFullName() throws IOException {
-        return getRequestWithoutPersonalisation(PSC_FULL_NAME);
     }
 
     private String getRequestWithoutPersonalisation(String personalisationName)
@@ -818,7 +792,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         return objectMapper.writeValueAsString(request);
     }
 
-    private String getRequestWithIncorrectlyFormattedIdvStartDate()
+    private String getRequestWithIncorrectlyFormattedDate()
             throws IOException {
         var request = objectMapper.readValue(
                 getValidSendLetterRequestBody(),
@@ -829,7 +803,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var personalisationDetails = JsonParser
                 .parseString(personalisationDetailsString)
                 .getAsJsonObject();
-        personalisationDetails.addProperty(IDV_START_DATE, "Monday, 30 June 2025");
+        personalisationDetails.addProperty(TRIGGERING_EVENT_DATE, "Monday, 30 June 2025");
 
         letterDetails.setPersonalisationDetails(personalisationDetails.toString());
         return objectMapper.writeValueAsString(request);
