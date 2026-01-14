@@ -1,0 +1,18 @@
+{
+  "sender_details": {
+    "app_id": "chips.send_email",
+    "reference": "PSC-EMAIL-2023-04102",
+    "name": "Companies House Admin",
+    "user_id": "ch-admin-1234",
+    "email_address": "admin@example.com"
+  },
+  "recipient_details": {
+    "name": "Jane Doe",
+    "email_address": "jane.doe@example.com"
+  },
+  "email_details": {
+    "template_id": "psc_verification|email35",
+    "personalisation_details": "{\"letter_reference\":\"PSC-EMAIL-2023-04103\",\"company_name\":\"DOE ENTERPRISES LTD\",\"company_id\":\"87654321\",\"psc_type\":\"50%\"}"
+  },
+  "created_at": "2023-04-15T15:45:30Z"
+}

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -21,7 +22,9 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendEmailRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendEmailRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
@@ -32,6 +35,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Go
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.ACTION;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.NOTIFICATION_ID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.STORE_EMAIL_RESPONSE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.STORE_LETTER_RESPONSE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -79,6 +83,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Te
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
+import uk.gov.service.notify.SendEmailResponse;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @SpringBootTest
@@ -727,6 +732,24 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 any());
     }
 
+    @Test
+    @DisplayName("Send email successfully, log response correctly")
+    void sendEmailSuccessfully(CapturedOutput log) throws Exception {
+
+        // Given
+        var responseReceived = new SendEmailResponse(
+                resourceToString("/fixtures/send-email-response.json", UTF_8));
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+                .thenReturn(responseReceived);
+
+        // When and then
+        postSendEmailRequest(mockMvc,
+                getValidSendEmailRequestBody(),
+                status().isCreated());
+
+        verifyEmailResponseLoggedCorrectly(log);
+    }
+
     @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
     // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
     // response payload to fetch the letter created.
@@ -762,6 +785,17 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         var data = nodes.get("data");
         assertThat(data.get(ACTION).asText(), is(STORE_LETTER_RESPONSE));
         assertThat(data.get(REFERENCE).asText(), is("send-letter-request"));
+        assertThat(data.get(NOTIFICATION_ID).asText(), is("71f6e354-eabc-4ea1-8352-6a21c00a49ca"));
+    }
+
+    private void verifyEmailResponseLoggedCorrectly(CapturedOutput log)
+            throws JsonProcessingException {
+        var message = log.getAll().lines().filter(s -> s.contains(STORE_EMAIL_RESPONSE));
+        var nodes = objectMapper.readTree(message.collect(Collectors.joining()));
+        assertThat(nodes.get("context").asText(), is(REQUEST_ID));
+        var data = nodes.get("data");
+        assertThat(data.get(ACTION).asText(), is(STORE_EMAIL_RESPONSE));
+        assertThat(data.get(REFERENCE).asText(), is("send-email-request"));
         assertThat(data.get(NOTIFICATION_ID).asText(), is("71f6e354-eabc-4ea1-8352-6a21c00a49ca"));
     }
 
