@@ -1,0 +1,13 @@
+{
+  "id":"71f6e354-eabc-4ea1-8352-6a21c00a49ca",
+  "content": {
+    "subject": "The subject",
+    "body": ""
+  },
+  "template": {
+    "id":"123e4567-e89b-42d3-a456-556642440000",
+    "version":"1",
+    "uri": "https://api.notifications.service.gov.uk/v2/template/123e4567-e89b-42d3-a456-556642440000"
+  },
+  "reference":"send-email-request"
+}

@@ -189,11 +189,30 @@ public class TestUtils {
         return resourceToString("/fixtures/send-direction-letter-request.json", UTF_8);
     }
 
+    public static String getValidSendEmailRequestBody() throws IOException {
+        return resourceToString("/fixtures/send-email-request.json", UTF_8);
+    }
+
     public static ResultActions postSendLetterRequest(MockMvc mockMvc,
                                                       String requestBody,
                                                       ResultMatcher expectedResponseStatus)
             throws Exception {
         return mockMvc.perform(post("/gov-uk-notify-integration/letter")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(X_REQUEST_ID, CONTEXT_ID)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                        .content(requestBody))
+                .andExpect(expectedResponseStatus);
+    }
+
+    public static ResultActions postSendEmailRequest(MockMvc mockMvc,
+                                                      String requestBody,
+                                                      ResultMatcher expectedResponseStatus)
+            throws Exception {
+        return mockMvc.perform(post("/gov-uk-notify-integration/email")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .header(X_REQUEST_ID, CONTEXT_ID)
