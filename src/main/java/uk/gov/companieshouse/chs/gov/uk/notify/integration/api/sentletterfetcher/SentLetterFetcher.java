@@ -8,7 +8,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -117,89 +116,6 @@ public class SentLetterFetcher {
 
     }
 
-    /**
-     * "Fetches" letter PDF for sent letter assumed to be uniquely selected by the query parameter
-     * values provided. It does so by retrieving the data stored when the letter was sent and using
-     * it to regenerate the PDF.
-     *
-     * @param pscName the name of the PSC intended to receive the letter
-     * @param companyNumber the company number
-     * @param letterId the ID of the letter
-     * @param templateId the ID of the template used to generate the letter
-     * @param letterSendingDate the date on which CHIPS triggered the sending of the letter
-     * @return the letter PDF
-     * @throws IOException should something unexpected happen
-     */
-    public InputStream fetchLetter(
-            final String pscName,
-            final String companyNumber,
-            final String letterId,
-            final String templateId,
-            final LocalDate letterSendingDate,
-            final String contextId)
-            throws IOException {
-
-        var letter = fetchLetterFromDatabase(pscName, companyNumber, letterId, templateId, letterSendingDate);
-        var reference = letter.getSenderDetails().getReference();
-        var html = getHtml(letter, reference, contextId);
-
-        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
-            logger.debug(
-                "Responding with regenerated letter PDF to view for letter with "
-                + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate),
-                createLogMap(contextId, VIEW_LETTER_PDF));
-            return precompiledPdf;
-        }
-    }
-
-    /**
-     * "Fetches" letter PDFs for sent letters selected by the query parameter values provided,
-     * one at a time. It does so by retrieving the data stored when the letter was sent and using
-     * it to regenerate the PDF.
-     *
-     * @param pscName the name of the PSC intended to receive the letter
-     * @param companyNumber the company number
-     * @param templateId the ID of the template used to generate the letter. This corresponds
-     *                   directly to the letter type.
-     * @param letterSendingDate the date on which CHIPS triggered the sending of the letter
-     * @param letterNumber the number of the specific letter to be fetched, from the collection of
-     *                     selected letters, ordered by the createdAt date. The first such letter
-     *                     is letter number 1.
-     * @return the letter PDF
-     * @throws IOException should something unexpected happen
-     */
-    public FetchedLetter fetchLetter(
-            final String pscName,
-            final String companyNumber,
-            final String letterId,
-            final String templateId,
-            final LocalDate letterSendingDate,
-            final int letterNumber,
-            final String contextId)
-            throws IOException {
-
-        validateLetterNumber(letterNumber);
-        var page = notificationDatabaseService.getLettersByPscNameOrLetterAndCompanyTemplateDate(
-                pscName, companyNumber, letterId, templateId, letterSendingDate, letterNumber);
-        var letter = getLetter(page, letterNumber);
-        var reference = letter.getSenderDetails().getReference();
-        var html = getHtml(letter, reference, contextId);
-
-        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
-            logger.debug(
-                    "Responding with regenerated letter PDF to view for letter with "
-                            + queryParameters(pscName,
-                                              companyNumber,
-                                              letterId,
-                                              templateId,
-                                              letterSendingDate,
-                                              letterNumber),
-                    createLogMap(contextId, VIEW_LETTER_PDFS));
-            var numberOfLetters = page.getTotalPages();
-            return new FetchedLetter(precompiledPdf, numberOfLetters);
-        }
-    }
-
     private String getHtml(final GovUkLetterDetailsRequest letter,
                            final String reference,
                            final String contextId) {
@@ -235,54 +151,6 @@ public class SentLetterFetcher {
                             + "Total number of matching letters was " + page.getTotalPages() + ".");
         }
         return request.get().getRequest();
-    }
-
-    private GovUkLetterDetailsRequest fetchLetterFromDatabase(final String pscName,
-                                                              final String companyNumber,
-                                                              final String letterId,
-                                                              final String templateId,
-                                                              final LocalDate letterSendingDate) {
-        var letters = notificationDatabaseService.getLettersByPscNameOrLetterAndCompanyTemplateDate(
-                pscName,
-                companyNumber,
-                letterId,
-                templateId,
-                letterSendingDate);
-        if (letters.isEmpty()) {
-            throw new LetterNotFoundException("Letter not found for "
-                    + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate));
-        } else if (letters.size() > 1) {
-            throw new TooManyLettersFoundException("Multiple letters found for "
-                    + queryParameters(pscName, companyNumber, letterId, templateId, letterSendingDate));
-        }
-
-        return letters.getFirst().getRequest();
-    }
-
-    private String queryParameters(final String pscName,
-                                   final String companyNumber,
-                                   final String letterId,
-                                   final String templateId,
-                                   final LocalDate letterSendingDate) {
-        return "psc name " + pscName
-                + ", companyNumber " + companyNumber
-                + ", letterId " + letterId
-                + ", templateId " + templateId
-                + ", letter sending date " + letterSendingDate + ".";
-    }
-
-    private String queryParameters(final String pscName,
-                                   final String companyNumber,
-                                   final String letterId,
-                                   final String templateId,
-                                   final LocalDate letterSendingDate,
-                                   final int letterNumber) {
-        return "psc name " + pscName
-                + ", companyNumber " + companyNumber
-                + ", letterId " + letterId
-                + ", templateId " + templateId
-                + ", letter sending date " + letterSendingDate
-                + ", letter number " + letterNumber + ".";
     }
 
     private void validateLetterNumber(final int letterNumber) {
