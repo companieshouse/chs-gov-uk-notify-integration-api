@@ -2,8 +2,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
@@ -77,13 +75,6 @@ public class NotificationDatabaseService {
     @Transactional( readOnly = true )
     public List<NotificationLetterRequest> getLetterByReference(final String reference) {
         return notificationLetterRequestRepository.findByReference(reference);
-    }
-
-    @Transactional( readOnly = true )
-    public Page<NotificationLetterRequest> getLetterByReference(final String reference,
-                                                                final int letterNumber) {
-        return notificationLetterRequestRepository.findByReference(reference,
-                PageRequest.of(letterNumber - 1, 1));
     }
 
     @Transactional( readOnly = true )

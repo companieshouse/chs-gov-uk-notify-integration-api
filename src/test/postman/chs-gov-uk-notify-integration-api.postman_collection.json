@@ -1034,33 +1034,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "view letters by reference",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/gov-uk-notify-integration/letters/view_by_reference/paginated_view/{{letter}}?reference=PSCDIR/09768964",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"gov-uk-notify-integration",
-								"letters",
-								"view_by_reference",
-								"paginated_view",
-								"{{letter}}"
-							],
-							"query": [
-								{
-									"key": "reference",
-									"value": "PSCDIR/09768964"
-								}
-							]
-						}
-					},
-					"response": []
 				}
 			],
 			"auth": {
