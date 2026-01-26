@@ -186,7 +186,7 @@ public class TestUtils {
     }
 
     public static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-direction-letter-request.json", UTF_8);
+        return resourceToString("/fixtures/send-new-psc-direction-letter-request.json", UTF_8);
     }
 
     public static ResultActions postSendLetterRequest(MockMvc mockMvc,

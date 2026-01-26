@@ -6,19 +6,15 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_LLP;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
 
 import com.google.common.collect.Sets;
 import java.util.Collections;
@@ -37,15 +33,6 @@ public class TemplateContextValidator {
     
     static {
         VALID_CONTEXTS = new HashMap<>();
-        VALID_CONTEXTS.put(CHIPS_DIRECTION_LETTER_1, Set.of(
-                ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                TODAYS_DATE,
-                REFERENCE,
-                COMPANY_NAME,
-                PSC_FULL_NAME,
-                DEADLINE_DATE,
-                EXTENSION_DATE
-        ));
         for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             VALID_CONTEXTS.put(key, Set.of(
                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,

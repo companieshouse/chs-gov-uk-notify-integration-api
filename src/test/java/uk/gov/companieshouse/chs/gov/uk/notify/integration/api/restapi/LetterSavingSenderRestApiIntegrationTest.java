@@ -10,25 +10,20 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Map;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonParser;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -58,12 +53,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     
     private static final String SAVED_LETTER_FILEPATH =
-            HtmlPdfGenerator.getPdfFilepath("send-direction-letter-request");
-    private static final File[] SAVED_LETTERS_TO_DELETE = new File[] {
-            new File(SAVED_LETTER_FILEPATH),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-csidvdeflet-request")),
-            new File(HtmlPdfGenerator.getPdfFilepath("send-idvpscdefault-request"))
-    };
+            HtmlPdfGenerator.getPdfFilepath("PSCDIR_00006400");
 
     @Autowired
     private MockMvc mockMvc;
@@ -79,16 +69,13 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         System.getProperties().setProperty("xr.util-logging.loggingEnabled", "true");
     }
 
-    @AfterAll
-    static void tearDown() {
-        Arrays.stream(SAVED_LETTERS_TO_DELETE).forEach(File::delete);
-    }
-
     @Test
     @DisplayName("Send letter successfully, saving letter PDF for troubleshooting in the process")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
-        sendLetter("send-direction-letter-request", log);
+        String requestName = "send-new-psc-direction-letter-request";
+        sendLetter(requestName, log);
         verifyLetterPdfContent();
+        deleteLetterPdf(requestName);
     }
 
     @ParameterizedTest(name = "Send English letter request json: {0}")
@@ -171,7 +158,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-direction-letter-request.json", UTF_8);
+        return resourceToString("/fixtures/send-new-psc-direction-letter-request.json", UTF_8);
     }
 
     private static String getSendLetterRequestBody(final String requestName) throws IOException {
@@ -206,10 +193,6 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     getValidSendLetterRequestBody(),
                     GovUkLetterDetailsRequest.class);
 
-            // Date
-            var date = LocalDate.now().format(DATE_FORMATTER);
-            assertThat(page1, containsString(date));
-
             // Reference
             var reference = request.getSenderDetails().getReference();
             assertThat(page1, containsString(reference));
@@ -233,14 +216,14 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
             Map<String,String> personalisationDetails =
                     objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
                             new TypeReference<>() {});
-            var pscFullName = personalisationDetails.get("psc_full_name");
+            var pscFullName = personalisationDetails.get("psc_name");
             assertThat(page1, containsString(pscFullName));
             var companyName = personalisationDetails.get("company_name").toUpperCase();
             assertThat(page1, containsString(companyName));
-            var deadlineDate = personalisationDetails.get("deadline_date");
+            var deadlineDate = personalisationDetails.get("idv_verification_due_date");
             assertThat(page1, containsString(deadlineDate));
-            var extensionDate = personalisationDetails.get("extension_date");
-            assertThat(page1, containsString(extensionDate));
+            var startDate = personalisationDetails.get("idv_start_date");
+            assertThat(page1, containsString(startDate));
         }
     }
 
