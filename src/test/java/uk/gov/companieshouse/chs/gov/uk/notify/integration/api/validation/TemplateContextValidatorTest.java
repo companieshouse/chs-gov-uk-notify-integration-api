@@ -25,7 +25,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_APPLICATION_ID;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -128,7 +127,9 @@ class TemplateContextValidatorTest {
     @Test
     @DisplayName("requiresTodaysDate returns false for letter templates that do not need today's date")
     void requiresTodaysDateIsFalse() {
-        assertThat(validator.requiresTodaysDate(CHIPS_EXTENSION_ACCEPTANCE_LETTER_1), is(false));
+        for (var letterTemplateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            assertThat(validator.requiresTodaysDate(letterTemplateKey), is(false));
+        }
     }
 
     @Test

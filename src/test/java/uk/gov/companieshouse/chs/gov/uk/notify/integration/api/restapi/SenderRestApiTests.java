@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -24,7 +24,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
 
@@ -203,10 +202,17 @@ class SenderRestApiTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "other", "CSIDVDEFLET_v1", "CSIDVDEFLET_v1.1", "IDVPSCDEFAULT_v1", "IDVPSCDEFAULT_v1.1" })
-    void sendLetter_shouldReturnCreated_defaultPostage(String templateId) throws Exception {
+    @CsvSource(value = { 
+            "ANY,version",
+            "null,other", 
+            "null,CSIDVDEFLET_v1", 
+            "null,CSIDVDEFLET_v1.1",
+            "null,IDVPSCDEFAULT_v1", 
+            "null,IDVPSCDEFAULT_v1.1", 
+            "IDVPSCDEFAULT,v1.0",
+            "CSIDVDEFLET,v1.0"}, nullValues = { "null" })
+    void sendLetter_shouldReturnCreated_defaultPostage(String letterId, String templateId) throws Exception {
         String contextId = "context1234";
-        String letterId = "letterId";
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
 
         var senderDetails = req.getSenderDetails();
@@ -222,15 +228,18 @@ class SenderRestApiTests {
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = { LetterTemplateKey.DIRECTION_LETTER,
-            LetterTemplateKey.NEW_PSC_DIRECTION_LETTER,
-            LetterTemplateKey.TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER,
-            LetterTemplateKey.EXTENSION_ACCEPTANCE_LETTER,
-            LetterTemplateKey.SECOND_EXTENSION_ACCEPTANCE_LETTER })
-    void sendLetter_shouldReturnCreated_whenSecondClassPostage(String templateId) throws Exception {
+    @CsvSource(value = { 
+            "null,direction_letter_v1",
+            "null,new_psc_direction_letter_v1",
+            "null,transitional_non_director_psc_information_letter_v1",
+            "null,extension_acceptance_letter_v1",
+            "null,second_extension_acceptance_letter_v1",
+            "IDVPSCEXT1,v1.0",
+            "IDVPSCEXT2,v1.0",
+            "IDVPSCDIRNEW,v1.0",
+            "IDVPSCDIRTRAN,v1.0"}, nullValues = { "null" })
+    void sendLetter_shouldReturnCreated_whenSecondClassPostage(String letterId, String templateId) throws Exception {
         String contextId = "context5678";
-        String letterId = null;
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", letterId, templateId);
 
         var senderDetails = req.getSenderDetails();

@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link th:replace="~{../../../common/notify_letter_layout :: stylesheet()}">
+    <link th:href="@{${letter} + style.css}" media="all" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="welsh_letter" th:if="${is_welsh}" th:with="is_welsh_letter=true">
+        <section th:replace="~{../../../common/notify_letter_layout :: notifyLetterLayout(
+            ~{content_cy},
+            ~{title_cy},
+            'Rhif y cwmni',
+            ${company_number})}">
+        </section>
+    </div>
+    <div id="welsh-page-break" style="page-break-before: always" th:if="${is_welsh}"></div>
+    <div id="english_letter">
+        <p class="second-letter-spacer" th:if="${is_welsh}"></p>
+        <section th:replace="~{../../../common/notify_letter_layout :: notifyLetterLayout(
+        ~{content_en},
+        ~{title_en},
+        'Company number',
+        ${company_number})}">
+        </section>
+    </div>
+</body>
+</html>
