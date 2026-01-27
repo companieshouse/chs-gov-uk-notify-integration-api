@@ -77,7 +77,7 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_TODAYS_DATE_IN_WELSH;
     static {
         EXPECTED_TODAYS_DATE = LocalDate.now().format(DATE_FORMATTER);
-        EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE, "today's date");
+        EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE);
     }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
@@ -489,12 +489,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
     }
 
@@ -520,12 +520,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
         String letterHtml = letter.html();
         assertThat(letterHtml.contains("PAC"), is(true));
@@ -630,12 +630,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
     }
 
@@ -661,12 +661,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
         String letterHtml = letter.html();
         assertThat(letterHtml.contains("PAC"), is(true));
