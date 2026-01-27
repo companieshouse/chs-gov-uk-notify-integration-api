@@ -51,11 +51,12 @@ public class WelshDatesPublisher {
 
     private static Map<String, Object> extractWelshDates(final Set<String> variableNames, Function<String, Object> dateGetter) {
         return variableNames.stream()
-                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
-                .filter(variableName -> dateGetter.apply(variableName) instanceof String)
+                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX)) // Only replace date values
+                .map(variableName -> Map.entry(variableName, dateGetter.apply(variableName))) // map to name => value
+                .filter(e -> e.getValue() instanceof String) // Only replace string objects
                 .collect(Collectors.toMap(
-                        variableName -> WELSH_DATE_VARIABLE_NAME_PREFIX + variableName,
-                        variableName -> getWelshDate(dateGetter.apply(variableName), variableName))
+                        e -> WELSH_DATE_VARIABLE_NAME_PREFIX + e.getKey(),
+                        e -> getWelshDate(e.getValue(), e.getKey()))
                 );
     }
 
