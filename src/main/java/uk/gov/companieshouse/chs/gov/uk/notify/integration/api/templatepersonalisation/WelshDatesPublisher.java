@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonal
 
 import static java.util.AbstractMap.SimpleEntry;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -41,7 +42,8 @@ public class WelshDatesPublisher {
 
     public static void publishWelshDates(final Context context) {
         var welshDateVariables = extractWelshDates(context.getVariableNames(), context::getVariable);
-        context.setVariables(welshDateVariables);
+        Map<String, Object> welshDateVariablesObject = new HashMap<>(welshDateVariables);
+        context.setVariables(welshDateVariablesObject);
     }
 
     public static void publishWelshDates(final Map<String, Object> personalisationDetails) {
@@ -49,20 +51,20 @@ public class WelshDatesPublisher {
         personalisationDetails.putAll(welshDateVariables);
     }
 
-    private static Map<String, Object> extractWelshDates(final Set<String> variableNames, Function<String, Object> dateGetter) {
+    private static Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, Object> dateGetter) {
         return variableNames.stream()
                 .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX)) // Only replace date values
                 .map(variableName -> Map.entry(variableName, dateGetter.apply(variableName))) // map to name => value
                 .filter(e -> e.getValue() instanceof String) // Only replace string objects
                 .collect(Collectors.toMap(
                         e -> WELSH_DATE_VARIABLE_NAME_PREFIX + e.getKey(),
-                        e -> getWelshDate(e.getValue(), e.getKey()))
+                        e -> getWelshDate((String) e.getValue(), e.getKey()))
                 );
     }
 
-    private static Object getWelshDate(final Object value, final String dateVariableName) {
+    private static String getWelshDate(final String value, final String dateVariableName) {
         try {
-            return getWelshDate(value.toString());
+            return getWelshDate(value);
         } catch (LetterValidationException ex) {
             throw new LetterValidationException(ex.getMessage() + " for " + dateVariableName);
         }
