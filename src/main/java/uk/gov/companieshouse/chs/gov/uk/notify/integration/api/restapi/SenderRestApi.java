@@ -67,13 +67,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
 
-        Map<String, String> personalisationDetails;
+        Map<String, Object> personalisationDetails;
         try {
             logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
                     govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
-                    new TypeReference<Map<String, String>>() {
-                    }
+                    new TypeReference<>() { }
             );
         } catch (JsonProcessingException e) {
             logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));

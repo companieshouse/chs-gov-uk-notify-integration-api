@@ -46,31 +46,40 @@ public class WelshDatesPublisher {
         context.setVariables(welshDateVariablesObject);
     }
 
-    public static void publishWelshDates(final Map<String, String> personalisationDetails) {
+    public static void publishWelshDates(final Map<String, Object> personalisationDetails) {
         var welshDateVariables = extractWelshDates(personalisationDetails.keySet(), personalisationDetails::get);
         personalisationDetails.putAll(welshDateVariables);
     }
 
-    private static Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, ?> dateGetter) {
+    private static Map<String, String> extractWelshDates(final Set<String> variableNames, Function<String, Object> dateGetter) {
         return variableNames.stream()
-                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX))
+                .filter(variableName -> variableName.endsWith(DATE_VARIABLE_NAME_SUFFIX)) // Only replace date values
+                .map(variableName -> Map.entry(variableName, dateGetter.apply(variableName))) // map to name => value
+                .filter(e -> e.getValue() instanceof String) // Only replace string objects
                 .collect(Collectors.toMap(
-                        variableName -> WELSH_DATE_VARIABLE_NAME_PREFIX + variableName,
-                        variableName -> getWelshDate(dateGetter.apply(variableName).toString(), variableName))
+                        e -> WELSH_DATE_VARIABLE_NAME_PREFIX + e.getKey(),
+                        e -> getWelshDate((String) e.getValue(), e.getKey()))
                 );
     }
 
-    public static String getWelshDate(final String englishDate, final String dateVariableName) {
+    private static String getWelshDate(final String value, final String dateVariableName) {
+        try {
+            return getWelshDate(value);
+        } catch (LetterValidationException ex) {
+            throw new LetterValidationException(ex.getMessage() + " for " + dateVariableName);
+        }
+    }
+
+    public static String getWelshDate(final String englishDate) {
         var dayMonthYear = englishDate.split(" ");
         if (dayMonthYear.length != 3) {
-            throw new LetterValidationException("Format of date '" + dateVariableName
-                    + "' '" + englishDate + "' is incorrect.");
+            throw new LetterValidationException("Incorrect date format '" + englishDate + "'");
         }
         var month = dayMonthYear[1];
         var welshMonth = WELSH_MONTHS_DICTIONARY.get(month);
         if (welshMonth == null) {
-            throw new LetterValidationException("Unknown month '" + month
-                    + "' found in '"  + dateVariableName + "' date '" + englishDate + "'.");
+            throw new LetterValidationException(
+                    "Unknown month '" + month + "' in date '" + englishDate + "'");
         }
         return dayMonthYear[0] + " " + welshMonth + " " + dayMonthYear[2];
     }

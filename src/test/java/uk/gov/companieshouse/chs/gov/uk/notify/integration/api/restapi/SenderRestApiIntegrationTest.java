@@ -141,11 +141,11 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "This PdfXConformanceException could indicate that a font, style or "
                     + "stylesheet cannot be found.";
     private static final String INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Format of date 'triggering_event_date' "
-                    + "'Monday, 30 June 2025' is incorrect.";
+            "Error in chs-gov-uk-notify-integration-api: Incorrect date format "
+                    + "'Monday, 30 June 2025' for triggering_event_date";
     private static final String INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' found in "
-                    + "'psc_appointment_date' date '24 Jun 2025'.";
+            "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' in "
+                    + "date '24 Jun 2025' for psc_appointment_date";
 
     @Autowired
     private MockMvc mockMvc;
