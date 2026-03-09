@@ -10,7 +10,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_5;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
@@ -79,9 +78,8 @@ public class TemplatePersonaliser {
         populateLetterWithDynamicDates(context, personalisationDetails, templateLookupKey);
         populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
-        var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
-        populateAddress(context, address, upperCaseCompanyName);
-        personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
+        populateAddress(context, address);
+        personaliseLetter(context, personalisationDetails);
 
         validator.validateContextForTemplate(context, templateLookupKey);
 
@@ -103,17 +101,7 @@ public class TemplatePersonaliser {
         }
     }
 
-    private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
-        // Company name must be provided and is always rendered in UPPER CASE in the letter.
-        var companyName = personalisationDetails.get(COMPANY_NAME);
-        if (isBlank(companyName)) {
-            throw new LetterValidationException(
-                    "No company name found in the letter personalisation details.");
-        }
-        return companyName.toUpperCase();
-    }
-
-    private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
+    private void populateAddress(Context context, Address address) {
         var addressLines = Map.of(
                 ADDRESS_LINE_1, blankIfNull(address.getAddressLine1()),
                 ADDRESS_LINE_2, blankIfNull(address.getAddressLine2()),
@@ -126,7 +114,7 @@ public class TemplatePersonaliser {
 
         addressLines.forEach((key, value) -> {
             if (!isBlank(value)) {
-                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName));
+                context.setVariable(key, value);
             }
         });
     }
@@ -136,24 +124,9 @@ public class TemplatePersonaliser {
     }
 
     private void personaliseLetter(Context context,
-                                   Map<String, String> personalisationDetails,
-                                   String upperCaseCompanyName) {
+                                   Map<String, String> personalisationDetails) {
         personalisationDetails.forEach((key, value) ->
-                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
-    }
-
-    /**
-     * If the address line is the company name, this serves to replace the company name with an
-     * uppercased version of the same.
-     *
-     * @param addressLine          the address line to be checked
-     * @param uppercaseCompanyName the uppercased company name
-     * @return either the uppercased version of the company name if the address line is the
-    company name, or otherwise the original address line, unchanged.
-     */
-    private String uppercaseIfCompanyName(String addressLine, String uppercaseCompanyName) {
-        return addressLine != null && addressLine.equalsIgnoreCase(uppercaseCompanyName)
-                ? uppercaseCompanyName : addressLine;
+                context.setVariable(key, value));
     }
 
     /**
