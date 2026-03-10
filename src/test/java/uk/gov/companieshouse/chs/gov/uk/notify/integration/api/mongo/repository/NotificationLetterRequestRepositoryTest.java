@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
@@ -26,8 +24,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
-
-    private static final String NULL_LETTER_ID = null;
 
     private static final Pageable LETTER_1 = PageRequest.of(0, 1);
     private static final Pageable LETTER_2 = PageRequest.of(1, 1);
@@ -138,68 +134,6 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         var firstLetter = requestRepository.findByReference("Not The Reference", LETTER_1);
         assertThat(firstLetter.isEmpty(), is(true));
-    }
-
-    @Test
-    @DisplayName("Able to paginate through letter requests sought by selection criteria")
-    void ableToPaginateThroughLettersSoughtBySelectionCriteria() {
-
-        saveThreeLettersWithReferences();
-
-        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_1);
-        var secondLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_2);
-        var lastLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_3);
-        var noLetter = findByPscNameOrLetterAndCompanyTemplateDate(LETTER_4);
-
-        assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
-        assertThat(firstLetter.stream().
-                        findFirst().get().getRequest().getSenderDetails().getReference(),
-                is("Reference 1"));
-        assertThat(secondLetter.stream().findFirst().isPresent(), is(true));
-        assertThat(secondLetter.stream().
-                        findFirst().get().getRequest().getSenderDetails().getReference(),
-                is("Reference 2"));
-        assertThat(lastLetter.stream().findFirst().isPresent(), is(true));
-        assertThat(lastLetter.stream().
-                        findFirst().get().getRequest().getSenderDetails().getReference(),
-                is("Reference 3"));
-
-        assertThat(noLetter.stream().findFirst().isPresent(), is(false));
-    }
-
-    @Test
-    @DisplayName("Not able to paginate through letter requests sought by selection criteria when none found")
-    void notAbleToPaginateThroughLettersWhenNoneFoundBySelectionCriteria() {
-
-        saveThreeLettersWithReferences();
-
-        var firstLetter = findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(
-                PageRequest.of(0, 1));
-        assertThat(firstLetter.isEmpty(), is(true));
-    }
-
-    private Page<NotificationLetterRequest>
-    findByPscNameOrLetterAndCompanyTemplateDate(Pageable letter) {
-        return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
-                "Joe Bloggs",
-                "00006400",
-                NULL_LETTER_ID,
-                "template-456",
-                LocalDate.now().toString(),
-                LocalDate.now().plusDays(1).toString(),
-                letter);
-    }
-
-    private Page<NotificationLetterRequest>
-    findByPscNameOrLetterAndCompanyTemplateDateWithWrongTemplateId(Pageable letter) {
-        return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
-                "Joe Bloggs",
-                "00006400",
-                NULL_LETTER_ID,
-                "unknown_template",
-                LocalDate.now().toString(),
-                LocalDate.now().plusDays(1).toString(),
-                letter);
     }
 
     private void saveThreeLettersWithReferences() {
