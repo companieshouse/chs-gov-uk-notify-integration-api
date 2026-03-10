@@ -201,7 +201,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
             var address = request.getRecipientDetails().getPhysicalAddress();
             var addressLine1 = address.getAddressLine1();
             assertThat(page1, containsString(addressLine1));
-            var addressLine2 = address.getAddressLine2().toUpperCase(); // company name
+            var addressLine2 = address.getAddressLine2(); // company name
             assertThat(page1, containsString(addressLine2));
             var addressLine3 = address.getAddressLine3();
             assertThat(page1, containsString(addressLine3));
@@ -218,7 +218,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
                             new TypeReference<>() {});
             var pscFullName = personalisationDetails.get("psc_name");
             assertThat(page1, containsString(pscFullName));
-            var companyName = personalisationDetails.get("company_name").toUpperCase();
+            var companyName = personalisationDetails.get("company_name");
             assertThat(page1, containsString(companyName));
             var deadlineDate = personalisationDetails.get("idv_verification_due_date");
             assertThat(page1, containsString(deadlineDate));
