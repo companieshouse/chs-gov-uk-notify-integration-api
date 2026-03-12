@@ -51,7 +51,7 @@ class TemplatePersonaliserIntegrationTest {
             Map.of("company_name", "Amazon");
 
     private static final Address ADDRESS = new Address()
-                        .addressLine1("Line 1")
+                        .addressLine1("Company Name")
                         .addressLine2("Line 2")
                         .addressLine3("Line 3")
                         .addressLine4("Line 4")
@@ -60,7 +60,7 @@ class TemplatePersonaliserIntegrationTest {
                         .addressLine7("Line 7");
 
     private static final Address SHORTER_ADDRESS = new Address()
-            .addressLine1("Line 1")
+            .addressLine1("Company Name")
             .addressLine2("Line 2")
             .addressLine3("Line 3")
             .addressLine4("Line 4");
@@ -120,7 +120,7 @@ class TemplatePersonaliserIntegrationTest {
                 LETTER_TEMPLATE_KEY,
                 "the reference",
                 Map.of(PSC_NAME, "Joe Bloggs",
-                        COMPANY_NAME, "Tŷ'r Cwmnïau",
+                        COMPANY_NAME, "COMPANY NAME",
                         COMPANY_NUMBER, "12345678",
                         IS_LLP, "false",
                         ACTION_DUE_DATE, "18 March 2025",
@@ -141,7 +141,7 @@ class TemplatePersonaliserIntegrationTest {
                 LETTER_TEMPLATE_KEY,
                 "the reference",
                 Map.of(PSC_NAME, "Joe Bloggs",
-                        COMPANY_NAME, "Tŷ'r Cwmnïau",
+                        COMPANY_NAME, "COMPANY NAME",
                         COMPANY_NUMBER, "12345678",
                         IS_LLP, "false",
                         ACTION_DUE_DATE, "18 March 2025",
@@ -745,7 +745,7 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterAddressed(final Document letter) {
-        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 1), is("Company Name"));
         assertThat(getAddressLine(letter, 2), is("Line 2"));
         assertThat(getAddressLine(letter, 3), is("Line 3"));
         assertThat(getAddressLine(letter, 4), is("Line 4"));
@@ -755,7 +755,7 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterAddressedWithShorterAddress(final Document letter) {
-        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 1), is("Company Name"));
         assertThat(getAddressLine(letter, 2), is("Line 2"));
         assertThat(getAddressLine(letter, 3), is("Line 3"));
         assertThat(getAddressLine(letter, 4), is("Line 4"));

@@ -23,7 +23,6 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
@@ -97,9 +96,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
             "Invalid token: service has no API keys";
     private static final String PDF_FILE_SIGNATURE = "%PDF-";
-    private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: No company name found in the "
-                    + "letter personalisation details.";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -216,22 +212,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
-    }
-
-    @Test
-    @DisplayName("Send letter without providing the company name in the personalisation details")
-    void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
-
-        // Given, when and then
-        postSendLetterRequest(mockMvc,
-                getRequestWithoutCompanyName(),
-                status().isBadRequest())
-                .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
-
-        assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
-
-        verifyLetterDetailsRequestStored();
-        verifyNoLetterResponsesAreStored();
     }
 
     @Test
@@ -752,27 +732,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static void verifyLetterPdfSent(StringBuilder fileSignature) {
         assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
-    }
-
-    private String getRequestWithoutCompanyName() throws IOException {
-        return getRequestWithoutPersonalisation(COMPANY_NAME);
-    }
-
-    private String getRequestWithoutPersonalisation(String personalisationName)
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
-
-        var personalisationDetails = JsonParser
-                .parseString(personalisationDetailsString)
-                .getAsJsonObject();
-        personalisationDetails.remove(personalisationName);
-
-        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
-        return objectMapper.writeValueAsString(request);
     }
 
     private String getRequestWithReferenceInPersonalisationDetails()
