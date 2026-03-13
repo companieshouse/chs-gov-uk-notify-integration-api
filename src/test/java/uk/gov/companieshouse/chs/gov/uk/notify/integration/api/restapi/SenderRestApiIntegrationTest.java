@@ -61,6 +61,7 @@ import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
@@ -642,8 +643,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         String csidvdefletRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
-                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY),
+                eq(new LetterReference("chips", letterType, reference)), eq(templateId), any(),
+                any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(govNotifyReference),
                 any());
     }
@@ -673,8 +675,9 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         String otherRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
         postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
 
-        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
-                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS),
+                eq(new LetterReference("chips", letterType, reference)), eq(templateId), any(),
+                any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(govNotifyReference),
                 any());
     }

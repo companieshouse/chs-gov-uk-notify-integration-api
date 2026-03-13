@@ -125,8 +125,7 @@ public class TemplatePersonaliser {
 
     private void personaliseLetter(Context context,
                                    Map<String, String> personalisationDetails) {
-        personalisationDetails.forEach((key, value) ->
-                context.setVariable(key, value));
+        personalisationDetails.forEach(context::setVariable);
     }
 
     /**
