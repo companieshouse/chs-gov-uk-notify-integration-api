@@ -18,6 +18,7 @@ import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrat
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
@@ -134,6 +135,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var appId = senderDetails.getAppId();
         var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
         var letterId = letterDetails.getLetterId();
+        var fullReference = new LetterReference(appId, letterId, reference);
         var templateId = letterDetails.getTemplateId();
         var postage = determinePostage(appId, letterId, templateId);
         var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
@@ -142,9 +144,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         try {
             var response = letterDispatcher.sendLetter(
                     postage,
-                    reference,
-                    appId,
-                    letterId,
+                    fullReference,
                     templateId,
                     address,
                     personalisationDetails,

@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -44,35 +43,24 @@ public class LetterDispatcher {
 
     public GovUkNotifyService.LetterResp sendLetter(
             final Postage postage,
-            final String reference,
-            final String appId,
-            final String letterId,
+            final LetterReference reference,
             final String templateId,
             final Address address,
             final String personalisationDetailsString,
             final String contextId) throws IOException {
         var letter = personaliseLetter(
                 reference,
-                appId,
-                letterId,
                 templateId,
                 address,
                 personalisationDetailsString,
                 contextId);
-        String govNotifyReference;
-        if (StringUtils.isBlank(letterId)) {
-            // Old letters do not have letter IDs and expect just the reference
-            govNotifyReference = reference;
-        } else {
-            govNotifyReference = String.join("-", appId, letterId, reference);
-        }
+        String govNotifyReference = reference.getFullReference();
+
         return sendLetterPdf(postage, govNotifyReference, contextId, letter);
     }
 
     private String personaliseLetter(
-            final String reference,
-            final String appId,
-            final String letterId,
+            final LetterReference reference,
             final String templateId,
             final Address address,
             final String personalisationDetailsString,
@@ -83,10 +71,10 @@ public class LetterDispatcher {
 
         return templatePersonaliser.personaliseLetterTemplate(
                 new LetterTemplateKey(
-                        appId,
-                        letterId,
+                        reference.appId(),
+                        reference.letterId(),
                         templateId),
-                        reference,
+                        reference.reference(),
                         personalisationDetails,
                         address);
     }

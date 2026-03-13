@@ -1,8 +1,19 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
+
 import java.io.IOException;
 import java.util.Map;
-
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
@@ -21,23 +32,12 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
@@ -217,8 +217,10 @@ class SenderRestApiTests {
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
-        Mockito.when(letterDispatcher.sendLetter(Postage.ECONOMY, senderDetails.getReference(),
-                senderDetails.getAppId(), letterDetails.getLetterId(),
+        LetterReference reference = new LetterReference(senderDetails.getAppId(), letterId,
+                senderDetails.getReference());
+        Mockito.when(
+                letterDispatcher.sendLetter(Postage.ECONOMY, reference,
                 letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
@@ -244,8 +246,9 @@ class SenderRestApiTests {
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
-        Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, senderDetails.getReference(),
-                senderDetails.getAppId(), letterDetails.getLetterId(),
+        LetterReference reference = new LetterReference(senderDetails.getAppId(), letterId,
+                senderDetails.getReference());
+        Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, reference,
                 letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
@@ -258,7 +261,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
@@ -269,7 +272,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
         GovUkLetterDetailsRequest req = createSampleLetterRequestWithTemplateId("chips", "letterId", "other");
-        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any(), any(), any()))
+        Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");
