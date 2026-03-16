@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,7 +24,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
-        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("john.doe@example.com");
+        EmailRequestDao emailRequest = createSampleEmailRequest("john.doe@example.com");
         NotificationEmailRequest notificationEmailRequest = new NotificationEmailRequest();
         notificationEmailRequest.setRequest(emailRequest);
         notificationEmailRequest.setId(null);
@@ -40,7 +40,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
-        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("jane.doe@example.com");
+        EmailRequestDao emailRequest = createSampleEmailRequest("jane.doe@example.com");
         NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
 
         Optional<NotificationEmailRequest> retrievedRequest = requestRepository.findById(savedRequest.getId());
@@ -73,7 +73,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
-        GovUkEmailDetailsRequest initialRequest = createSampleEmailRequest("initial@example.com");
+        EmailRequestDao initialRequest = createSampleEmailRequest("initial@example.com");
         NotificationEmailRequest savedRequest = requestRepository.save(new NotificationEmailRequest(null, null, initialRequest, null));
 
         savedRequest.getRequest().getSenderDetails().setEmailAddress( "updated@example.com" );

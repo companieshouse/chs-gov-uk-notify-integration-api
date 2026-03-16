@@ -1,54 +1,50 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleEmailResponse;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithReference;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterResponse;
 
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterResponse;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.*;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
 @SpringBootTest
 class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
-    
+
     @Autowired
     private NotificationLetterRequestRepository notificationLetterRequestRepository;
+
+    @Autowired
+    private NotificationEmailRequestRepository notificationEmailRequestRepository;
 
     @Autowired
     private NotificationDatabaseService notificationDatabaseService;
 
     @Test
-    void When_StoreEmail_ThenEmailStored() {
-        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("john.doe@example.com");
-        NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
-
-        assertNotNull(savedRequest);
-        assertNotNull(savedRequest.getId());
-    }
-
-    @Test
     void When_GetEmail_ThenEmailRetrieved() {
-        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequest("jane.smith@example.com");
-        NotificationEmailRequest savedRequest = notificationDatabaseService.storeEmail(emailRequest);
+        EmailRequestDao emailRequest = createSampleEmailRequest("jane.smith@example.com");
+        NotificationEmailRequest savedRequest = saveEmail(emailRequest);
         String id = savedRequest.getId();
 
         Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService.getEmail(id);
@@ -67,8 +63,8 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
     @Test
     void When_FindAllEmails_ThenAllEmailsRetrieved() {
-        notificationDatabaseService.storeEmail(createSampleEmailRequest("user1@example.com"));
-        notificationDatabaseService.storeEmail(createSampleEmailRequest("user2@example.com"));
+        saveEmail(createSampleEmailRequest("user1@example.com"));
+        saveEmail(createSampleEmailRequest("user2@example.com"));
 
         List<NotificationEmailRequest> allEmails = notificationDatabaseService.findAllEmails();
 
@@ -109,46 +105,11 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
         assertTrue(allLetters.size() >= 2);
     }
 
-    private NotificationLetterRequest saveLetter(LetterRequestDao letterRequest) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
-    }
-
-    @Test
-    void When_UpdateStatus_ThenStatusUpdated() {
-        String requestId = UUID.randomUUID().toString();
-        String responseId = UUID.randomUUID().toString();
-        Map<String, Object> statusDetails = Map.of(
-                "timestamp", System.currentTimeMillis(),
-                "message", "Email sent successfully",
-                "deliveryChannel", "email"
-        );
-
-        NotificationStatus status = new NotificationStatus(
-                null,
-                null,
-                requestId,
-                responseId,
-                "SENT",
-                statusDetails,
-                null
-        );
-
-        NotificationStatus savedStatus = notificationDatabaseService.updateStatus(status);
-
-        assertNotNull(savedStatus);
-        assertNotNull(savedStatus.getId());
-        assertEquals(requestId, savedStatus.getRequestId());
-        assertEquals(responseId, savedStatus.getResponseId());
-        assertEquals("SENT", savedStatus.getStatus());
-        assertNotNull(savedStatus.getStatusDetails());
-        assertEquals("Email sent successfully", savedStatus.getStatusDetails().get("message"));
-    }
-
     @Test
     void When_GetEmailByReference_ThenEmailsRetrieved() {
         String reference = "REF-123-EMAIL";
-        GovUkEmailDetailsRequest emailRequest = createSampleEmailRequestWithReference("user1@example.com", reference);
-        notificationDatabaseService.storeEmail(emailRequest);
+        EmailRequestDao emailRequest = createSampleEmailRequestWithReference("user1@example.com", reference);
+        saveEmail(emailRequest);
 
         List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
 
@@ -205,11 +166,11 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     @Test
     void When_MultipleEmailsWithSameReference_ThenAllRetrieved() {
         String reference = "MULTI-EMAIL-REF";
-        GovUkEmailDetailsRequest email1 = createSampleEmailRequestWithReference("user1@example.com", reference);
-        GovUkEmailDetailsRequest email2 = createSampleEmailRequestWithReference("user2@example.com", reference);
+        EmailRequestDao email1 = createSampleEmailRequestWithReference("user1@example.com", reference);
+        EmailRequestDao email2 = createSampleEmailRequestWithReference("user2@example.com", reference);
 
-        notificationDatabaseService.storeEmail(email1);
-        notificationDatabaseService.storeEmail(email2);
+        saveEmail(email1);
+        saveEmail(email2);
 
         List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
 
@@ -237,5 +198,13 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
             GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
             assertEquals(reference, mapped.getSenderDetails().getReference());
         }
+    }
+
+    private NotificationEmailRequest saveEmail(EmailRequestDao emailRequest) {
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
+    }
+
+    private NotificationLetterRequest saveLetter(LetterRequestDao letterRequest) {
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
     }
 }

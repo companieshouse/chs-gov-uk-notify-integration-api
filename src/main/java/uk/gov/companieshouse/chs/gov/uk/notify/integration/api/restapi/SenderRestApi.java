@@ -19,6 +19,8 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -70,11 +72,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
 
+        EmailRequestDao emailRequest = EmailRequestMapper.toDao(govUkEmailDetailsRequest);
+
         Map<String, Object> personalisationDetails;
         try {
             logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
-                    govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
+                    emailRequest.getEmailDetails().getPersonalisationDetails(),
                     new TypeReference<>() { }
             );
         } catch (JsonProcessingException e) {
@@ -90,16 +94,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
-        notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
-
-        logger.infoContext(xHeaderId, "Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
         var emailResp = govUkNotifyService.sendEmail(
-                govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
-                govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
-                govUkEmailDetailsRequest.getSenderDetails().getReference(),
+                emailRequest.getRecipientDetails().getEmailAddress(),
+                emailRequest.getEmailDetails().getTemplateId(),
+                emailRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 

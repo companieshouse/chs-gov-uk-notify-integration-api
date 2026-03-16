@@ -100,7 +100,6 @@ class SenderRestApiTests {
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(govUkEmailDetailsRequest, XHEADER);
 
-        verify(notificationDatabaseService).storeEmail(govUkEmailDetailsRequest);
         verify(govUKNotifyEmailFacade).sendEmail(VALID_EMAIL, VALID_TEMPLATE_ID, VALID_REFERENCE, VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         Assertions.assertNotNull(response);

@@ -7,19 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterResponse;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationStatusRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-
 
 @Service
 public class NotificationDatabaseService {
@@ -30,25 +26,17 @@ public class NotificationDatabaseService {
     private final NotificationEmailResponseRepository notificationEmailResponseRepository;
     private final NotificationLetterRequestRepository notificationLetterRequestRepository;
     private final NotificationLetterResponseRepository notificationLetterResponseRepository;
-    private final NotificationStatusRepository notificationStatusRepository; // not in mvp, will be done later
 
     public NotificationDatabaseService(
             final NotificationEmailRequestRepository notificationEmailRequestRepository,
             final NotificationEmailResponseRepository notificationEmailResponseRepository,
             final NotificationLetterRequestRepository notificationLetterRequestRepository,
-            final NotificationLetterResponseRepository notificationLetterResponseRepository,
-            final NotificationStatusRepository notificationStatusRepository
+            final NotificationLetterResponseRepository notificationLetterResponseRepository
     ) {
         this.notificationEmailRequestRepository = notificationEmailRequestRepository;
         this.notificationLetterRequestRepository = notificationLetterRequestRepository;
         this.notificationEmailResponseRepository = notificationEmailResponseRepository;
         this.notificationLetterResponseRepository = notificationLetterResponseRepository;
-        this.notificationStatusRepository = notificationStatusRepository;
-    }
-
-    @Transactional
-    public NotificationEmailRequest storeEmail(final GovUkEmailDetailsRequest emailDetailsRequest) {
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailDetailsRequest, null));
     }
 
     @Transactional( readOnly = true )
@@ -134,11 +122,6 @@ public class NotificationDatabaseService {
     @Transactional()
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
         return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, null, letterResp.response(), null));
-    }
-
-    @Transactional()
-    public NotificationStatus updateStatus(final NotificationStatus notificationStatus) {
-        return notificationStatusRepository.save(notificationStatus);
     }
 
 }

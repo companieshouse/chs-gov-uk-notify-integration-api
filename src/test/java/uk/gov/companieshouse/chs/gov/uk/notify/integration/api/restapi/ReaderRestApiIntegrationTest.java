@@ -35,11 +35,11 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 
 import static com.google.common.net.HttpHeaders.X_REQUEST_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -151,9 +151,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private NotificationDatabaseService notificationDatabaseService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -175,8 +172,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void When_RequestingAllEmails_Expect_SuccessfulResponseWithEmailList() throws Exception {
         notificationEmailRequestRepository.deleteAll();
 
-        GovUkEmailDetailsRequest emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
-        notificationDatabaseService.storeEmail(emailRequest);
+        EmailRequestDao emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
+        saveEmail(emailRequest);
 
         MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/emails")
                         .accept(MediaType.APPLICATION_JSON)
@@ -220,8 +217,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestingEmailById_Expect_SuccessfulResponseWithMatchingEmail() throws Exception {
-        GovUkEmailDetailsRequest emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
-        NotificationEmailRequest savedEmail = notificationDatabaseService.storeEmail(emailRequest);
+        EmailRequestDao emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
+        NotificationEmailRequest savedEmail = saveEmail(emailRequest);
         String emailId = savedEmail.getId();
 
         MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/email/" + emailId)
@@ -1308,6 +1305,15 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         letterRequest.getLetterDetails().setTemplateId(TEST_TEMPLATE_ID);
         letterRequest.getLetterDetails().setPersonalisationDetails("{ \"verification_due_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\", \"is_llp\": \"no\"}");
         return saveLetter(letterRequest).getRequest();
+    }
+    
+    private NotificationEmailRequest saveEmail(EmailRequestDao request) throws Exception {
+        var responseReceived = new LetterResponse(
+                resourceToString("/fixtures/send-letter-response.json", UTF_8));
+        when(notificationClient.sendPrecompiledLetterWithInputStream(
+                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
+
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, request, null));
     }
 
     private void implementLetterNotFoundTest(CapturedOutput log,

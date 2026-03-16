@@ -8,6 +8,10 @@ import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 
 public class LetterRequestMapper {
 
+    private LetterRequestMapper() {
+        // Private constructor to prevent instantiation
+    }
+
     public static LetterRequestDao toDao(GovUkLetterDetailsRequest src) {
         if (src == null) {
             return null;
@@ -69,8 +73,9 @@ public class LetterRequestMapper {
     }
 
     public static RecipientDetailsLetter fromDao(LetterRecipientDetailsDao src) {
-        if (src == null)
+        if (src == null) {
             return null;
+        }
         RecipientDetailsLetter dest = new RecipientDetailsLetter();
         dest.setName(src.getName());
         dest.setPhysicalAddress(fromDao(src.getPhysicalAddress()));
