@@ -1,20 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterWithReference;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
@@ -39,7 +39,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main St");
+        LetterRequestDao letterRequest = createSampleLetterRequest("123 Main St");
         NotificationLetterRequest notificationLetterRequest = new NotificationLetterRequest();
         notificationLetterRequest.setRequest(letterRequest);
         notificationLetterRequest.setId(null);
@@ -55,7 +55,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 Oak Ave");
+        LetterRequestDao letterRequest = createSampleLetterRequest("456 Oak Ave");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
 
         Optional<NotificationLetterRequest> retrievedRequest = requestRepository.findById(savedRequest.getId());
@@ -88,7 +88,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
-        GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
+        LetterRequestDao initialRequest = createSampleLetterRequest("Initial Address");
         NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
 
         savedRequest.getRequest().getRecipientDetails().getPhysicalAddress().setAddressLine1( "Updated Address" );
@@ -183,8 +183,8 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         return requestRepository.findByPscNameOrLetterAndCompanyTemplateDate(
                 "Joe Bloggs",
                 "00006400",
-                NULL_LETTER_ID,
-                "template-456",
+                "IDVPSCDIRNEW",
+                "v1.0",
                 LocalDate.now().toString(),
                 LocalDate.now().plusDays(1).toString(),
                 letter);
@@ -210,6 +210,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     private void saveLetterWithReference(String reference) {
         var letter = createLetterWithReference(reference);
+        letter.setCreatedAt(OffsetDateTime.now());
         requestRepository.save(new NotificationLetterRequest(null, null, letter, null));
     }
 

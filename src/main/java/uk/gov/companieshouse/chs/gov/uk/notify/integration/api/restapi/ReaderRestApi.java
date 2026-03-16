@@ -22,6 +22,7 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher.SentLetterFetcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.ViewLetterValidator;
@@ -130,6 +131,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         return new ResponseEntity<>(
                 letters.stream()
                         .map(NotificationLetterRequest::getRequest)
+                        .map(LetterRequestMapper::fromDao)
                         .toList(),
                 HttpStatus.OK
         );
@@ -149,7 +151,8 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
 
         if (letterRequest.isPresent()) {
             LOGGER.info("Letter notification found with ID: " + id, logMap);
-            return new ResponseEntity<>(letterRequest.get().getRequest(), HttpStatus.OK);
+            GovUkLetterDetailsRequest request = LetterRequestMapper.fromDao(letterRequest.get().getRequest());
+            return new ResponseEntity<>(request, HttpStatus.OK);
         } else {
             LOGGER.info("Letter notification not found with ID: " + id, logMap);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -173,6 +176,7 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         return new ResponseEntity<>(
                 letters.stream()
                         .map(NotificationLetterRequest::getRequest)
+                        .map(LetterRequestMapper::fromDao)
                         .toList(),
                 HttpStatus.OK
         );

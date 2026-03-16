@@ -10,9 +10,9 @@ import static org.mockito.Mockito.withSettings;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequestWithTemplateId;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -26,13 +26,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.model.LetterDetails;
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
+import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsLetter;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
@@ -217,11 +221,12 @@ class SenderRestApiTests {
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
+        var address = LetterRequestMapper.toDao(req.getRecipientDetails().getPhysicalAddress());
         LetterReference reference = new LetterReference(senderDetails.getAppId(), letterId,
                 senderDetails.getReference());
         Mockito.when(
                 letterDispatcher.sendLetter(Postage.ECONOMY, reference,
-                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getTemplateId(), address,
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
@@ -246,10 +251,11 @@ class SenderRestApiTests {
 
         var senderDetails = req.getSenderDetails();
         var letterDetails = req.getLetterDetails();
+        var address = LetterRequestMapper.toDao(req.getRecipientDetails().getPhysicalAddress());
         LetterReference reference = new LetterReference(senderDetails.getAppId(), letterId,
                 senderDetails.getReference());
         Mockito.when(letterDispatcher.sendLetter(Postage.SECOND_CLASS, reference,
-                letterDetails.getTemplateId(), req.getRecipientDetails().getPhysicalAddress(),
+                letterDetails.getTemplateId(), address,
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
@@ -280,5 +286,26 @@ class SenderRestApiTests {
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
     }
 
+    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId,
+            String letterId, String templateId) {
+        SenderDetails senderDetails = new SenderDetails(appId, "test-reference");
+        Address address = new Address()
+                .addressLine1("Test Address Line 1")
+                .addressLine2("Apt 101")
+                .addressLine3("District")
+                .addressLine4("City")
+                .addressLine5("County");
+        RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
+                .name("Test Recipient")
+                .physicalAddress(address);
+        LetterDetails letterDetails = new LetterDetails(templateId, "Dear {{name}}");
+        letterDetails.setLetterId(letterId);
+
+        return new GovUkLetterDetailsRequest()
+                .senderDetails(senderDetails)
+                .recipientDetails(recipientDetails)
+                .letterDetails(letterDetails)
+                .createdAt(OffsetDateTime.now());
+    }
 
 }

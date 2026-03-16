@@ -17,6 +17,9 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,6 +30,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 @SpringBootTest
 class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     
+    @Autowired
+    private NotificationLetterRequestRepository notificationLetterRequestRepository;
+
     @Autowired
     private NotificationDatabaseService notificationDatabaseService;
 
@@ -71,25 +77,18 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void When_StoreLetter_ThenLetterStored() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main Street");
-        NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
-
-        assertNotNull(savedRequest);
-        assertNotNull(savedRequest.getId());
-    }
-
-    @Test
     void When_GetLetter_ThenLetterRetrieved() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 High Street");
-        NotificationLetterRequest savedRequest = notificationDatabaseService.storeLetter(letterRequest);
+        LetterRequestDao letterRequest = createSampleLetterRequest("456 High Street");
+        NotificationLetterRequest savedRequest = saveLetter(letterRequest);
         String id = savedRequest.getId();
 
         Optional<NotificationLetterRequest> retrievedRequest = notificationDatabaseService.getLetter(id);
 
         assertTrue(retrievedRequest.isPresent());
         assertEquals(id, retrievedRequest.get().getId());
-        assertEquals("456 High Street", retrievedRequest.get().getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
+        LetterRequestDao mongoLetter = retrievedRequest.get().getRequest();
+        GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
+        assertEquals("456 High Street", mapped.getRecipientDetails().getPhysicalAddress().getAddressLine1());
     }
 
     @Test
@@ -101,13 +100,17 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
     @Test
     void When_FindAllLetters_ThenAllLettersRetrieved() {
-        notificationDatabaseService.storeLetter(createSampleLetterRequest("789 Broadway"));
-        notificationDatabaseService.storeLetter(createSampleLetterRequest("101 Park Avenue"));
+        saveLetter(createSampleLetterRequest("789 Broadway"));
+        saveLetter(createSampleLetterRequest("101 Park Avenue"));
 
         List<NotificationLetterRequest> allLetters = notificationDatabaseService.findAllLetters();
 
         assertNotNull(allLetters);
         assertTrue(allLetters.size() >= 2);
+    }
+
+    private NotificationLetterRequest saveLetter(LetterRequestDao letterRequest) {
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
     }
 
     @Test
@@ -165,14 +168,16 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     @Test
     void When_GetLetterByReference_ThenLettersRetrieved() {
         String reference = "REF-456-LETTER";
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequestWithReference("123 Main Street", reference);
-        notificationDatabaseService.storeLetter(letterRequest);
+        LetterRequestDao letterRequest = createSampleLetterRequestWithReference("123 Main Street", reference);
+        saveLetter(letterRequest);
 
         List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference(reference);
 
         assertNotNull(retrievedLetters);
         assertFalse(retrievedLetters.isEmpty());
-        assertEquals(reference, retrievedLetters.get(0).getRequest().getSenderDetails().getReference());
+        LetterRequestDao mongoLetter = retrievedLetters.get(0).getRequest();
+        GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
+        assertEquals(reference, mapped.getSenderDetails().getReference());
     }
 
     @Test
@@ -217,17 +222,20 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     @Test
     void When_MultipleLettersWithSameReference_ThenAllRetrieved() {
         String reference = "MULTI-LETTER-REF";
-        GovUkLetterDetailsRequest letter1 = createSampleLetterRequestWithReference("123 Main St", reference);
-        GovUkLetterDetailsRequest letter2 = createSampleLetterRequestWithReference("456 High St", reference);
+        LetterRequestDao letter1 = createSampleLetterRequestWithReference("123 Main St", reference);
+        LetterRequestDao letter2 = createSampleLetterRequestWithReference("456 High St", reference);
 
-        notificationDatabaseService.storeLetter(letter1);
-        notificationDatabaseService.storeLetter(letter2);
+        saveLetter(letter1);
+        saveLetter(letter2);
 
         List<NotificationLetterRequest> retrievedLetters = notificationDatabaseService.getLetterByReference(reference);
 
         assertNotNull(retrievedLetters);
         assertEquals(2, retrievedLetters.size());
-        assertEquals(reference, retrievedLetters.get(0).getRequest().getSenderDetails().getReference());
-        assertEquals(reference, retrievedLetters.get(1).getRequest().getSenderDetails().getReference());
+        for (NotificationLetterRequest req : retrievedLetters) {
+            LetterRequestDao mongoLetter = req.getRequest();
+            GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
+            assertEquals(reference, mapped.getSenderDetails().getReference());
+        }
     }
 }

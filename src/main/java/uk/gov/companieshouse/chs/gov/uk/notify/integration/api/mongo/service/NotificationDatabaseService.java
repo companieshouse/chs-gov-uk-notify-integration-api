@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
@@ -65,11 +64,6 @@ public class NotificationDatabaseService {
     @Transactional( readOnly = true )
     public List<NotificationEmailRequest> findAllEmails() {
         return notificationEmailRequestRepository.findAll();
-    }
-
-    @Transactional()
-    public NotificationLetterRequest storeLetter(final GovUkLetterDetailsRequest letterDetails) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterDetails, null));
     }
 
     @Transactional( readOnly = true )

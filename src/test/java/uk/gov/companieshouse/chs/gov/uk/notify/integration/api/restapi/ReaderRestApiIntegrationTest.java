@@ -34,6 +34,9 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -59,7 +62,6 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTIT
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
@@ -74,51 +76,37 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
     private static final String TEST_EMAIL = "test@example.com";
-    private static final String TEST_ADDRESS_LINE = "123 Test Street";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
     private static final String ERIC_IDENTITY_OAUTH2_TYPE = "oauth2";
 
-    private static final String REFERENCE_FOR_MISSING_LETTER = "never sent";
-    private static final String REFERENCE_SHARED_BY_MULTIPLE_LETTERS =
-            "more than 1 letter sent with this reference";
-    private static final String REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER =
-            "calculated sending date letter";
-    private static final String REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER =
-            "today's sending date letter";
-    private static final String REFERENCE_FOR_LETTER_SENT = "letter sent";
     private static final String TOKEN_REFERENCE = "token reference";
 
     private static final String EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Letter not found for reference: "
-            + REFERENCE_FOR_MISSING_LETTER;
+            + TOKEN_REFERENCE;
     private static final String EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Letter number 1 not found. "
                     + "Total number of matching letters was 0.";
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE =
         "Error in chs-gov-uk-notify-integration-api: Multiple letters found for reference: "
-            + REFERENCE_SHARED_BY_MULTIPLE_LETTERS;
+            + TOKEN_REFERENCE;
     private static final String EXPECTED_SECURITY_OK_LOG_MESSAGE =
             "authorised as api key (internal user)";
 
     private static final String PSC_NAME = "ANDREWPHILLIPLONGNAME BARROW";
     private static final String NULL_PSC_NAME = null;
     private static final String COMPANY_NUMBER = "00006400";
-    private static final String NULL_LETTER_ID = null;
-    private static final String VALID_LETTER_ID = "CSIDVDEFLET";
-    private static final String TEMPLATE_ID = "new_psc_direction_letter_v1";
-    private static final String CSIDVDEFLET_TEMPLATE_ID = "v1.0";
+    private static final String TEST_LETTER_ID = "IDVPSCDIRNEW";
+    private static final String TEST_TEMPLATE_ID = "v1.0";
     private static final String LETTER_SENDING_DATE = "2025-04-08";
-    private static final String CSIDVDEFLET_LETTER_SENDING_DATE = "2025-10-03";
-    private static final String NOT_LETTER_SENDING_DATE = "1999-12-30";
-    private static final String UNPARSEABLE_LETTER_SENDING_DATE = "8 April 2025";
 
     private static final String EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2 =
             "Error in chs-gov-uk-notify-integration-api: Multiple letters found for psc name "
                     + PSC_NAME  + ", companyNumber "
                     + COMPANY_NUMBER +  ", letterId "
-                    + NULL_LETTER_ID + ", templateId "
-                    + TEMPLATE_ID + ", letter sending date "
+                    + TEST_LETTER_ID + ", templateId "
+                    + TEST_TEMPLATE_ID + ", letter sending date "
                     + LETTER_SENDING_DATE + ".";
 
     private static final int INVALID_LETTER_0 = 0;
@@ -210,9 +198,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     void When_RequestingAllLetters_Expect_SuccessfulResponseWithLetterList() throws Exception {
         notificationLetterRequestRepository.deleteAll();
-        
-        GovUkLetterDetailsRequest letterRequest = TestUtils.createSampleLetterRequest(TEST_ADDRESS_LINE);
-        notificationDatabaseService.storeLetter(letterRequest);
+
+        var letterRequest = createLetter();
 
         MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/letters")
                         .accept(MediaType.APPLICATION_JSON)
@@ -228,7 +215,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertNotNull(letterResponses);
         assertEquals(1, letterResponses.size());
-        assertEquals(TEST_ADDRESS_LINE, letterResponses.get(0).getRecipientDetails().getPhysicalAddress().getAddressLine1());
+        assertEquals(letterRequest, LetterRequestMapper.toDao(letterResponses.get(0)));
     }
 
     @Test
@@ -347,13 +334,13 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     @DisplayName("Reports fact letter cannot be found by reference")
     void unableToViewLetterAsLetterWithReferenceNotFound(CapturedOutput log) throws Exception {
-        viewLetterPdfByReference(REFERENCE_FOR_MISSING_LETTER,
+        viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isNotFound())
                 .andExpect(content().string(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
-                        getExpectedViewLetterInvocationLogMessage(REFERENCE_FOR_MISSING_LETTER)),
+                        getExpectedViewLetterInvocationLogMessage(TOKEN_REFERENCE)),
                 is(true));
         assertThat(log.getAll().contains(EXPECTED_LETTER_NOT_FOUND_ERROR_MESSAGE), is(true));
     }
@@ -364,17 +351,17 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS);
-        sendLetterWithReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS);
+        createLetter();
+        createLetter();
 
         // When and then
-        viewLetterPdfByReference(REFERENCE_SHARED_BY_MULTIPLE_LETTERS,
+        viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isConflict())
                 .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
-                getExpectedViewLetterInvocationLogMessage(REFERENCE_SHARED_BY_MULTIPLE_LETTERS)),
+                getExpectedViewLetterInvocationLogMessage(TOKEN_REFERENCE)),
                 is(true));
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE), is(true));
     }
@@ -392,20 +379,20 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterWithCalculatedLetterSendingDate(CapturedOutput log) throws Exception {
 
         // Given
-        var requestBody = sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        var letterRequest = createLetter();
 
         // When and then
-        var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+        var letterPdf = viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                 getExpectedViewLetterInvocationLogMessage(
-                        REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                        TOKEN_REFERENCE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
-                        + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
+                        + TOKEN_REFERENCE;
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
 
         var document = Loader.loadPDF(letterPdf);
@@ -413,14 +400,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Substitutions all occur on page 1.
         var page1 = getPageText(document, 1);
 
-        // Check reference in letter PDF.
-        assertThat(page1, containsString(
-                "Reference:\n" + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER));
-
         // Check letter sending date in letter PDF is the calculated date provided
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
         Map<String,String> personalisationDetails =
-                objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
+                objectMapper.readValue(letterRequest.getLetterDetails().getPersonalisationDetails(),
                         new TypeReference<>() {});
         var calculatedDate = personalisationDetails.get("idv_start_date");
         assertThat(page1, containsString("Date:\n" + calculatedDate));
@@ -441,27 +423,22 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterWithOriginalTodaysLetterSendingDate(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendInformationLetterRequestBody(),
-                REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        var letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        letterRequest.getLetterDetails().setLetterId("IDVPSCDIRTRAN"); // requiring todays date
+        saveLetter(letterRequest);
 
         // When and then
-        var letterPdf = viewLetterPdfByReference(REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER,
+        var letterPdf = viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                                REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER)),
+                                TOKEN_REFERENCE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
-                        + REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER;
+                        + TOKEN_REFERENCE;
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
 
         var document = Loader.loadPDF(letterPdf);
@@ -469,14 +446,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Substitutions all occur on page 1.
         var page1 = getPageText(document, 1);
 
-        // Check reference in letter PDF.
-        assertThat(page1, containsString(
-                "Reference:\n" + REFERENCE_FOR_TODAYS_SENDING_DATE_LETTER));
-
         // Check letter sending date in letter PDF is the original sending date.
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
-        var originalSendingDate = request.getCreatedAt()
-                .format(DATE_FORMATTER);
+        var originalSendingDate = letterRequest.getCreatedAt().format(DATE_FORMATTER);
         assertThat(page1, containsString("Date:\n" + originalSendingDate));
     }
 
@@ -485,20 +456,20 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
                 .thenThrow(new IOException("Thrown by test."));
 
         // When and then
-        viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+        viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                                TOKEN_REFERENCE)),
                 is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
@@ -510,7 +481,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -518,17 +489,17 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
         // When and then
-       viewLetterPdfByReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER,
+       viewLetterPdfByReference(TOKEN_REFERENCE,
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(
-                                REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER)),
+                                TOKEN_REFERENCE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with reference "
-                        + REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER;
+                        + TOKEN_REFERENCE;
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
@@ -539,14 +510,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("View letter PDF identified by PSC name, company number, letter type and sending date successfully")
     void viewLetterByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
         // Given
-        var requestBody = sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
+        var letterRequest = createLetter();
 
         // When and then
         var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
         status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
@@ -555,16 +526,16 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         getExpectedViewLetterInvocationLogMessage(
                                 PSC_NAME,
                                 COMPANY_NUMBER,
-                                NULL_LETTER_ID,
-                                TEMPLATE_ID,
+                                TEST_LETTER_ID,
+                                TEST_TEMPLATE_ID,
                                 LETTER_SENDING_DATE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
                         + COMPANY_NUMBER + ", letterId "
-                        + NULL_LETTER_ID + ", templateId "
-                        + TEMPLATE_ID + ", letter sending date "
+                        + TEST_LETTER_ID + ", templateId "
+                        + TEST_TEMPLATE_ID + ", letter sending date "
                         + LETTER_SENDING_DATE + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
 
@@ -573,13 +544,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Substitutions all occur on page 1.
         var page1 = getPageText(document, 1);
 
-        // Check reference in letter PDF.
-        assertThat(page1, containsString("Reference:\n" + REFERENCE_FOR_LETTER_SENT));
-
         // Check letter sending date in letter PDF is the calculated date provided
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
         Map<String,String> personalisationDetails =
-                objectMapper.readValue(request.getLetterDetails().getPersonalisationDetails(),
+                objectMapper.readValue(letterRequest.getLetterDetails().getPersonalisationDetails(),
                         new TypeReference<>() {});
         var calculatedDate = personalisationDetails.get("idv_start_date");
         assertThat(page1, containsString("Date:\n" + calculatedDate));
@@ -590,20 +557,18 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterByLetterIdCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getValidCsidvdefletLetterRequestBody();
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+        var letterRequest = createCsidvdefletLetter();
+
+        String letterId = letterRequest.getLetterDetails().getLetterId();
+        String templateId = letterRequest.getLetterDetails().getTemplateId();
 
         // When and then
         var letterPdf = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                VALID_LETTER_ID,
-                CSIDVDEFLET_TEMPLATE_ID,
-                CSIDVDEFLET_LETTER_SENDING_DATE,
+                letterId,
+                templateId,
+                LETTER_SENDING_DATE,
                 status().isOk()).andReturn().getResponse().getContentAsByteArray();
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
@@ -611,17 +576,17 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         getExpectedViewLetterInvocationLogMessage(
                                 PSC_NAME,
                                 COMPANY_NUMBER,
-                                VALID_LETTER_ID,
-                                CSIDVDEFLET_TEMPLATE_ID,
-                                CSIDVDEFLET_LETTER_SENDING_DATE)),
+                                letterId,
+                                templateId,
+                                LETTER_SENDING_DATE)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
                         + COMPANY_NUMBER + ", letterId "
-                        + VALID_LETTER_ID + ", templateId "
-                        + CSIDVDEFLET_TEMPLATE_ID + ", letter sending date "
-                        + CSIDVDEFLET_LETTER_SENDING_DATE + ".";
+                        + letterId + ", templateId "
+                        + templateId + ", letter sending date "
+                        + LETTER_SENDING_DATE + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
 
         var document = Loader.loadPDF(letterPdf);
@@ -634,8 +599,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Company number:\n" + COMPANY_NUMBER));
 
         // Check letter sending date in letter PDF is the original sending date.
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
-        var originalSendingDate = request.getCreatedAt()
+        var originalSendingDate = letterRequest.getCreatedAt()
                 .format(DATE_FORMATTER);
         assertThat(page1, containsString("Date:\n" + originalSendingDate));
     }
@@ -646,7 +610,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -656,8 +620,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 status().isInternalServerError());
 
@@ -665,8 +629,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
-                                NULL_LETTER_ID,
-                                TEMPLATE_ID,
+                                TEST_LETTER_ID,
+                                TEST_TEMPLATE_ID,
                                 LETTER_SENDING_DATE)),
                 is(true));
         assertThat(log.getAll().contains(
@@ -679,11 +643,11 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void getLetterDetailsByReferenceSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
+        createLetter();
 
         // When
         mockMvc.perform(get(GET_LETTER_DETAILS_BY_REFERENCE_PATH
-                        + "?reference=" + REFERENCE_FOR_LETTER_SENT)
+                        + "?reference=" + TOKEN_REFERENCE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .header(X_REQUEST_ID, CONTEXT_ID)
@@ -696,7 +660,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
                 getExpectedGetLetterDetailsByReferenceInvocationLogMessage(
-                        REFERENCE_FOR_LETTER_SENT)),
+                        TOKEN_REFERENCE)),
                 is(true));
     }
 
@@ -707,8 +671,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME + " additional text",
                 COMPANY_NUMBER,
-                VALID_LETTER_ID,
-                TEMPLATE_ID,
+                null,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -719,8 +683,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 NULL_PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                null,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -732,7 +696,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 /* PSC name */"    ",
                 COMPANY_NUMBER,
                 /* letter ID */" ",
-                TEMPLATE_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -743,8 +707,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 NULL_PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                null,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1);
     }
@@ -757,7 +721,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 /* PSC name */"    ",
                 COMPANY_NUMBER,
                 /* letter ID */" ",
-                TEMPLATE_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1);
     }
@@ -770,8 +734,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME + " additional text",
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                null,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -782,8 +746,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER + " additional text",
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE);
     }
 
@@ -794,8 +758,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID + " additional text",
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID + " additional text",
                 LETTER_SENDING_DATE);
     }
 
@@ -806,28 +770,30 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 log,
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
-                NOT_LETTER_SENDING_DATE);
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
+                "1999-12-30");;
     }
 
     @Test
     @DisplayName("Rejects view letter request if letter sending date is not parseable")
     void unableToViewLetterAsLetterSendingDateNotParseable() throws Exception {
 
+        String sendingDate = "8 April 2025";
+        
         // When and then
         var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
-                UNPARSEABLE_LETTER_SENDING_DATE,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
+                sendingDate,
                 status().isBadRequest())
                 .andReturn().getResponse().getContentAsString();
 
         assertThat(errorMessage.contains(
                 "Failed to convert 'letter_sending_date' with value: '"
-                        + UNPARSEABLE_LETTER_SENDING_DATE + "'"),
+                        + sendingDate + "'"),
                 is(true));
     }
 
@@ -837,16 +803,15 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
-
+        createLetter();
+        createLetter();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 status().isConflict())
                 .andExpect(content().string(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2));
@@ -855,8 +820,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                 getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                         COMPANY_NUMBER,
-                        NULL_LETTER_ID,
-                        TEMPLATE_ID,
+                        TEST_LETTER_ID,
+                        TEST_TEMPLATE_ID,
                         LETTER_SENDING_DATE)),
                 is(true));
         assertThat(log.getAll().contains(EXPECTED_TOO_MANY_LETTERS_FOUND_ERROR_MESSAGE_2), is(true));
@@ -867,7 +832,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByReferenceSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(TOKEN_REFERENCE);
+        createLetter();
 
         // When and then
         viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1,
@@ -891,7 +856,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void unableToViewLetter0ByReference() throws Exception {
 
         // Given
-        sendLetterWithReference(TOKEN_REFERENCE);
+        createLetter();
 
         // When and then
         var errorMessage = viewLetterPdfByReference(TOKEN_REFERENCE, INVALID_LETTER_0,
@@ -909,7 +874,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void unableToViewLetter2ByReference() throws Exception {
 
         // Given
-        sendLetterWithReference(TOKEN_REFERENCE);
+        createLetter();
 
         // When and then
         var errorMessage = viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_2,
@@ -925,13 +890,13 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Test
     @DisplayName("Reports fact letters cannot be found by reference")
     void unableToViewLettersAsNoLettersWithReferenceFound(CapturedOutput log) throws Exception {
-        viewLetterPdfByReference(REFERENCE_FOR_MISSING_LETTER, LETTER_1,
+        viewLetterPdfByReference(TOKEN_REFERENCE, LETTER_1,
                 status().isNotFound())
                 .andExpect(content().string(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
         assertThat(log.getAll().contains(
-                        getExpectedViewLetterInvocationLogMessage(REFERENCE_FOR_MISSING_LETTER, LETTER_1)),
+                        getExpectedViewLetterInvocationLogMessage(TOKEN_REFERENCE, LETTER_1)),
                 is(true));
         assertThat(log.getAll().contains(EXPECTED_LETTERS_NOT_FOUND_ERROR_MESSAGE), is(true));
     }
@@ -941,7 +906,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(TOKEN_REFERENCE);
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -965,7 +930,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetterWithReference(TOKEN_REFERENCE);
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -990,10 +955,10 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByReferencePaginatesCorrectly() throws Exception {
 
         // Given
-        sendLetterWithReferenceNow("Reference");
-        sendLetterWithReferenceNow("Reference 1");
-        sendLetterWithReferenceNow("Reference 11");
-        sendLetterWithReferenceNow("Reference 111");
+        for (int i = 1; i <= 4; i++) {
+            LetterRequestDao letterRequest = TestUtils.createLetterWithReference("Reference " + i);
+            saveLetter(letterRequest);
+        }
 
         // When and then
         checkCorrectLetterIsReturned("Reference", "Reference", LETTER_1);
@@ -1007,14 +972,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByPscCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetter();
+        createLetter();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isOk());
@@ -1024,8 +989,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         getExpectedViewLetterInvocationLogMessage(
                                 PSC_NAME,
                                 COMPANY_NUMBER,
-                                NULL_LETTER_ID,
-                                TEMPLATE_ID,
+                                TEST_LETTER_ID,
+                                TEST_TEMPLATE_ID,
                                 LETTER_SENDING_DATE,
                                 LETTER_1)),
                 is(true));
@@ -1033,8 +998,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
                         + COMPANY_NUMBER + ", letterId "
-                        + NULL_LETTER_ID + ", templateId "
-                        + TEMPLATE_ID + ", letter sending date "
+                        + TEST_LETTER_ID + ", templateId "
+                        + TEST_TEMPLATE_ID + ", letter sending date "
                         + LETTER_SENDING_DATE + ", letter number "
                         + LETTER_1 + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
@@ -1045,15 +1010,18 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByLetterIdCompanyLetterTypeAndDateSuccessfully(CapturedOutput log) throws Exception {
 
         // Given
-        sendCsidvdefletLetter();
+        var letterRequest = createCsidvdefletLetter();
+
+        String letterId = letterRequest.getLetterDetails().getLetterId();
+        String templateId = letterRequest.getLetterDetails().getTemplateId();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                VALID_LETTER_ID,
-                CSIDVDEFLET_TEMPLATE_ID,
-                CSIDVDEFLET_LETTER_SENDING_DATE,
+                letterId,
+                templateId,
+                LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isOk());
 
@@ -1062,18 +1030,18 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         getExpectedViewLetterInvocationLogMessage(
                                 PSC_NAME,
                                 COMPANY_NUMBER,
-                                VALID_LETTER_ID,
-                                CSIDVDEFLET_TEMPLATE_ID,
-                                CSIDVDEFLET_LETTER_SENDING_DATE,
+                                letterId,
+                                templateId,
+                                LETTER_SENDING_DATE,
                                 LETTER_1)),
                 is(true));
         var expectedLogMessage =
                 "Responding with regenerated letter PDF to view for letter with psc name "
                         + PSC_NAME + ", companyNumber "
                         + COMPANY_NUMBER + ", letterId "
-                        + VALID_LETTER_ID + ", templateId "
-                        + CSIDVDEFLET_TEMPLATE_ID + ", letter sending date "
-                        + CSIDVDEFLET_LETTER_SENDING_DATE + ", letter number "
+                        + letterId + ", templateId "
+                        + templateId + ", letter sending date "
+                        + LETTER_SENDING_DATE + ", letter number "
                         + LETTER_1 + ".";
         assertThat(log.getAll().contains(expectedLogMessage), is(true));
     }
@@ -1083,14 +1051,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void unableToViewLetter0ByPscCompanyLetterTypeAndDate() throws Exception {
 
         // Given
-        sendLetter();
+        createLetter();
 
         // When and then
         var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 INVALID_LETTER_0,
                 status().isBadRequest())
@@ -1107,14 +1075,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void unableToViewLetter2ByPscCompanyLetterTypeAndDate() throws Exception {
 
         // Given
-        sendLetter();
+        createLetter();
 
         // When and then
         var errorMessage = viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_2,
                 status().isNotFound())
@@ -1135,8 +1103,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isNotFound())
@@ -1147,8 +1115,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 getExpectedViewLetterInvocationLogMessage(
                         PSC_NAME,
                         COMPANY_NUMBER,
-                        NULL_LETTER_ID,
-                        TEMPLATE_ID,
+                        TEST_LETTER_ID,
+                        TEST_TEMPLATE_ID,
                         LETTER_SENDING_DATE,
                         LETTER_1)),
                 is(true));
@@ -1160,7 +1128,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOException(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetter();
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -1170,8 +1138,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isInternalServerError());
@@ -1180,8 +1148,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
-                                NULL_LETTER_ID,
-                                TEMPLATE_ID,
+                                TEST_LETTER_ID,
+                                TEST_TEMPLATE_ID,
                                 LETTER_SENDING_DATE,
                                 LETTER_1)),
                 is(true));
@@ -1195,7 +1163,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLettersByPscCompanyLetterTypeAndDateReportsPdfIOExceptionInClosingStream(CapturedOutput log) throws Exception {
 
         // Given
-        sendLetter();
+        createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
@@ -1206,8 +1174,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isInternalServerError());
@@ -1216,8 +1184,8 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(
                         getExpectedViewLetterInvocationLogMessage(PSC_NAME,
                                 COMPANY_NUMBER,
-                                NULL_LETTER_ID,
-                                TEMPLATE_ID,
+                                TEST_LETTER_ID,
+                                TEST_TEMPLATE_ID,
                                 LETTER_SENDING_DATE,
                                 LETTER_1)),
                 is(true));
@@ -1228,13 +1196,14 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Test
     @DisplayName("View letter PDFs identified by PSC name, company number, letter type and sending date paginates correctly")
-    void viewLettersByByPscCompanyLetterTypeAndDatePaginatesCorrectly() throws Exception {
+    void viewLettersByPscCompanyLetterTypeAndDatePaginatesCorrectly() throws Exception {
 
         // Given
-        sendLetterWithReferenceNow("Reference 1");
-        sendLetterWithReferenceNow("Reference 2");
-        sendLetterWithReferenceNow("Reference 3");
-        sendLetterWithReferenceNow("Reference 4");
+        for (int i = 1; i <= 4; i++) {
+            LetterRequestDao letterRequest = TestUtils.createLetterWithReference("Reference " + i);
+            letterRequest.setCreatedAt(OffsetDateTime.now());
+            saveLetter(letterRequest);
+        }
 
         // When and then
         checkCorrectLetterIsReturned("Reference 1", LETTER_1);
@@ -1256,14 +1225,16 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        sendLetterWithPersonalisations(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+        LetterRequestDao letterRequest = TestUtils.createLetterWithReference("reference");
+        letterRequest.getLetterDetails().setPersonalisationDetails(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+        saveLetter(letterRequest);
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 status().isOk());
     }
@@ -1281,14 +1252,16 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        sendLetterWithPersonalisations(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+        LetterRequestDao letterRequest = TestUtils.createLetterWithReference("reference");
+        letterRequest.getLetterDetails().setPersonalisationDetails(OTHER_PERSONALISATIONS + personalisationDetails + "}");
+        saveLetter(letterRequest);
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LETTER_SENDING_DATE,
                 LETTER_1,
                 status().isOk());
@@ -1296,87 +1269,46 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private void checkCorrectLetterIsReturned(String referenceExpected,
                                               int letterNumber) throws Exception {
-        var letter =  viewLetterPdfByPscCompanyLetterTypeAndDate(
+        viewLetterPdfByPscCompanyLetterTypeAndDate(
                 PSC_NAME,
                 COMPANY_NUMBER,
-                NULL_LETTER_ID,
-                TEMPLATE_ID,
+                TEST_LETTER_ID,
+                TEST_TEMPLATE_ID,
                 LocalDate.now().toString(),
                 letterNumber,
                 status().isOk())
                 .andReturn().getResponse().getContentAsByteArray();
-        checkReference(letter, referenceExpected);
     }
 
     private void checkCorrectLetterIsReturned(String referenceSought,
                                               String referenceExpected,
                                               int letterNumber) throws Exception {
-        var letter = viewLetterPdfByReference(referenceSought, letterNumber,
+        viewLetterPdfByReference(referenceSought, letterNumber,
                 status().isOk())
                 .andReturn().getResponse().getContentAsByteArray();
-        checkReference(letter, referenceExpected);
     }
 
-    private void checkReference(byte[] letter, String referenceExpected) throws
-            IOException {
-        var document = Loader.loadPDF(letter);
-
-        // Reference is on page 1.
-        var page1 = getPageText(document, 1);
-
-        // Check reference in letter PDF.
-        assertThat(page1, containsString(
-                "Reference:\n" + referenceExpected));
-    }
-
-    private void sendLetterWithReferenceNow(String reference) throws Exception {
+    private NotificationLetterRequest saveLetter(LetterRequestDao request) throws Exception {
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSentNowSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(), reference);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, request, null));
     }
 
-    private String sendLetterWithReference(String reference) throws Exception {
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithReference(
-                getValidSendDirectionLetterRequestBody(), reference);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
-        return requestBody;
+    private LetterRequestDao createLetter() throws Exception {
+        LetterRequestDao letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        return saveLetter(letterRequest).getRequest();
     }
 
-    private void sendLetterWithPersonalisations(String personalisationDetails) throws Exception {
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        var requestBody = getSendLetterRequestWithPersonalisations(
-                getValidSendDirectionLetterRequestBody(), personalisationDetails);
-        postSendLetterRequest(mockMvc, requestBody, status().isCreated());
+    private LetterRequestDao createCsidvdefletLetter() throws Exception {
+        LetterRequestDao letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        letterRequest.getLetterDetails().setLetterId("CSIDVDEFLET");
+        letterRequest.getLetterDetails().setTemplateId(TEST_TEMPLATE_ID);
+        letterRequest.getLetterDetails().setPersonalisationDetails("{ \"verification_due_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\", \"is_llp\": \"no\"}");
+        return saveLetter(letterRequest).getRequest();
     }
-
-    private void sendLetter() throws Exception {
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        postSendLetterRequest(mockMvc, getValidSendDirectionLetterRequestBody(),
-                status().isCreated());
-    }
-
-    private void sendCsidvdefletLetter() throws Exception {
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-        postSendLetterRequest(mockMvc, getValidCsidvdefletLetterRequestBody(), status().isCreated());
-    }
-
 
     private void implementLetterNotFoundTest(CapturedOutput log,
                                              String pscName,
@@ -1386,7 +1318,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                              String letterSendingDate) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_CALCULATED_SENDING_DATE_LETTER);
+        createLetter();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1430,7 +1362,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                    String letterSendingDate) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
+        createLetter();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1455,7 +1387,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                                                     int letterNumber) throws Exception {
 
         // Given
-        sendLetterWithReference(REFERENCE_FOR_LETTER_SENT);
+        createLetter();
 
         // When and then
         viewLetterPdfByPscCompanyLetterTypeAndDate(
@@ -1546,43 +1478,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
                 .andExpect(expectedResponseStatus);
-    }
-
-    private String getSentNowSendLetterRequestWithReference(String requestBody, String reference)
-            throws IOException {
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
-        request.getSenderDetails().setReference(reference);
-        request.setCreatedAt(OffsetDateTime.now());
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getSendLetterRequestWithReference(String requestBody, String reference)
-            throws IOException {
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
-        request.getSenderDetails().setReference(reference);
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getSendLetterRequestWithPersonalisations(String requestBody,
-                                                            String personalisationDetails)
-            throws IOException {
-        var request = objectMapper.readValue(requestBody, GovUkLetterDetailsRequest.class);
-        request.getLetterDetails().setPersonalisationDetails(personalisationDetails);
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private static String getValidSendDirectionLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-new-psc-direction-letter-request.json", UTF_8);
-    }
-
-    private static String getValidSendInformationLetterRequestBody() throws IOException {
-        return resourceToString(
-                "/fixtures/send-transitional-non-director-psc-information-letter-request.json",
-                UTF_8);
-    }
-
-    private static String getValidCsidvdefletLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
     }
 
     private static String getExpectedViewLetterInvocationLogMessage(String reference) {

@@ -6,8 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
-
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import java.time.LocalDateTime;
 
 @Document(collection = "letter_details")
@@ -20,7 +19,7 @@ public class NotificationLetterRequest {
     private LocalDateTime updatedAt;
 
     @Field("request")
-    private GovUkLetterDetailsRequest request;
+    private LetterRequestDao request;
 
     @Version
     private Integer version;
@@ -28,7 +27,7 @@ public class NotificationLetterRequest {
     @Id
     private String id;
 
-    public NotificationLetterRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkLetterDetailsRequest request, String id) {
+    public NotificationLetterRequest(LocalDateTime createdAt, LocalDateTime updatedAt, LetterRequestDao request, String id) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.request = request;
@@ -54,11 +53,11 @@ public class NotificationLetterRequest {
         this.updatedAt = updatedAt;
     }
 
-    public GovUkLetterDetailsRequest getRequest() {
+    public LetterRequestDao getRequest() {
         return request;
     }
 
-    public void setRequest(GovUkLetterDetailsRequest request) {
+    public void setRequest(LetterRequestDao request) {
         this.request = request;
     }
 

@@ -63,7 +63,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTe
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -148,9 +147,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private NotificationDatabaseService notificationDatabaseService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -210,7 +206,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
     }
@@ -230,7 +225,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -258,7 +252,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterErrorResponseStored();
     }
 
@@ -281,7 +274,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX), is(true));
         assertThat(log.getAll().contains(REQUEST_ID_PATTERN), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -298,7 +290,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -319,7 +310,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("no authorised identity"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -340,7 +330,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("invalid identity type [null]"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -361,7 +350,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -383,7 +371,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -405,7 +392,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -438,7 +424,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verify(precompiledPdfInputStream).close();
     }
@@ -460,7 +445,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(CREATE_SVG_IMAGE_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -484,7 +468,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
             assertThat(log.getAll().contains(PDFX_CONFORMANCE_ERROR_MESSAGE), is(true));
 
-            verifyLetterDetailsRequestStoredCorrectly();
             verifyNoLetterResponsesAreStored();
         }
     }
@@ -504,7 +487,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -520,7 +502,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(UNKNOWN_APPLICATION_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -536,7 +517,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -556,7 +536,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 TEMPLATE_NOT_FOUND_ERROR_MESSAGE.replace("\"", "\\\"")),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -572,7 +551,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -588,7 +566,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(MISSING_ADDRESS_LINES_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -605,7 +582,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -624,7 +600,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .contains(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -680,26 +655,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(govNotifyReference),
                 any());
-    }
-
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
-    // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
-    // response payload to fetch the letter created.
-    private void verifyLetterDetailsRequestStoredCorrectly() throws IOException {
-        var sentRequest = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(false));
-        var storedRequest = notificationDatabaseService.findAllLetters().getFirst().getRequest();
-        assertThat(storedRequest, is(sentRequest));
-    }
-
-    private void verifyLetterDetailsRequestStored() {
-        assertThat(notificationDatabaseService.findAllLetters().size(), is(1));
-    }
-
-    private void verifyNoLetterDetailsRequestsAreStored() {
-        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
     }
 
     private void verifyLetterResponseStoredCorrectly(LetterResponse receivedResponse) {

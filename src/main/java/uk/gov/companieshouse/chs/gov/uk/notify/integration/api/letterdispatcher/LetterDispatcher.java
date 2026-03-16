@@ -4,7 +4,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 
 import java.io.IOException;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -45,7 +45,7 @@ public class LetterDispatcher {
             final Postage postage,
             final LetterReference reference,
             final String templateId,
-            final Address address,
+            final AddressDao address,
             final String personalisationDetailsString,
             final String contextId) throws IOException {
         var letter = personaliseLetter(
@@ -62,7 +62,7 @@ public class LetterDispatcher {
     private String personaliseLetter(
             final LetterReference reference,
             final String templateId,
-            final Address address,
+            final AddressDao address,
             final String personalisationDetailsString,
             final String contextId) {
 

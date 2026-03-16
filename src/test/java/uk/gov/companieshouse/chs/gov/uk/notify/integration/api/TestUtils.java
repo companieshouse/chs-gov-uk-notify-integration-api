@@ -11,15 +11,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.LetterDetails;
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
-import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsLetter;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterDetailsDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRecipientDetailsDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.SenderDetailsDao;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.SendEmailResponse;
 
@@ -45,70 +46,38 @@ public class TestUtils {
                     + "\"company_name\": \"Tŷ'r Cwmnïau\","
                     + "\"company_number\": \"00006400\"}";
 
-    public static GovUkLetterDetailsRequest createSampleLetterRequest(String addressLine1) {
-        SenderDetails senderDetails = new SenderDetails("test-app-id", "test-reference");
-        Address address = new Address()
-                .addressLine1(addressLine1)
-                .addressLine2("Apt 101")
-                .addressLine3("District")
-                .addressLine4("City")
-                .addressLine5("County");
-        RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
-                .name("Test Recipient")
-                .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", PERSONALISATION_DETAILS);
-
-        return new GovUkLetterDetailsRequest()
-                .senderDetails(senderDetails)
-                .recipientDetails(recipientDetails)
-                .letterDetails(letterDetails)
-                .createdAt(OffsetDateTime.now());
+    public static LetterRequestDao createSampleLetterRequest(String addressLine1) {
+        return createSampleLetterRequestWithReference(addressLine1, "test-reference");
     }
 
-    public static GovUkLetterDetailsRequest createSampleLetterRequestWithReference(String addressLine1, String reference) {
-        SenderDetails senderDetails = new SenderDetails("test-app-id", reference);
-        Address address = new Address()
-                .addressLine1(addressLine1)
-                .addressLine2("Apt 101")
-                .addressLine3("District")
-                .addressLine4("City")
-                .addressLine5("County");
-        RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
-                .name("Test Recipient")
-                .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails("template-456", PERSONALISATION_DETAILS);
+    public static LetterRequestDao createSampleLetterRequestWithReference(String addressLine1, String reference) {
+        SenderDetailsDao senderDetails = new SenderDetailsDao();
+        senderDetails.setAppId("chips");
+        senderDetails.setReference(reference);
+        AddressDao address = new AddressDao();
+        address.setAddressLine1(addressLine1);
+        address.setAddressLine2("Apt 101");
+        address.setAddressLine3("District");
+        address.setAddressLine4("City");
+        address.setAddressLine5("County");
+        LetterRecipientDetailsDao recipientDetails = new LetterRecipientDetailsDao();
+        recipientDetails.setName("Test Recipient");
+        recipientDetails.setPhysicalAddress(address);
+        LetterDetailsDao letterDetails = new LetterDetailsDao();
+        letterDetails.setLetterId("IDVPSCDIRNEW");
+        letterDetails.setTemplateId("v1.0");
+        letterDetails.setPersonalisationDetails(PERSONALISATION_DETAILS);
 
-        return new GovUkLetterDetailsRequest()
-                .senderDetails(senderDetails)
-                .recipientDetails(recipientDetails)
-                .letterDetails(letterDetails)
-                .createdAt(OffsetDateTime.now());
+        LetterRequestDao letterRequest = new LetterRequestDao();
+        letterRequest.setSenderDetails(senderDetails);
+        letterRequest.setRecipientDetails(recipientDetails);
+        letterRequest.setLetterDetails(letterDetails);
+        letterRequest.setCreatedAt(OffsetDateTime.of(2025, 4, 8, 4, 49, 12, 0, OffsetDateTime.now().getOffset()));
+        return letterRequest;
     }
 
-    public static GovUkLetterDetailsRequest createLetterWithReference(String reference) {
+    public static LetterRequestDao createLetterWithReference(String reference) {
         return createSampleLetterRequestWithReference("Address line 1", reference);
-    }
-
-    public static GovUkLetterDetailsRequest createSampleLetterRequestWithTemplateId(String appId,
-            String letterId, String templateId) {
-        SenderDetails senderDetails = new SenderDetails(appId, "test-reference");
-        Address address = new Address()
-                .addressLine1("Test Address Line 1")
-                .addressLine2("Apt 101")
-                .addressLine3("District")
-                .addressLine4("City")
-                .addressLine5("County");
-        RecipientDetailsLetter recipientDetails = new RecipientDetailsLetter()
-                .name("Test Recipient")
-                .physicalAddress(address);
-        LetterDetails letterDetails = new LetterDetails(templateId, "Dear {{name}}");
-        letterDetails.setLetterId(letterId);
-
-        return new GovUkLetterDetailsRequest()
-                .senderDetails(senderDetails)
-                .recipientDetails(recipientDetails)
-                .letterDetails(letterDetails)
-                .createdAt(OffsetDateTime.now());
     }
 
     public static GovUkEmailDetailsRequest createSampleEmailRequest(String email) {

@@ -35,8 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.thymeleaf.context.Context;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
@@ -50,20 +50,22 @@ class TemplatePersonaliserIntegrationTest {
     private static final Map<String, String> PERSONALISATION_DETAILS =
             Map.of("company_name", "Amazon");
 
-    private static final Address ADDRESS = new Address()
-                        .addressLine1("Company Name")
-                        .addressLine2("Line 2")
-                        .addressLine3("Line 3")
-                        .addressLine4("Line 4")
-                        .addressLine5("Line 5")
-                        .addressLine6("Line 6")
-                        .addressLine7("Line 7");
-
-    private static final Address SHORTER_ADDRESS = new Address()
-            .addressLine1("Company Name")
-            .addressLine2("Line 2")
-            .addressLine3("Line 3")
-            .addressLine4("Line 4");
+    private static final AddressDao ADDRESS = new AddressDao();
+    private static final AddressDao SHORTER_ADDRESS = new AddressDao();
+    static {
+        ADDRESS.setAddressLine1("Company Name");
+        ADDRESS.setAddressLine2("Line 2");
+        ADDRESS.setAddressLine3("Line 3");
+        ADDRESS.setAddressLine4("Line 4");
+        ADDRESS.setAddressLine5("Line 5");
+        ADDRESS.setAddressLine6("Line 6");
+        ADDRESS.setAddressLine7("Line 7");
+        
+        SHORTER_ADDRESS.setAddressLine1("Company Name");
+        SHORTER_ADDRESS.setAddressLine2("Line 2");
+        SHORTER_ADDRESS.setAddressLine3("Line 3");
+        SHORTER_ADDRESS.setAddressLine4("Line 4");
+    }
 
     private static final String TOKEN_VALUE = "Token value";
     private static final String REFERENCE = "reference";

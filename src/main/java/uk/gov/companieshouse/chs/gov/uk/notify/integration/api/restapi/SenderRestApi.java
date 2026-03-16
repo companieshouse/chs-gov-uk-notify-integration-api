@@ -19,6 +19,8 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
@@ -123,22 +125,21 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext( contextId,"Starting sendLetter process", logMap );
 
-        logger.debugContext( contextId, "Storing letter request in database", createLogMap(contextId, "store_letter"));
-        notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
+        LetterRequestDao letterRequest = LetterRequestMapper.toDao(govUkLetterDetailsRequest);
 
         logger.infoContext( contextId, "Processing letter for "
-                        + govUkLetterDetailsRequest.getRecipientDetails().getName(),
+                        + letterRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
+        var senderDetails = letterRequest.getSenderDetails();
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
-        var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        var letterDetails = letterRequest.getLetterDetails();
         var letterId = letterDetails.getLetterId();
         var fullReference = new LetterReference(appId, letterId, reference);
         var templateId = letterDetails.getTemplateId();
         var postage = determinePostage(appId, letterId, templateId);
-        var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
+        var address = letterRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
