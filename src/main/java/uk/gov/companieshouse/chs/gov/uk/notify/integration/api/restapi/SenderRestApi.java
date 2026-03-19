@@ -75,7 +75,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         if (savedRequest.isEmpty()) {
             logger.errorContext(xHeaderId, new IllegalStateException(
                     "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         var emailRequest = savedRequest.get().getRequest();
 
@@ -139,7 +139,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             logger.errorContext(contextId,
                     new IllegalStateException("Letter request not found in database"),
                     createLogMap(contextId, "read_request"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         var letterRequest = savedRequest.get().getRequest();
 

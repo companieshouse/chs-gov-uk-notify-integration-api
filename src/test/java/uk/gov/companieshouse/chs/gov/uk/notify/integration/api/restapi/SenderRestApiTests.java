@@ -13,6 +13,7 @@ import static org.mockito.Mockito.withSettings;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -98,7 +99,7 @@ class SenderRestApiTests {
     }
 
     @Test
-    void whenEmailRequestNotInDbExpectBadRequestErrorResponse(){
+    void whenEmailRequestNotInDbExpectNotFoundErrorResponse(){
         EmailRequestDao emailRequest = TestUtils.createEmailRequest();
         String appId = emailRequest.getSenderDetails().getAppId();
         String reference = emailRequest.getSenderDetails().getReference();
@@ -107,7 +108,7 @@ class SenderRestApiTests {
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
-        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         assertNotNull(response);
 
         verifyNoInteractions(govUKNotifyEmailFacade);
@@ -233,7 +234,7 @@ class SenderRestApiTests {
     }
 
     @Test
-    void sendLetter_shouldReturnBadRequest_requestNotFoundInDb() {
+    void sendLetter_shouldReturnNotFound_requestNotFoundInDb() {
         LetterRequestDao letterRequest = TestUtils.createLetterRequest();
         String appId = letterRequest.getSenderDetails().getAppId();
         String reference = letterRequest.getSenderDetails().getReference();
@@ -242,7 +243,7 @@ class SenderRestApiTests {
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
 
-        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         verifyNoInteractions(letterDispatcher);
     }
 

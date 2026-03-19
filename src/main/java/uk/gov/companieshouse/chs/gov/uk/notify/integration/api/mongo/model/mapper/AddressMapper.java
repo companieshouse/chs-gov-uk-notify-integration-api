@@ -4,10 +4,14 @@ import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 
 public class AddressMapper {
-    private AddressMapper() {}
+    private AddressMapper() {
+        // Private constructor to prevent instantiation
+    }
 
     public static AddressDao toDao(Address src) {
-        if (src == null) return null;
+        if (src == null) {
+            return null;
+        }
         AddressDao dest = new AddressDao();
         dest.setAddressLine1(src.getAddressLine1());
         dest.setAddressLine2(src.getAddressLine2());
@@ -20,7 +24,9 @@ public class AddressMapper {
     }
 
     public static Address fromDao(AddressDao src) {
-        if (src == null) return null;
+        if (src == null) {
+            return null;
+        }
         Address dest = new Address();
         dest.setAddressLine1(src.getAddressLine1());
         dest.setAddressLine2(src.getAddressLine2());
@@ -32,4 +38,3 @@ public class AddressMapper {
         return dest;
     }
 }
-
