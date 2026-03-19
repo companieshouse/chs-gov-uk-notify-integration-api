@@ -4,10 +4,10 @@ import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class EmailDetailsDao {
-    @Field("templateId")
+    @Field("template_id")
     private String templateId;
 
-    @Field("personalisationDetails")
+    @Field("personalisation_details")
     private String personalisationDetails;
 
     public String getTemplateId() {

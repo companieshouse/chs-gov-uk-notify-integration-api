@@ -9,10 +9,10 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 
 @Repository
 public interface NotificationEmailRequestRepository extends MongoRepository<NotificationEmailRequest, String> {
-    @Query("{ 'request.senderDetails.reference' : ?0 }")
+    @Query("{ 'request.sender_details.reference' : ?0 }")
     List<NotificationEmailRequest> findByReference(String reference);
 
-    @Query("{ 'request.senderDetails.appId' : ?0, 'request.senderDetails.reference' : ?1 }")
+    @Query("{ 'request.sender_details.app_id' : ?0, 'request.sender_details.reference' : ?1 }")
     Optional<NotificationEmailRequest> findByUniqueReference(String appId, String reference);
 
 }

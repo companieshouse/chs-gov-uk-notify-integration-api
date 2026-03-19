@@ -7,7 +7,7 @@ public class EmailRecipientDetailsDao {
     @Field("name")
     private String name;
 
-    @Field("emailAddress")
+    @Field("email_address")
     private String emailAddress;
 
     public String getName() {

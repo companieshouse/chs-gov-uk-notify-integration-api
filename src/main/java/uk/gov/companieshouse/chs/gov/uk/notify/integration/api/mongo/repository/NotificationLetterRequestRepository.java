@@ -13,27 +13,27 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 public interface NotificationLetterRequestRepository extends
         MongoRepository<NotificationLetterRequest, String> {
 
-    @Query("{ 'request.senderDetails.reference' : ?0 }")
+    @Query("{ 'request.sender_details.reference' : ?0 }")
     List<NotificationLetterRequest> findByReference(String reference);
 
-    @Query("{ 'request.senderDetails.appId' : ?0, 'request.senderDetails.reference' : ?1 }")
+    @Query("{ 'request.sender_details.app_id' : ?0, 'request.sender_details.reference' : ?1 }")
     Optional<NotificationLetterRequest> findByUniqueReference(String appId, String reference);
 
-    @Query(value = "{ 'request.senderDetails.reference' : { $regex: ?0 }}",
-            sort = "{ 'request.createdAt' : 1 }")
+    @Query(value = "{ 'request.sender_details.reference' : { $regex: ?0 }}",
+            sort = "{ 'request.created_at' : 1 }")
     Page<NotificationLetterRequest> findByReference(String reference, Pageable pageable);
 
     @Query("""
             {$and: [
                {$or: [
-                    {'request.letterDetails.personalisationDetails':
+                    {'request.letter_details.personalisation_details':
                      {$regex: '"psc_name": *"?0"'}},
-                    {'request.letterDetails.letterId': ?2},
+                    {'request.letter_details.letter_id': ?2},
                  ]
                 },
-                {'request.letterDetails.personalisationDetails':
+                {'request.letter_details.personalisation_details':
                  {$regex: '"company_number": *"?1"'}},
-                {'request.letterDetails.templateId': '?3'},
+                {'request.letter_details.template_id': '?3'},
                 {'request.createdAt': { $gte: { $date: '?4'}, $lt: { $date: '?5'} }}
             ]}
             """
@@ -49,14 +49,14 @@ public interface NotificationLetterRequestRepository extends
     @Query(value = """
             {$and: [
                {$or: [
-                    {'request.letterDetails.personalisationDetails':
+                    {'request.letter_details.personalisation_details':
                      {$regex: '"psc_name": *"?0"'}},
-                    {'request.letterDetails.letterId': ?2},
+                    {'request.letter_details.letter_id': ?2},
                  ]
                 },
-                {'request.letterDetails.personalisationDetails':
+                {'request.letter_details.personalisation_details':
                  {$regex: '"company_number": *"?1"'}},
-                {'request.letterDetails.templateId': '?3'},
+                {'request.letter_details.template_id': '?3'},
                 {'request.createdAt': { $gte: { $date: '?4'}, $lt: { $date: '?5'} }}
             ]}
             """,

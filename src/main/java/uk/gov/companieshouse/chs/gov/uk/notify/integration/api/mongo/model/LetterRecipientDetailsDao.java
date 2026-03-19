@@ -7,7 +7,7 @@ public class LetterRecipientDetailsDao {
     @Field("name")
     private String name;
 
-    @Field("physicalAddress")
+    @Field("physical_address")
     private AddressDao physicalAddress;
 
     public String getName() {

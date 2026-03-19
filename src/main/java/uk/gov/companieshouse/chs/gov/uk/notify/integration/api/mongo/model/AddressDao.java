@@ -4,25 +4,25 @@ import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class AddressDao {
-    @Field("addressLine1")
+    @Field("address_line_1")
     private String addressLine1;
 
-    @Field("addressLine2")
+    @Field("address_line_2")
     private String addressLine2;
 
-    @Field("addressLine3")
+    @Field("address_line_3")
     private String addressLine3;
 
-    @Field("addressLine4")
+    @Field("address_line_4")
     private String addressLine4;
 
-    @Field("addressLine5")
+    @Field("address_line_5")
     private String addressLine5;
 
-    @Field("addressLine6")
+    @Field("address_line_6")
     private String addressLine6;
 
-    @Field("addressLine7")
+    @Field("address_line_7")
     private String addressLine7;
 
     public String getAddressLine1() {

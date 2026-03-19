@@ -4,13 +4,13 @@ import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class LetterDetailsDao {
-    @Field("templateId")
+    @Field("template_id")
     private String templateId;
 
-    @Field("personalisationDetails")
+    @Field("personalisation_details")
     private String personalisationDetails;
 
-    @Field("letterId")
+    @Field("letter_id")
     private String letterId;
 
     public String getTemplateId() {

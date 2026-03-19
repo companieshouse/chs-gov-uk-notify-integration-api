@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 public class SenderDetailsDao {
-    @Field("appId")
+    @Field("app_id")
     private String appId;
 
     @Field("reference")
@@ -13,10 +13,10 @@ public class SenderDetailsDao {
     @Field("name")
     private String name;
 
-    @Field("userId")
+    @Field("user_id")
     private String userId;
 
-    @Field("emailAddress")
+    @Field("email_address")
     private String emailAddress;
 
     public String getAppId() {

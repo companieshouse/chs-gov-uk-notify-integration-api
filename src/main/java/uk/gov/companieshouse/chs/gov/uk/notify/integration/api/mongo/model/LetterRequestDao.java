@@ -5,16 +5,16 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 
 public class LetterRequestDao {
-    @Field("senderDetails")
+    @Field("sender_details")
     private SenderDetailsDao senderDetails;
 
-    @Field("recipientDetails")
+    @Field("recipient_details")
     private LetterRecipientDetailsDao recipientDetails;
 
-    @Field("letterDetails")
+    @Field("letter_details")
     private LetterDetailsDao letterDetails;
 
-    @Field("createdAt")
+    @Field("created_at")
     private OffsetDateTime createdAt;
 
     public SenderDetailsDao getSenderDetails() {
