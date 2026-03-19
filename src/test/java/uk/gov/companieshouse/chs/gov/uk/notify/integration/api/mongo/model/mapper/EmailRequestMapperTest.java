@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,10 +10,11 @@ import uk.gov.companieshouse.api.chs.notification.model.EmailDetails;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsEmail;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 
 class EmailRequestMapperTest {
     @Test
-    void toDaoFromDao() throws Exception {
+    void toDaoFromDao() {
         // Setup
         SenderDetails sender = new SenderDetails();
         sender.setAppId("app");
@@ -57,22 +58,7 @@ class EmailRequestMapperTest {
 
         // fromDao
         GovUkEmailDetailsRequest mappedBack = EmailRequestMapper.fromDao(dao);
-        assertNotNull(mappedBack);
-        assertEquals(request.getCreatedAt(), mappedBack.getCreatedAt());
-        assertNotNull(mappedBack.getSenderDetails());
-        assertEquals(sender.getAppId(), mappedBack.getSenderDetails().getAppId());
-        assertEquals(sender.getReference(), mappedBack.getSenderDetails().getReference());
-        assertEquals(sender.getName(), mappedBack.getSenderDetails().getName());
-        assertEquals(sender.getUserId(), mappedBack.getSenderDetails().getUserId());
-        assertEquals(sender.getEmailAddress(), mappedBack.getSenderDetails().getEmailAddress());
-
-        assertNotNull(mappedBack.getRecipientDetails());
-        assertEquals(recipient.getName(), mappedBack.getRecipientDetails().getName());
-        assertEquals(recipient.getEmailAddress(), mappedBack.getRecipientDetails().getEmailAddress());
-
-        assertNotNull(mappedBack.getEmailDetails());
-        assertEquals(emailDetails.getTemplateId(), mappedBack.getEmailDetails().getTemplateId());
-        assertEquals(emailDetails.getPersonalisationDetails(), mappedBack.getEmailDetails().getPersonalisationDetails());
+        assertEquals(request, mappedBack);
     }
 
     @Test
@@ -82,44 +68,8 @@ class EmailRequestMapperTest {
     }
 
     @Test
-    void toDaoNullSenderDetails() {
-        SenderDetails sender = null;
-        assertNull(EmailRequestMapper.toDao(sender));
-    }
-
-    @Test
-    void toDaoNullRecipientDetailsEmail() {
-        RecipientDetailsEmail recipient = null;
-        assertNull(EmailRequestMapper.toDao(recipient));
-    }
-
-    @Test
-    void toDaoNullEmailDetails() {
-        EmailDetails emailDetails = null;
-        assertNull(EmailRequestMapper.toDao(emailDetails));
-    }
-
-    @Test
     void fromDaoNullEmailRequestDao() {
         EmailRequestDao dao = null;
-        assertNull(EmailRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullSenderDetailsDao() {
-        SenderDetailsDao dao = null;
-        assertNull(EmailRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullEmailRecipientDetailsDao() {
-        EmailRecipientDetailsDao dao = null;
-        assertNull(EmailRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullEmailDetailsDao() {
-        EmailDetailsDao dao = null;
         assertNull(EmailRequestMapper.fromDao(dao));
     }
 

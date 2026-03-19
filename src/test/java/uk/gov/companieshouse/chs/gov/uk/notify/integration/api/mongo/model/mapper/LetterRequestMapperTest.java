@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,10 +11,12 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsReques
 import uk.gov.companieshouse.api.chs.notification.model.LetterDetails;
 import uk.gov.companieshouse.api.chs.notification.model.RecipientDetailsLetter;
 import uk.gov.companieshouse.api.chs.notification.model.SenderDetails;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 
 class LetterRequestMapperTest {
     @Test
-    void toDaoFromDao() throws Exception {
+    void toDaoFromDao() {
         // Setup
         Address address = new Address();
         address.setAddressLine1("Line1");
@@ -61,14 +63,14 @@ class LetterRequestMapperTest {
         assertNotNull(dao.getRecipientDetails());
         assertEquals(recipient.getName(), dao.getRecipientDetails().getName());
         assertNotNull(dao.getRecipientDetails().getPhysicalAddress());
-        AddressDao adressDao = dao.getRecipientDetails().getPhysicalAddress();
-        assertEquals(address.getAddressLine1(), adressDao.getAddressLine1());
-        assertEquals(address.getAddressLine2(), adressDao.getAddressLine2());
-        assertEquals(address.getAddressLine3(), adressDao.getAddressLine3());
-        assertEquals(address.getAddressLine4(), adressDao.getAddressLine4());
-        assertEquals(address.getAddressLine5(), adressDao.getAddressLine5());
-        assertEquals(address.getAddressLine6(), adressDao.getAddressLine6());
-        assertEquals(address.getAddressLine7(), adressDao.getAddressLine7());
+        AddressDao addressDao = dao.getRecipientDetails().getPhysicalAddress();
+        assertEquals(address.getAddressLine1(), addressDao.getAddressLine1());
+        assertEquals(address.getAddressLine2(), addressDao.getAddressLine2());
+        assertEquals(address.getAddressLine3(), addressDao.getAddressLine3());
+        assertEquals(address.getAddressLine4(), addressDao.getAddressLine4());
+        assertEquals(address.getAddressLine5(), addressDao.getAddressLine5());
+        assertEquals(address.getAddressLine6(), addressDao.getAddressLine6());
+        assertEquals(address.getAddressLine7(), addressDao.getAddressLine7());
 
         assertNotNull(dao.getLetterDetails());
         assertEquals(letterDetails.getLetterId(), dao.getLetterDetails().getLetterId());
@@ -88,56 +90,9 @@ class LetterRequestMapperTest {
     }
 
     @Test
-    void toDaoNullSenderDetails() {
-        SenderDetails sender = null;
-        assertNull(LetterRequestMapper.toDao(sender));
-    }
-
-    @Test
-    void toDaoNullRecipientDetailsLetter() {
-        RecipientDetailsLetter recipient = null;
-        assertNull(LetterRequestMapper.toDao(recipient));
-    }
-
-    @Test
-    void toDaoNullAddress() {
-        Address address = null;
-        assertNull(LetterRequestMapper.toDao(address));
-    }
-
-    @Test
-    void toDaoNullLetterDetails() {
-        LetterDetails letterDetails = null;
-        assertNull(LetterRequestMapper.toDao(letterDetails));
-    }
-
-    @Test
     void fromDaoNullLetterRequestDao() {
         LetterRequestDao dao = null;
         assertNull(LetterRequestMapper.fromDao(dao));
     }
 
-    @Test
-    void fromDaoNullSenderDetailsDao() {
-        SenderDetailsDao dao = null;
-        assertNull(LetterRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullLetterRecipientDetailsDao() {
-        LetterRecipientDetailsDao dao = null;
-        assertNull(LetterRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullAddressDao() {
-        AddressDao dao = null;
-        assertNull(LetterRequestMapper.fromDao(dao));
-    }
-
-    @Test
-    void fromDaoNullLetterDetailsDao() {
-        LetterDetailsDao dao = null;
-        assertNull(LetterRequestMapper.fromDao(dao));
-    }
 }
