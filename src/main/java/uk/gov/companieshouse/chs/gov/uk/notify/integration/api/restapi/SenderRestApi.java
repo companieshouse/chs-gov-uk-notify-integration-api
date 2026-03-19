@@ -19,10 +19,6 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.EmailRequestMapper;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
@@ -67,21 +63,21 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             @Valid final GovUkEmailDetailsRequest govUkEmailDetailsRequest,
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String xHeaderId
     ) {
-        Map<String, Object> logMap = createLogMap("", "letter_send");
+        var logMap = createLogMap(xHeaderId, "email_send");
         logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
 
-        logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
+        logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
 
         var senderDetails = govUkEmailDetailsRequest.getSenderDetails();
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
-        var emailRequest = notificationDatabaseService.getEmail(appId, reference)
-                .map(NotificationEmailRequest::getRequest)
-                // This is a temporary fallback for old kafka messages that were sent before the
-                // sender api started storing the letter request in the database.
-                // TODO: remove once we're confident all old messages have been processed and
-                // the request is being stored for all new messages.
-                .orElse(EmailRequestMapper.toDao(govUkEmailDetailsRequest));
+        var savedRequest = notificationDatabaseService.getEmail(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(xHeaderId, new IllegalStateException(
+                    "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        var emailRequest = savedRequest.get().getRequest();
 
         Map<String, Object> personalisationDetails;
         try {
@@ -133,18 +129,19 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         Map<String, Object> logMap = createLogMap(contextId, "letter_send");
         logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
 
-        logger.infoContext( contextId,"Starting sendLetter process", logMap );
+        logger.infoContext(contextId, "Starting sendLetter process", logMap );
 
         var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
-        var letterRequest = notificationDatabaseService.getLetter(appId, reference)
-                .map(NotificationLetterRequest::getRequest)
-                // This is a temporary fallback for old kafka messages that were sent before the
-                // sender api started storing the letter request in the database.
-                // TODO: remove once we're confident all old messages have been processed and
-                // the request is being stored for all new messages.
-                .orElse(LetterRequestMapper.toDao(govUkLetterDetailsRequest));
+        var savedRequest = notificationDatabaseService.getLetter(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(contextId,
+                    new IllegalStateException("Letter request not found in database"),
+                    createLogMap(contextId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        var letterRequest = savedRequest.get().getRequest();
 
         logger.infoContext( contextId, "Processing letter for "
                         + letterRequest.getRecipientDetails().getName(),

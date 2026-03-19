@@ -759,7 +759,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 COMPANY_NUMBER,
                 TEST_LETTER_ID,
                 TEST_TEMPLATE_ID,
-                "1999-12-30");;
+                "1999-12-30");
     }
 
     @Test

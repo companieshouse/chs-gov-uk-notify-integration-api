@@ -164,7 +164,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         file.deleteOnExit();
     }
 
-    private String getExpectedSavingLetterLogMessage() throws IOException {
+    private String getExpectedSavingLetterLogMessage() {
         var reference = getReference();
         var savedLetterFilepath = HtmlPdfGenerator.getPdfFilepath(reference);
         return "Saving PDF of letter to " + savedLetterFilepath + ".";
@@ -174,13 +174,13 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         return resourceToString("/fixtures/valid-api-request.json", UTF_8);
     }
 
-    private void verifyLetterPdfSaved() throws IOException {
+    private void verifyLetterPdfSaved() {
         var reference = getReference();
         var savedLetterFilepath = Paths.get(HtmlPdfGenerator.getPdfFilepath(reference));
         assertThat(Files.exists(savedLetterFilepath), is(true));
     }
 
-    private String getReference() throws IOException {
+    private String getReference() {
         if (StringUtils.isBlank(letterRequest.getLetterDetails().getLetterId())) {
             // Old letters do not have letter IDs and use just the reference
             return letterRequest.getSenderDetails().getReference();

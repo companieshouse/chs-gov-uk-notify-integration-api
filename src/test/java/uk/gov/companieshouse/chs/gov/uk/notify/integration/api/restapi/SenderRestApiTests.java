@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -39,6 +41,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.Email
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.EmailResp;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
@@ -75,8 +78,6 @@ class SenderRestApiTests {
     @InjectMocks
     private SenderRestApi notifyIntegrationSenderController;
 
-
-
     @Test
     void whenEmailRequestIsValidExpectEmailMessageIsSentSuccessfully(){
         EmailRequestDao emailRequest = mockEmailRequest();
@@ -94,6 +95,23 @@ class SenderRestApiTests {
                 VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         assertNotNull(response);
+    }
+
+    @Test
+    void whenEmailRequestNotInDbExpectBadRequestErrorResponse(){
+        EmailRequestDao emailRequest = TestUtils.createEmailRequest();
+        String appId = emailRequest.getSenderDetails().getAppId();
+        String reference = emailRequest.getSenderDetails().getReference();
+        GovUkEmailDetailsRequest req = createSampleEmailRequest(emailRequest);
+        when(notificationDatabaseService.getEmail(appId, reference)).thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
+
+        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        assertNotNull(response);
+
+        verifyNoInteractions(govUKNotifyEmailFacade);
+        verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
     }
 
     @Test
@@ -215,6 +233,20 @@ class SenderRestApiTests {
     }
 
     @Test
+    void sendLetter_shouldReturnBadRequest_requestNotFoundInDb() throws Exception {
+        LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+        String appId = letterRequest.getSenderDetails().getAppId();
+        String reference = letterRequest.getSenderDetails().getReference();
+        GovUkLetterDetailsRequest req = createSampleLetterRequest(letterRequest);
+        when(notificationDatabaseService.getLetter(appId, reference)).thenReturn(Optional.empty());
+
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+
+        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
+        verifyNoInteractions(letterDispatcher);
+    }
+
+    @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
         LetterRequestDao letterRequest = mockLetterRequest("letterId", "other");
         GovUkLetterDetailsRequest req = createSampleLetterRequest(letterRequest);
@@ -229,7 +261,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
         LetterRequestDao letterRequest = mockLetterRequest("letterId", "other");
-    GovUkLetterDetailsRequest req = createSampleLetterRequest(letterRequest);
+        GovUkLetterDetailsRequest req = createSampleLetterRequest(letterRequest);
         Mockito.when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
@@ -270,7 +302,7 @@ class SenderRestApiTests {
                 .thenReturn(Optional.of(notificationRequest));
         return letterRequest;
     }
-    
+
     private EmailRequestDao mockEmailRequest() {
         String appId = APP_ID;
         String reference = VALID_REFERENCE;
