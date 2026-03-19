@@ -45,6 +45,11 @@ public class NotificationDatabaseService {
     }
 
     @Transactional( readOnly = true )
+    public Optional<NotificationEmailRequest> getEmail(final String appId, final String reference) {
+        return notificationEmailRequestRepository.findByUniqueReference(appId, reference);
+    }
+
+    @Transactional( readOnly = true )
     public List<NotificationEmailRequest> getEmailByReference(final String reference) {
         return notificationEmailRequestRepository.findByReference(reference);
     }
@@ -57,6 +62,11 @@ public class NotificationDatabaseService {
     @Transactional( readOnly = true )
     public Optional<NotificationLetterRequest> getLetter(final String letterId) {
         return notificationLetterRequestRepository.findById(letterId);
+    }
+
+    @Transactional( readOnly = true )
+    public Optional<NotificationLetterRequest> getLetter(final String appId, final String reference) {
+        return notificationLetterRequestRepository.findByUniqueReference(appId, reference);
     }
 
     @Transactional( readOnly = true )

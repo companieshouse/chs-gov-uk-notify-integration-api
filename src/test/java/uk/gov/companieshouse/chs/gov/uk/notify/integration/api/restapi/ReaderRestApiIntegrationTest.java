@@ -38,8 +38,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.No
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 
 import static com.google.common.net.HttpHeaders.X_REQUEST_ID;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -153,12 +151,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private NotificationEmailRequestRepository notificationEmailRequestRepository;
-
-    @Autowired
-    private NotificationLetterRequestRepository notificationLetterRequestRepository;
-
     @MockitoBean
     private NotificationClient notificationClient;
 
@@ -172,7 +164,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void When_RequestingAllEmails_Expect_SuccessfulResponseWithEmailList() throws Exception {
         notificationEmailRequestRepository.deleteAll();
 
-        EmailRequestDao emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
+        EmailRequestDao emailRequest = TestUtils.createEmailRequest(TEST_EMAIL);
         saveEmail(emailRequest);
 
         MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/emails")
@@ -217,7 +209,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestingEmailById_Expect_SuccessfulResponseWithMatchingEmail() throws Exception {
-        EmailRequestDao emailRequest = TestUtils.createSampleEmailRequest(TEST_EMAIL);
+        EmailRequestDao emailRequest = TestUtils.createEmailRequest(TEST_EMAIL);
         NotificationEmailRequest savedEmail = saveEmail(emailRequest);
         String emailId = savedEmail.getId();
 
@@ -420,7 +412,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     void viewLetterWithOriginalTodaysLetterSendingDate(CapturedOutput log) throws Exception {
 
         // Given
-        var letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        var letterRequest = TestUtils.createLetterRequestWithReference(TOKEN_REFERENCE);
         letterRequest.getLetterDetails().setLetterId("IDVPSCDIRTRAN"); // requiring todays date
         saveLetter(letterRequest);
 
@@ -953,7 +945,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given
         for (int i = 1; i <= 4; i++) {
-            LetterRequestDao letterRequest = TestUtils.createLetterWithReference("Reference " + i);
+            LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference("Reference " + i);
             saveLetter(letterRequest);
         }
 
@@ -1197,7 +1189,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // Given
         for (int i = 1; i <= 4; i++) {
-            LetterRequestDao letterRequest = TestUtils.createLetterWithReference("Reference " + i);
+            LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference("Reference " + i);
             letterRequest.setCreatedAt(OffsetDateTime.now());
             saveLetter(letterRequest);
         }
@@ -1222,7 +1214,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        LetterRequestDao letterRequest = TestUtils.createLetterWithReference("reference");
+        LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference("reference");
         letterRequest.getLetterDetails().setPersonalisationDetails(OTHER_PERSONALISATIONS + personalisationDetails + "}");
         saveLetter(letterRequest);
 
@@ -1249,7 +1241,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
             throws Exception {
 
         // Given
-        LetterRequestDao letterRequest = TestUtils.createLetterWithReference("reference");
+        LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference("reference");
         letterRequest.getLetterDetails().setPersonalisationDetails(OTHER_PERSONALISATIONS + personalisationDetails + "}");
         saveLetter(letterRequest);
 
@@ -1295,12 +1287,12 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     }
 
     private LetterRequestDao createLetter() throws Exception {
-        LetterRequestDao letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference(TOKEN_REFERENCE);
         return saveLetter(letterRequest).getRequest();
     }
 
     private LetterRequestDao createCsidvdefletLetter() throws Exception {
-        LetterRequestDao letterRequest = TestUtils.createLetterWithReference(TOKEN_REFERENCE);
+        LetterRequestDao letterRequest = TestUtils.createLetterRequestWithReference(TOKEN_REFERENCE);
         letterRequest.getLetterDetails().setLetterId("CSIDVDEFLET");
         letterRequest.getLetterDetails().setTemplateId(TEST_TEMPLATE_ID);
         letterRequest.getLetterDetails().setPersonalisationDetails("{ \"verification_due_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\", \"is_llp\": \"no\"}");

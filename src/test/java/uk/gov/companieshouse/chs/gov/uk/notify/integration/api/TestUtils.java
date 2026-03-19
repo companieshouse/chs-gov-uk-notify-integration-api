@@ -43,20 +43,30 @@ public class TestUtils {
                     + "\"company_name\": \"Tŷ'r Cwmnïau\","
                     + "\"company_number\": \"00006400\"}";
 
-    public static LetterRequestDao createSampleLetterRequest(String addressLine1) {
-        return createSampleLetterRequestWithReference(addressLine1, "test-reference");
+    public static LetterRequestDao createLetterRequestWithAddressLine1(String addressLine1) {
+        LetterRequestDao letterRequest = createLetterRequest();
+        letterRequest.getRecipientDetails().getPhysicalAddress().setAddressLine1(addressLine1);
+        return letterRequest;
     }
 
-    public static LetterRequestDao createSampleLetterRequestWithReference(String addressLine1, String reference) {
+    public static LetterRequestDao createLetterRequestWithReference(String reference) {
+        LetterRequestDao letterRequest = createLetterRequest();
+        letterRequest.getSenderDetails().setReference(reference);
+        return letterRequest;
+    }
+
+    public static LetterRequestDao createLetterRequest() {
         SenderDetailsDao senderDetails = new SenderDetailsDao();
         senderDetails.setAppId("chips");
-        senderDetails.setReference(reference);
+        senderDetails.setReference("test-reference");
         AddressDao address = new AddressDao();
-        address.setAddressLine1(addressLine1);
+        address.setAddressLine1("Address line 1");
         address.setAddressLine2("Apt 101");
         address.setAddressLine3("District");
         address.setAddressLine4("City");
         address.setAddressLine5("County");
+        address.setAddressLine6("Postcode");
+        address.setAddressLine7("Foreign country");
         LetterRecipientDetailsDao recipientDetails = new LetterRecipientDetailsDao();
         recipientDetails.setName("Test Recipient");
         recipientDetails.setPhysicalAddress(address);
@@ -73,21 +83,19 @@ public class TestUtils {
         return letterRequest;
     }
 
-    public static LetterRequestDao createLetterWithReference(String reference) {
-        return createSampleLetterRequestWithReference("Address line 1", reference);
+    public static EmailRequestDao createEmailRequest(String email) {
+        EmailRequestDao emailRequest = createEmailRequest();
+        emailRequest.getRecipientDetails().setEmailAddress(email);
+        return emailRequest;
     }
 
-    public static EmailRequestDao createSampleEmailRequest(String email) {
-        return createSampleEmailRequestWithReference(email, "test-reference");
-    }
-
-    public static EmailRequestDao createSampleEmailRequestWithReference(String email, String reference) {
+    public static EmailRequestDao createEmailRequest() {
         SenderDetailsDao senderDetails = new SenderDetailsDao();
         senderDetails.setAppId("chips");
-        senderDetails.setReference(reference);
+        senderDetails.setReference("test-reference");
         EmailRecipientDetailsDao recipientDetails = new EmailRecipientDetailsDao();
         recipientDetails.setName("Test User");
-        recipientDetails.setEmailAddress(email);
+        recipientDetails.setEmailAddress("test@example");
         EmailDetailsDao emailDetails = new EmailDetailsDao();
         emailDetails.setTemplateId("template-123");
         emailDetails.setPersonalisationDetails("Hello {{name}}");
@@ -98,10 +106,6 @@ public class TestUtils {
         emailRequest.setEmailDetails(emailDetails);
         emailRequest.setCreatedAt(OffsetDateTime.now());
         return emailRequest;
-    }
-
-    public static EmailRequestDao createSampleNotificationRequest() {
-        return createSampleEmailRequestWithReference("test@example.com", "test-reference");
     }
 
     public static SendEmailResponse createSampleEmailResponse() {
@@ -138,10 +142,6 @@ public class TestUtils {
         textStripper.setStartPage(pageNumber);
         textStripper.setEndPage(pageNumber);
         return textStripper.getText(pdf);
-    }
-
-    public static String getValidSendLetterRequestBody() throws IOException {
-        return resourceToString("/fixtures/send-new-psc-direction-letter-request.json", UTF_8);
     }
 
     public static ResultActions postSendLetterRequest(MockMvc mockMvc,

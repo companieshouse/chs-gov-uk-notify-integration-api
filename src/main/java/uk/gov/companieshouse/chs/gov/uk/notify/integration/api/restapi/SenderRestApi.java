@@ -19,9 +19,9 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestMapper;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -72,7 +72,16 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
 
-        EmailRequestDao emailRequest = EmailRequestMapper.toDao(govUkEmailDetailsRequest);
+        var senderDetails = govUkEmailDetailsRequest.getSenderDetails();
+        var reference = senderDetails.getReference();
+        var appId = senderDetails.getAppId();
+        var emailRequest = notificationDatabaseService.getEmail(appId, reference)
+                .map(NotificationEmailRequest::getRequest)
+                // This is a temporary fallback for old kafka messages that were sent before the
+                // sender api started storing the letter request in the database.
+                // TODO: remove once we're confident all old messages have been processed and
+                // the request is being stored for all new messages.
+                .orElse(EmailRequestMapper.toDao(govUkEmailDetailsRequest));
 
         Map<String, Object> personalisationDetails;
         try {
@@ -126,15 +135,21 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext( contextId,"Starting sendLetter process", logMap );
 
-        LetterRequestDao letterRequest = LetterRequestMapper.toDao(govUkLetterDetailsRequest);
+        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
+        var reference = senderDetails.getReference();
+        var appId = senderDetails.getAppId();
+        var letterRequest = notificationDatabaseService.getLetter(appId, reference)
+                .map(NotificationLetterRequest::getRequest)
+                // This is a temporary fallback for old kafka messages that were sent before the
+                // sender api started storing the letter request in the database.
+                // TODO: remove once we're confident all old messages have been processed and
+                // the request is being stored for all new messages.
+                .orElse(LetterRequestMapper.toDao(govUkLetterDetailsRequest));
 
         logger.infoContext( contextId, "Processing letter for "
                         + letterRequest.getRecipientDetails().getName(),
                 createLogMap(contextId, "process_letter"));
 
-        var senderDetails = letterRequest.getSenderDetails();
-        var reference = senderDetails.getReference();
-        var appId = senderDetails.getAppId();
         var letterDetails = letterRequest.getLetterDetails();
         var letterId = letterDetails.getLetterId();
         var fullReference = new LetterReference(appId, letterId, reference);
