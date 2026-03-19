@@ -158,7 +158,7 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
         verifyLetterPdfSaved();
     }
 
-    private void deleteLetterPdf() throws Exception {
+    private void deleteLetterPdf() {
         var reference = getReference();
         var file = new File(HtmlPdfGenerator.getPdfFilepath(reference));
         file.deleteOnExit();

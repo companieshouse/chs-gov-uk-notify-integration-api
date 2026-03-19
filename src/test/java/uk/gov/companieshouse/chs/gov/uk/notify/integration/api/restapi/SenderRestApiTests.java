@@ -233,7 +233,7 @@ class SenderRestApiTests {
     }
 
     @Test
-    void sendLetter_shouldReturnBadRequest_requestNotFoundInDb() throws Exception {
+    void sendLetter_shouldReturnBadRequest_requestNotFoundInDb() {
         LetterRequestDao letterRequest = TestUtils.createLetterRequest();
         String appId = letterRequest.getSenderDetails().getAppId();
         String reference = letterRequest.getSenderDetails().getReference();
