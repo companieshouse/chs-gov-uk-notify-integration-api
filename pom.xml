@@ -36,7 +36,7 @@
         <flying-saucer-version>12.0.0</flying-saucer-version>
         <openpdf-version>2.0.3</openpdf-version>
         <batik-transcoder-version>1.18</batik-transcoder-version>
-        <pdfbox-version>3.0.5</pdfbox-version>
+        <pdfbox-version>3.0.7</pdfbox-version>
         <tomcat-embed.version>11.0.18</tomcat-embed.version>
         <grpc-context.version>1.73.0</grpc-context.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
