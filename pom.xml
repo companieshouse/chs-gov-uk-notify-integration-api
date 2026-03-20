@@ -70,6 +70,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Temporarily overridden dependencies -->
+            <!--
+                Override dependency to fix CVE-2025-68161
+                Review to see if newer version of spring-boot-starter-logging
+                supplies an updated version of this,
+                allowing removal of this dependency.
+            -->
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j-version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -91,18 +104,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!--
-            Temporarily override dependency to fix CVE-2025-68161
-            Review to see if newer version of spring-boot-starter-logging
-            supplies an updated version of this,
-            allowing removal of this dependency.
-        -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j-version}</version>
         </dependency>
 
         <dependency>
