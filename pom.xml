@@ -26,7 +26,6 @@
         <private-api-sdk-java.version>4.0.429</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <api-security-java-version>2.0.10</api-security-java-version>
-        <web-security-java.version>3.1.6</web-security-java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
@@ -122,11 +121,6 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>api-security-java</artifactId>
             <version>${api-security-java-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.companieshouse</groupId>
-            <artifactId>web-security-java</artifactId>
-            <version>${web-security-java.version}</version>
         </dependency>
 
         <dependency>
