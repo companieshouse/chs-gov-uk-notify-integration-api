@@ -1,0 +1,24 @@
+{
+  "sender_details": {
+    "name": "unused",
+    "user_id": "unused",
+    "email_address": "request@email.com"
+  },
+  "recipient_details": {
+    "name": "unused",
+    "physical_address": {
+      "address_line_1": "unused",
+      "address_line_2": "unused",
+      "address_line_3": "unused",
+      "address_line_4": "unused",
+      "address_line_5": "unused",
+      "address_line_6": "unused"
+    }
+  },
+  "letter_details": {
+    "letter_id": "unused",
+    "template_id": "unused",
+    "personalisation_details": "unused"
+  },
+  "created_at": "2025-04-08T23:59:00.000+00:00"
+}

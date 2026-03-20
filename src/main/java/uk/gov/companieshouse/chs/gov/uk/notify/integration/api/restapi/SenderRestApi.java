@@ -63,16 +63,27 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             @Valid final GovUkEmailDetailsRequest govUkEmailDetailsRequest,
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String xHeaderId
     ) {
-        Map<String, Object> logMap = createLogMap("", "letter_send");
+        var logMap = createLogMap(xHeaderId, "email_send");
         logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
 
-        logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
+        logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
+
+        var senderDetails = govUkEmailDetailsRequest.getSenderDetails();
+        var reference = senderDetails.getReference();
+        var appId = senderDetails.getAppId();
+        var savedRequest = notificationDatabaseService.getEmail(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(xHeaderId, new IllegalStateException(
+                    "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var emailRequest = savedRequest.get().getRequest();
 
         Map<String, Object> personalisationDetails;
         try {
             logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
-                    govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
+                    emailRequest.getEmailDetails().getPersonalisationDetails(),
                     new TypeReference<>() { }
             );
         } catch (JsonProcessingException e) {
@@ -88,16 +99,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
-        notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
-
-        logger.infoContext(xHeaderId, "Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
         var emailResp = govUkNotifyService.sendEmail(
-                govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
-                govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
-                govUkEmailDetailsRequest.getSenderDetails().getReference(),
+                emailRequest.getRecipientDetails().getEmailAddress(),
+                emailRequest.getEmailDetails().getTemplateId(),
+                emailRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 
@@ -121,24 +129,30 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         Map<String, Object> logMap = createLogMap(contextId, "letter_send");
         logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
 
-        logger.infoContext( contextId,"Starting sendLetter process", logMap );
-
-        logger.debugContext( contextId, "Storing letter request in database", createLogMap(contextId, "store_letter"));
-        notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
-
-        logger.infoContext( contextId, "Processing letter for "
-                        + govUkLetterDetailsRequest.getRecipientDetails().getName(),
-                createLogMap(contextId, "process_letter"));
+        logger.infoContext(contextId, "Starting sendLetter process", logMap );
 
         var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
-        var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        var savedRequest = notificationDatabaseService.getLetter(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(contextId,
+                    new IllegalStateException("Letter request not found in database"),
+                    createLogMap(contextId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var letterRequest = savedRequest.get().getRequest();
+
+        logger.infoContext( contextId, "Processing letter for "
+                        + letterRequest.getRecipientDetails().getName(),
+                createLogMap(contextId, "process_letter"));
+
+        var letterDetails = letterRequest.getLetterDetails();
         var letterId = letterDetails.getLetterId();
         var fullReference = new LetterReference(appId, letterId, reference);
         var templateId = letterDetails.getTemplateId();
         var postage = determinePostage(appId, letterId, templateId);
-        var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
+        var address = letterRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {

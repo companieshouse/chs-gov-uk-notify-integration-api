@@ -28,6 +28,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
@@ -70,7 +71,7 @@ public class TemplatePersonaliser {
     public String personaliseLetterTemplate(LetterTemplateKey templateLookupKey,
                                             String reference,
                                             Map<String, String> personalisationDetails,
-                                            Address address) {
+                                            AddressDao address) {
 
         validatePersonalisationDetails(personalisationDetails);
 
@@ -101,7 +102,7 @@ public class TemplatePersonaliser {
         }
     }
 
-    private void populateAddress(Context context, Address address) {
+    private void populateAddress(Context context, AddressDao address) {
         var addressLines = Map.of(
                 ADDRESS_LINE_1, blankIfNull(address.getAddressLine1()),
                 ADDRESS_LINE_2, blankIfNull(address.getAddressLine2()),

@@ -6,8 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import java.time.LocalDateTime;
 
 @Document(collection = "email_details")
@@ -19,7 +18,7 @@ public class NotificationEmailRequest {
     private LocalDateTime updatedAt;
 
     @Field("request")
-    private GovUkEmailDetailsRequest request;
+    private EmailRequestDao request;
 
     @Id
     private String id;
@@ -27,7 +26,7 @@ public class NotificationEmailRequest {
     @Version
     private Integer version;
 
-    public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, GovUkEmailDetailsRequest request, String id) {
+    public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, EmailRequestDao request, String id) {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.request = request;
@@ -37,7 +36,7 @@ public class NotificationEmailRequest {
     public NotificationEmailRequest() {
     }
 
-    public GovUkEmailDetailsRequest getRequest() {
+    public EmailRequestDao getRequest() {
         return request;
     }
 
@@ -53,7 +52,7 @@ public class NotificationEmailRequest {
         return updatedAt;
     }
 
-    public void setRequest(GovUkEmailDetailsRequest request) {
+    public void setRequest(EmailRequestDao request) {
         this.request = request;
     }
 

@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -50,7 +51,7 @@ class LetterDispatcherTest {
     void sendLetter() throws IOException {
         Postage postage = Postage.FIRST_CLASS;
         String templateId = "template";
-        Address address = new Address();
+        AddressDao address = new AddressDao();
         String contextId = "ctx";
         String personalisedLetter = "<html>letter</html>";
         String govNotifyReference = "app-letter-ref";
@@ -85,7 +86,7 @@ class LetterDispatcherTest {
     void sendOldLetter() throws IOException {
         Postage postage = Postage.ECONOMY;
         String templateId = "template";
-        Address address = new Address();
+        AddressDao address = new AddressDao();
         String contextId = "ctx";
         String personalisedLetter = "<html>letter</html>";
         String govNotifyReference = "ref";

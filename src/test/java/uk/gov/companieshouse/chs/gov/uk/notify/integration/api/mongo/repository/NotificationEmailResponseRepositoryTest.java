@@ -1,26 +1,21 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import org.json.JSONObject;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
-import uk.gov.service.notify.SendEmailResponse;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Optional;
+import java.util.UUID;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
+import uk.gov.service.notify.SendEmailResponse;
+
 @SpringBootTest
 class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
-    
-    @Autowired
-    private NotificationEmailResponseRepository responseRepository;
 
     @Test
     void When_NewResponseSaved_Expect_IdAssigned() {
@@ -31,7 +26,7 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         notificationEmailResponse.setUpdatedAt(null);
         notificationEmailResponse.setResponse(emailResponse);
         notificationEmailResponse.setId(null);
-        NotificationEmailResponse savedResponse = responseRepository.save(
+        NotificationEmailResponse savedResponse = notificationEmailResponseRepository.save(
                 notificationEmailResponse);
 
         assertNotNull(savedResponse.toString());
@@ -45,10 +40,10 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
         UUID notificationId = UUID.randomUUID();
         SendEmailResponse emailResponse = createSampleEmailResponse(UUID.randomUUID(), notificationId);
 
-        NotificationEmailResponse savedResponse = responseRepository.save(
+        NotificationEmailResponse savedResponse = notificationEmailResponseRepository.save(
                 new NotificationEmailResponse(null, null, emailResponse, "1"));
 
-        Optional<NotificationEmailResponse> retrievedResponse = responseRepository.findById(savedResponse.getId());
+        Optional<NotificationEmailResponse> retrievedResponse = notificationEmailResponseRepository.findById(savedResponse.getId());
 
         assertTrue(retrievedResponse.isPresent());
         assertEquals(savedResponse.getId(), retrievedResponse.get().getId());
@@ -58,12 +53,12 @@ class NotificationEmailResponseRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_ResponseDeleted_Expect_ResponseNotFoundById() {
-        NotificationEmailResponse savedResponse = responseRepository.save(
+        NotificationEmailResponse savedResponse = notificationEmailResponseRepository.save(
                 new NotificationEmailResponse(null, null, createSampleEmailResponse(UUID.randomUUID(),UUID.randomUUID()), null ));
 
-        responseRepository.deleteById(savedResponse.getId());
+        notificationEmailResponseRepository.deleteById(savedResponse.getId());
 
-        Optional<NotificationEmailResponse> deletedResponse = responseRepository.findById(savedResponse.getId());
+        Optional<NotificationEmailResponse> deletedResponse = notificationEmailResponseRepository.findById(savedResponse.getId());
         assertFalse(deletedResponse.isPresent());
     }
 
