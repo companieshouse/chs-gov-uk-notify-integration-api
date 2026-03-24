@@ -1,16 +1,17 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
+import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
-import java.time.LocalDateTime;
 
-@Document(collection = "email_details")
-public class NotificationEmailRequest {
+public abstract class NotificationRequest<T> {
+
+    @Id
+    private String id;
+
     @Field("created_at") @CreatedDate
     private LocalDateTime createdAt;
 
@@ -18,25 +19,15 @@ public class NotificationEmailRequest {
     private LocalDateTime updatedAt;
 
     @Field("request")
-    private EmailRequestDao request;
+    private T request;
 
-    @Id
-    private String id;
+    @Field("status")
+    private RequestStatus status;
 
     @Version
     private Integer version;
 
-    public NotificationEmailRequest(LocalDateTime createdAt, LocalDateTime updatedAt, EmailRequestDao request, String id) {
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.request = request;
-        this.id = id;
-    }
-
-    public NotificationEmailRequest() {
-    }
-
-    public EmailRequestDao getRequest() {
+    public T getRequest() {
         return request;
     }
 
@@ -52,7 +43,7 @@ public class NotificationEmailRequest {
         return updatedAt;
     }
 
-    public void setRequest(EmailRequestDao request) {
+    public void setRequest(T request) {
         this.request = request;
     }
 
@@ -68,15 +59,23 @@ public class NotificationEmailRequest {
         this.updatedAt = updatedAt;
     }
 
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
-        return "NotificationEmailRequest{" +
+        return "{" +
                 "createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", request=" + request +
+                ", status=" + status +
                 ", id='" + id + '\'' +
                 ", version=" + version +
                 '}';
     }
 }
-

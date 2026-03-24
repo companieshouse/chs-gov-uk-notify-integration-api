@@ -12,8 +12,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 
 @SpringBootTest
 class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
@@ -37,7 +37,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
         EmailRequestDao emailRequest = createEmailRequest("jane.doe@example.com");
-        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
+        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequest));
 
         Optional<NotificationEmailRequest> retrievedRequest = notificationEmailRequestRepository.findById(savedRequest.getId());
 
@@ -48,9 +48,9 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
-        notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, createEmailRequest("user1@example.com"), null));
-        notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, createEmailRequest("user2@example.com"), null));
-        notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, createEmailRequest("user3@example.com"), null));
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(createEmailRequest("user1@example.com")));
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(createEmailRequest("user2@example.com")));
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(createEmailRequest("user3@example.com")));
 
         List<NotificationEmailRequest> allRequests = notificationEmailRequestRepository.findAll();
 
@@ -59,7 +59,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestDeleted_Expect_RequestNotFoundById() {
-        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, createEmailRequest("test@example.com"), null));
+        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(createEmailRequest("test@example.com")));
 
         notificationEmailRequestRepository.deleteById(savedRequest.getId());
 
@@ -70,7 +70,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
         EmailRequestDao initialRequest = createEmailRequest("initial@example.com");
-        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, initialRequest, null));
+        NotificationEmailRequest savedRequest = notificationEmailRequestRepository.save(new NotificationEmailRequest(initialRequest));
 
         savedRequest.getRequest().getSenderDetails().setEmailAddress( "updated@example.com" );
 
@@ -117,7 +117,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
         var email = createEmailRequest();
         email.getSenderDetails().setAppId(appId);
         email.getSenderDetails().setReference(reference);
-        notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, email, null));
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(email));
         return email;
     }
 }

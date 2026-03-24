@@ -18,12 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailResponse;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailResponse;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
@@ -271,10 +271,10 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     }
 
     private NotificationEmailRequest saveEmail(EmailRequestDao emailRequest) {
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, emailRequest, null));
+        return notificationDatabaseService.saveEmail(new NotificationEmailRequest(emailRequest));
     }
 
     private NotificationLetterRequest saveLetter(LetterRequestDao letterRequest) {
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
+        return notificationDatabaseService.saveLetter(new NotificationLetterRequest(letterRequest));
     }
 }

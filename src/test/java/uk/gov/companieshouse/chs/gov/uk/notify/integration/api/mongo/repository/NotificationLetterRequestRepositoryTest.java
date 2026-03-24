@@ -21,8 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
 
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
@@ -53,7 +53,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
         LetterRequestDao letterRequest = createLetterRequestWithAddressLine1("456 Oak Ave");
-        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(letterRequest));
 
         Optional<NotificationLetterRequest> retrievedRequest = notificationLetterRequestRepository.findById(savedRequest.getId());
 
@@ -64,9 +64,9 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
-        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("123 First St"), null));
-        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("456 Second Ave"), null));
-        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("789 Third Blvd"), null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(createLetterRequestWithAddressLine1("123 First St")));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(createLetterRequestWithAddressLine1("456 Second Ave")));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(createLetterRequestWithAddressLine1("789 Third Blvd")));
 
         List<NotificationLetterRequest> allRequests = notificationLetterRequestRepository.findAll();
 
@@ -75,7 +75,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestDeleted_Expect_RequestNotFoundById() {
-        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("Test Address"), null));
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(createLetterRequestWithAddressLine1("Test Address")));
 
         notificationLetterRequestRepository.deleteById(savedRequest.getId());
 
@@ -86,7 +86,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
         LetterRequestDao initialRequest = createLetterRequestWithAddressLine1("Initial Address");
-        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(initialRequest));
 
         savedRequest.getRequest().getRecipientDetails().getPhysicalAddress().setAddressLine1( "Updated Address" );
 
@@ -238,13 +238,13 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     private void saveLetterWithReference(String reference) {
         var letter = createLetterRequestWithReference(reference);
         letter.setCreatedAt(OffsetDateTime.now());
-        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letter, null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(letter));
     }
 
     private LetterRequestDao saveLetterWithReference(String appId, String reference) {
         var letter = createLetterRequestWithReference(reference);
         letter.getSenderDetails().setAppId(appId);
-        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letter, null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(letter));
         return letter;
     }
 

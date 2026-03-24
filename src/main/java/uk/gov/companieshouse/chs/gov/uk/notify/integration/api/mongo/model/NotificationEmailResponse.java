@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document;
+package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
