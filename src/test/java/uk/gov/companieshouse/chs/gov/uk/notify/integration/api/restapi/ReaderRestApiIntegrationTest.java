@@ -51,10 +51,10 @@ import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationEmailRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
@@ -431,7 +431,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
-        return notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, request, null));
+        return notificationLetterRequestRepository.save(new NotificationLetterRequest(request));
     }
 
     private LetterRequestDao createLetter() throws Exception {
@@ -445,7 +445,7 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(notificationClient.sendPrecompiledLetterWithInputStream(
                 anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
 
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(null, null, request, null));
+        return notificationEmailRequestRepository.save(new NotificationEmailRequest(request));
     }
 
     private ResultActions viewLetterPdfByReference(String reference,
