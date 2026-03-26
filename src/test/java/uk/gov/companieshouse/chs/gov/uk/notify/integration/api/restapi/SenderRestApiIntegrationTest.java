@@ -21,27 +21,23 @@ import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORI
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
 import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getValidSendLetterRequestBody;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfXConformanceException;
+import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
-
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.PdfXConformanceException;
-import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,13 +55,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -99,12 +95,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE =
             "Invalid token: service has no API keys";
     private static final String PDF_FILE_SIGNATURE = "%PDF-";
-    private static final String MISSING_COMPANY_NAME_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: No company name found in the "
-                    + "letter personalisation details.";
-    private static final String MISSING_PSC_FULL_NAME_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Context variable(s) [psc_full_name] "
-                    + "missing for LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
 
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
@@ -112,57 +102,51 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     + "start field name";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
             " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
-                    + "line: 1, column: 137]";
+                    + "line: 1, column: 208]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=unknown_application, letterId=null, templateId=direction_letter_v1]";
+                    + "LetterTemplateKey[appId=unknown_application, letterId=IDVPSCDIRNEW, templateId=v1.0]";
     private static final String UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
-                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=new_letter]";
+                    + "LetterTemplateKey[appId=chips, letterId=IDVPSCDIRNEW, templateId=new_template]";
+    private static final String UNKNOWN_LETTER_ID_ERROR_MESSAGE =
+            "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
+                    + "LetterTemplateKey[appId=chips, letterId=new_letter, templateId=v1.0]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
     "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
-            + "(template: \"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\") "
+            + "(template: \"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\") "
             + "[cause: java.io.FileNotFoundException: ClassLoader resource "
-            + "\"unknown_directory/chips/CSIDVDEFLET/v1.0/template.html\" could not be resolved]";
+            + "\"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\" could not be resolved]";
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
     private static final String MISSING_ADDRESS_LINES_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Context variable(s) "
                     + "[address_line_2, address_line_3] missing for "
-                    + "LetterTemplateKey[appId=chips, letterId=null, templateId=direction_letter_v1].";
+                    + "LetterTemplateKey[appId=chips, letterId=IDVPSCDIRNEW, templateId=v1.0].";
     private static final String CREATE_SVG_IMAGE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Caught IOException while "
-                    + "creating SVG image assets/templates/old_letters/common/warning.svg: "
+                    + "creating SVG image assets/templates/letters/common/warning.svg: "
                     + "Thrown by test. [cause: null]";
     private static final String SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: SVG image not found: "
-                    + "assets/templates/old_letters/common/warning.svg [cause: null]";
+                    + "assets/templates/letters/common/warning.svg [cause: null]";
     private static final String PDFX_CONFORMANCE_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Thrown by test [cause: null]. "
                     + "This PdfXConformanceException could indicate that a font, style or "
                     + "stylesheet cannot be found.";
     private static final String INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Format of date 'idv_start_date' "
-                    + "'Monday, 30 June 2025' is incorrect.";
+            "Error in chs-gov-uk-notify-integration-api: Incorrect date format "
+                    + "'Monday, 30 June 2025' for triggering_event_date";
     private static final String INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE =
-            "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' found in "
-                    + "'psc_appointment_date' date '24 Jun 2025'.";
+            "Error in chs-gov-uk-notify-integration-api: Unknown month 'Jun' in "
+                    + "date '24 Jun 2025' for psc_appointment_date";
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private NotificationDatabaseService notificationDatabaseService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private NotificationLetterResponseRepository notificationLetterResponseRepository;
 
     @MockitoBean
     private NotificationClient notificationClient;
@@ -188,6 +172,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @MockitoSpyBean
     private SvgReplacedElementFactory svgReplacedElementFactory;
 
+    private LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+
     @Test
     @DisplayName("Send letter successfully")
     void sendLetterSuccessfully(CapturedOutput log) throws Exception {
@@ -208,6 +194,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                     return responseReceived;
                 });
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -216,52 +204,25 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
+        assertThat(log.getAll().contains("reference: test-reference"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
     }
 
     @Test
-    @DisplayName("Send letter without providing the company name in the personalisation details")
-    void sendLetterWithoutCompanyName(CapturedOutput log) throws Exception {
-
-        // Given, when and then
-        postSendLetterRequest(mockMvc,
-                getRequestWithoutCompanyName(),
-                status().isBadRequest())
-                .andExpect(content().string(MISSING_COMPANY_NAME_ERROR_MESSAGE));
-
-        assertThat(log.getAll().contains(MISSING_COMPANY_NAME_ERROR_MESSAGE), is(true));
-
-        verifyLetterDetailsRequestStored();
-        verifyNoLetterResponsesAreStored();
-    }
-
-    @Test
-    @DisplayName("Send letter without providing the psc full name in the personalisation details")
-    void sendLetterWithoutPscFullName(CapturedOutput log) throws Exception {
-
-        // Given, when and then
-        postSendLetterRequest(mockMvc,
-                getRequestWithoutPscFullName(),
-                status().isBadRequest())
-                .andExpect(content().string(MISSING_PSC_FULL_NAME_ERROR_MESSAGE));
-
-        assertThat(log.getAll().contains(MISSING_PSC_FULL_NAME_ERROR_MESSAGE), is(true));
-
-        verifyLetterDetailsRequestStored();
-        verifyNoLetterResponsesAreStored();
-    }
-
-    @Test
     @DisplayName("Send letter with unparsable personalisation details")
     void sendLetterWithUnparsablePersonalisationDetails(CapturedOutput log) throws Exception {
+        // Given
+        var personalisationDetailsString = letterRequest.getLetterDetails()
+                .getPersonalisationDetails().replace("}", ",}"); // this comma makes it unparsable
+        letterRequest.getLetterDetails()
+                .setPersonalisationDetails(personalisationDetailsString);
+        saveRequestInDatabase();
 
-        // Given, when and then
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithUnparsablePersonalisationDetails(),
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content().string(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE));
 
@@ -270,7 +231,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -288,6 +248,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .thenThrow(
                         new NotificationClientException(INVALID_GOV_NOTIFY_API_KEY_ERROR_MESSAGE));
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -296,9 +258,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
+        assertThat(log.getAll().contains("reference: test-reference"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterErrorResponseStored();
     }
 
@@ -321,7 +282,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains(INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX), is(true));
         assertThat(log.getAll().contains(REQUEST_ID_PATTERN), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -331,14 +291,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         // When and then
         postSendLetterRequest(mockMvc,
-                resourceToString("/fixtures/send-letter-request-missing-sender-reference-and-app-id.json",
+                resourceToString("/fixtures/invalid-api-request-missing-reference-and-appid.json",
                         UTF_8),
                 status().isBadRequest())
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
 
         assertThat(log.getAll().contains(EXPECTED_NULL_FIELDS_ERRORS), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -359,7 +318,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("no authorised identity"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -380,7 +338,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("invalid identity type [null]"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -401,7 +358,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -423,7 +379,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("user does not have internal user privileges"), is(true));
 
-        verifyNoLetterDetailsRequestsAreStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -436,6 +391,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
                 .thenThrow(new IOException("Thrown by test."));
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -445,7 +402,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -464,6 +420,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 .thenReturn(precompiledPdfInputStream);
         doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -476,9 +434,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("emailAddress: jbloggs@jbloggs.com"), is(true));
+        assertThat(log.getAll().contains("reference: test-reference"), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyLetterResponseStoredCorrectly(responseReceived);
         verify(precompiledPdfInputStream).close();
     }
@@ -492,6 +449,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         when(svgDocumentFactory.createSVGDocument(anyString())).
                 thenThrow(new IOException("Thrown by test."));
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -500,7 +459,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(CREATE_SVG_IMAGE_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -516,6 +474,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                             any(PdfWriter.class), anyInt(), any()))
                     .thenThrow(new PdfXConformanceException("Thrown by test"));
 
+            saveRequestInDatabase();
+
             // When and then
             postSendLetterRequest(mockMvc,
                     getValidSendLetterRequestBody(),
@@ -524,7 +484,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
             assertThat(log.getAll().contains(PDFX_CONFORMANCE_ERROR_MESSAGE), is(true));
 
-            verifyLetterDetailsRequestStoredCorrectly();
             verifyNoLetterResponsesAreStored();
         }
     }
@@ -536,6 +495,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         // Given
         when(svgReplacedElementFactory.getResourceUrl(anyString())).thenReturn(null);
 
+        saveRequestInDatabase();
+
         // When and then
         postSendLetterRequest(mockMvc,
                 getValidSendLetterRequestBody(),
@@ -544,39 +505,63 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
 
         assertThat(log.getAll().contains(SVG_IMAGE_NOT_FOUND_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStoredCorrectly();
         verifyNoLetterResponsesAreStored();
     }
 
     @Test
     @DisplayName("Send letter with unknown application ID")
     void sendLetterWithUnknownApplicationId(CapturedOutput log) throws Exception {
+        // Given
+        String appId = "unknown_application";
+        letterRequest.getSenderDetails().setAppId(appId);
+        saveRequestInDatabase();
 
-        // Given, when and then
+        // When and then
+        String requestBody = getValidSendLetterRequestBody().replace("chips",
+                appId);
         postSendLetterRequest(mockMvc,
-                getRequestWithUnknownApplicationId(),
+                requestBody,
                 status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_APPLICATION_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_APPLICATION_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
     @Test
-    @DisplayName("Send letter with unknown template ID (aka letter)")
-    void sendLetterWithUnknownTemplateId(CapturedOutput log) throws Exception {
+    @DisplayName("Send letter with unknown letter ID")
+    void sendLetterWithUnknownLetterId(CapturedOutput log) throws Exception {
+        // Given
+        letterRequest.getLetterDetails().setLetterId("new_letter");
+        saveRequestInDatabase();
 
-        // Given, when and then
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithUnknownTemplateId(),
+                getValidSendLetterRequestBody(),
+                status().isBadRequest())
+                .andExpect(content().string(UNKNOWN_LETTER_ID_ERROR_MESSAGE));
+
+        assertThat(log.getAll().contains(UNKNOWN_LETTER_ID_ERROR_MESSAGE), is(true));
+
+        verifyNoLetterResponsesAreStored();
+    }
+
+    @Test
+    @DisplayName("Send letter with unknown template ID")
+    void sendLetterWithUnknownTemplateId(CapturedOutput log) throws Exception {
+        // Given
+        letterRequest.getLetterDetails().setTemplateId("new_template");
+        saveRequestInDatabase();
+
+        // When and then
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content().string(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(UNKNOWN_TEMPLATE_ID_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -584,11 +569,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send letter cannot find letter template")
     void sendLetterCannotFindTemplate(CapturedOutput log) throws Exception {
 
-        String requestBody = resourceToString("/fixtures/send-csidvdeflet-request.json", UTF_8);
-        // Given, when and then
+        // Given
+        saveRequestInDatabase();
         when(templateLookup.getLetterTemplatesRootDirectory()).thenReturn("unknown_directory/");
+
+        // When and then
         postSendLetterRequest(mockMvc,
-                requestBody,
+                getValidSendLetterRequestBody(),
                 status().isInternalServerError())
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
@@ -596,7 +583,6 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 TEMPLATE_NOT_FOUND_ERROR_MESSAGE.replace("\"", "\\\"")),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
@@ -604,58 +590,92 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @DisplayName("Send letter with reference in personalisation details")
     void sendLetterWithReferenceInPersonalisationDetails(CapturedOutput log) throws Exception {
 
-        // Given, when and then
+        // Given
+        var letterDetails = letterRequest.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(REFERENCE, "Test reference");
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        saveRequestInDatabase();
+
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithReferenceInPersonalisationDetails(),
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content().string(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
     @Test
     @DisplayName("Send letter with too short an address")
     void sendLetterWithTooShortAnAddress(CapturedOutput log) throws Exception {
+        // Given
+        AddressDao address = new AddressDao();
+        address.setAddressLine1("Recipient Name Only");
+        letterRequest.getRecipientDetails().setPhysicalAddress(address);
+        saveRequestInDatabase();
 
-        // Given, when and then
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithTooShortAnAddress(),
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content().string(MISSING_ADDRESS_LINES_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(MISSING_ADDRESS_LINES_ERROR_MESSAGE), is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
     @Test
     @DisplayName("Send letter with incorrectly formatted date")
     void sendLetterWithIncorrectlyFormattedDate(CapturedOutput log) throws Exception {
+        // Given
+        var letterDetails = letterRequest.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(TRIGGERING_EVENT_DATE, "Monday, 30 June 2025");
 
-        // Given, when and then
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        saveRequestInDatabase();
+
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithIncorrectlyFormattedIdvStartDate(),
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content().string(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(INCORRECTLY_FORMATTED_IDV_START_DATE_ERROR_MESSAGE),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
     @Test
     @DisplayName("Send letter with incorrectly named month in a date")
     void sendLetterWithIncorrectlyNamedMonth(CapturedOutput log) throws Exception {
+        // Given
+        var letterDetails = letterRequest.getLetterDetails();
+        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
 
-        // Given, when and then
+        var personalisationDetails = JsonParser
+                .parseString(personalisationDetailsString)
+                .getAsJsonObject();
+        personalisationDetails.addProperty(PSC_APPOINTMENT_DATE, "24 Jun 2025");
+
+        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
+        saveRequestInDatabase();
+
+        // When and then
         postSendLetterRequest(mockMvc,
-                getRequestWithIncorrectlyNamedMonthInPscAppointmentDate(),
+                getValidSendLetterRequestBody(),
                 status().isBadRequest())
                 .andExpect(content()
                         .string(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE));
@@ -664,16 +684,20 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .contains(INCORRECTLY_NAMED_MONTH_IN_PSC_APPOINTMENT_DATE_ERROR_MESSAGE),
                 is(true));
 
-        verifyLetterDetailsRequestStored();
         verifyNoLetterResponsesAreStored();
     }
 
     @ParameterizedTest(name = "Send letter with economy postage for {0} {1}")
-    @CsvSource({ "CSIDVDEFLET,v1.0,4221479,send-csidvdeflet-request",
-            "IDVPSCDEFAULT,v1.0,8574996,send-idvpscdefault-request" })
-    void sendLetterWithEconomyPostage(String letterType, String templateId, String reference, String filename)
+    @CsvSource({ "CSIDVDEFLET,v1.0", "CSIDVDEFLET,v1.1", "IDVPSCDEFAULT,v1.0",
+            "IDVPSCDEFAULT,v1.1" })
+    void sendLetterWithEconomyPostage(String letterType, String templateId)
             throws Exception {
-        final String govNotifyReference = String.join("-", "chips", letterType, reference);
+        configureRequest(letterType, templateId, letterType);
+        saveRequestInDatabase();
+
+        final String reference = letterRequest.getSenderDetails().getReference();
+        final String appId = letterRequest.getSenderDetails().getAppId();
+        final String govNotifyReference = String.join("-", appId, letterType, reference);
 
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -681,30 +705,41 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 eq(govNotifyReference), any(InputStream.class), eq("economy")))
                 .thenReturn(responseReceived);
 
-        String csidvdefletRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
-        postSendLetterRequest(mockMvc, csidvdefletRequest, status().isCreated());
-        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY), eq(reference),
-                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        postSendLetterRequest(mockMvc,
+                getValidSendLetterRequestBody(),
+                status().isCreated());
+        verify(letterDispatcher).sendLetter(eq(Postage.ECONOMY),
+                eq(new LetterReference(appId, letterType, reference)), eq(templateId), any(),
+                any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.ECONOMY), eq(govNotifyReference),
                 any());
     }
 
     @ParameterizedTest(name = "Send letter with second class postage for {0} {1}")
     @CsvSource(value = {
-            "null,direction_letter_v1, send-direction-letter-request, send-direction-letter-request",
-            "null,new_psc_direction_letter_v1, PSCDIR/00006400, send-new-psc-direction-letter-request",
-            "null,extension_acceptance_letter_v1, PSCEXT/00006400, send-extension-acceptance-letter-request",
-            "null,second_extension_acceptance_letter_v1, PSCEXT/00006400, send-second-extension-acceptance-letter-request",
-            "null,transitional_non_director_psc_information_letter_v1, PSCDIR/00006400, send-transitional-non-director-psc-information-letter-request" }, nullValues = {
+            "null,new_psc_direction_letter_v1,IDVPSCDIRNEW",
+            "IDVPSCDIRNEW,v1.0,IDVPSCDIRNEW",
+            "null,extension_acceptance_letter_v1,IDVPSCEXT",
+            "IDVPSCEXT1,v1.0,IDVPSCEXT",
+            "null,second_extension_acceptance_letter_v1,IDVPSCEXT",
+            "IDVPSCEXT2,v1.0,IDVPSCEXT",
+            "null,transitional_non_director_psc_information_letter_v1,IDVPSCDIRTRAN",
+            "IDVPSCDIRTRAN,v1.0,IDVPSCDIRTRAN"}, nullValues = {
                     "null" })
-    void sendLetterWithSecondClassPostage(String letterType, String templateId, String reference, String filename)
+    void sendLetterWithSecondClassPostage(String letterType, String templateId, String personalisationDetailsFile)
             throws Exception {
+        configureRequest(letterType, templateId, personalisationDetailsFile);
+        saveRequestInDatabase();
+
+        final String reference = letterRequest.getSenderDetails().getReference();
+        final String appId = letterRequest.getSenderDetails().getAppId();
+        
         String govNotifyReference;
         if (StringUtils.isBlank(letterType)) {
             // Old letters do not have letter IDs and use just the reference
             govNotifyReference = reference;
         } else  {
-            govNotifyReference = String.join("-", "chips", letterType, reference);
+            govNotifyReference = String.join("-", appId, letterType, reference);
         }
         var responseReceived = new LetterResponse(
                 resourceToString("/fixtures/send-letter-response.json", UTF_8));
@@ -712,33 +747,20 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
                 eq(govNotifyReference), any(InputStream.class), eq("second")))
                 .thenReturn(responseReceived);
 
-        String otherRequest = resourceToString("/fixtures/" + filename + ".json", UTF_8);
-        postSendLetterRequest(mockMvc, otherRequest, status().isCreated());
+        postSendLetterRequest(mockMvc, getValidSendLetterRequestBody(), status().isCreated());
 
-        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS), eq(reference),
-                eq("chips"), eq(letterType), eq(templateId), any(), any(), any());
+        verify(letterDispatcher).sendLetter(eq(Postage.SECOND_CLASS),
+                eq(new LetterReference("chips", letterType, reference)), eq(templateId), any(),
+                any(), any());
         verify(govUkNotifyService).sendLetter(eq(Postage.SECOND_CLASS), eq(govNotifyReference),
                 any());
     }
 
-    @SuppressWarnings("java:S1135") // TODO left in place intentionally for MVP.
-    // TODO Post MVP Ideally this would use the letter ID returned in the HTTP
-    // response payload to fetch the letter created.
-    private void verifyLetterDetailsRequestStoredCorrectly() throws IOException {
-        var sentRequest = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(false));
-        var storedRequest = notificationDatabaseService.findAllLetters().getFirst().getRequest();
-        assertThat(storedRequest, is(sentRequest));
-    }
-
-    private void verifyLetterDetailsRequestStored() {
-        assertThat(notificationDatabaseService.findAllLetters().size(), is(1));
-    }
-
-    private void verifyNoLetterDetailsRequestsAreStored() {
-        assertThat(notificationDatabaseService.findAllLetters().isEmpty(), is(true));
+    private void configureRequest(final String letterType, final String templateId, final String personalisationDetailsFilename) throws IOException {
+        String personalisationString = resourceToString("/fixtures/personalisation-details/" + personalisationDetailsFilename + ".json", UTF_8);
+        letterRequest.getLetterDetails().setLetterId(letterType);
+        letterRequest.getLetterDetails().setTemplateId(templateId);
+        letterRequest.getLetterDetails().setPersonalisationDetails(personalisationString);
     }
 
     private void verifyLetterResponseStoredCorrectly(LetterResponse receivedResponse) {
@@ -761,7 +783,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(storedResponse.getResponse(), is(notNullValue()));
         assertThat(storedResponse.getResponse().getNotificationId(), is(NIL_UUID));
         assertThat(storedResponse.getResponse().getReference().isPresent(), is(true));
-        assertThat(storedResponse.getResponse().getReference().get(), is("send-direction-letter-request"));
+        assertThat(storedResponse.getResponse().getReference().get(), is("chips-IDVPSCDIRNEW-test-reference"));
         assertThat(storedResponse.getResponse().getData(), is(notNullValue()));
         var data = storedResponse.getResponse().getData();
         assertThat(data.get("data"), is(notNullValue()));
@@ -776,121 +798,13 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(Objects.equals(fileSignature.toString(), PDF_FILE_SIGNATURE), is(true));
     }
 
-    private String getRequestWithoutCompanyName() throws IOException {
-        return getRequestWithoutPersonalisation(COMPANY_NAME);
+    private static String getValidSendLetterRequestBody() throws IOException {
+        return resourceToString("/fixtures/valid-api-request.json", UTF_8);
     }
 
-    private String getRequestWithoutPscFullName() throws IOException {
-        return getRequestWithoutPersonalisation(PSC_FULL_NAME);
+    private void saveRequestInDatabase() {
+        NotificationLetterRequest notificationLetterRequest = new NotificationLetterRequest();
+        notificationLetterRequest.setRequest(letterRequest);
+        notificationLetterRequestRepository.save(notificationLetterRequest);
     }
-
-    private String getRequestWithoutPersonalisation(String personalisationName)
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
-
-        var personalisationDetails = JsonParser
-                .parseString(personalisationDetailsString)
-                .getAsJsonObject();
-        personalisationDetails.remove(personalisationName);
-
-        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithReferenceInPersonalisationDetails()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
-
-        var personalisationDetails = JsonParser
-                .parseString(personalisationDetailsString)
-                .getAsJsonObject();
-        personalisationDetails.addProperty(REFERENCE, "Test reference");
-
-        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithIncorrectlyFormattedIdvStartDate()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
-
-        var personalisationDetails = JsonParser
-                .parseString(personalisationDetailsString)
-                .getAsJsonObject();
-        personalisationDetails.addProperty(IDV_START_DATE, "Monday, 30 June 2025");
-
-        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithIncorrectlyNamedMonthInPscAppointmentDate()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails.getPersonalisationDetails();
-
-        var personalisationDetails = JsonParser
-                .parseString(personalisationDetailsString)
-                .getAsJsonObject();
-        personalisationDetails.addProperty(PSC_APPOINTMENT_DATE, "24 Jun 2025");
-
-        letterDetails.setPersonalisationDetails(personalisationDetails.toString());
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithUnparsablePersonalisationDetails()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        var letterDetails = request.getLetterDetails();
-        var personalisationDetailsString = letterDetails
-                .getPersonalisationDetails()
-                .replace("}",",}"); // this comma makes it unparsable
-        letterDetails.setPersonalisationDetails(personalisationDetailsString);
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithUnknownApplicationId()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        request.getSenderDetails().setAppId("unknown_application");
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithUnknownTemplateId()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        request.getLetterDetails().setTemplateId("new_letter");
-        return objectMapper.writeValueAsString(request);
-    }
-
-    private String getRequestWithTooShortAnAddress()
-            throws IOException {
-        var request = objectMapper.readValue(
-                getValidSendLetterRequestBody(),
-                GovUkLetterDetailsRequest.class);
-        request.getRecipientDetails().setPhysicalAddress(
-                new Address().addressLine1("Recipient Name Only"));
-        return objectMapper.writeValueAsString(request);
-    }
-
 }

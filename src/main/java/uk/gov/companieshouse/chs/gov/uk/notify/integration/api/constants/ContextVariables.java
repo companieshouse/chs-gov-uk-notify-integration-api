@@ -32,10 +32,7 @@ public class ContextVariables {
     public static final String REFERENCE = "reference";
     public static final String COMPANY_NAME = "company_name";
     public static final String COMPANY_NUMBER = "company_number";
-    public static final String PSC_FULL_NAME = "psc_full_name";
     public static final String PSC_NAME = "psc_name";
-    public static final String DEADLINE_DATE = "deadline_date";
-    public static final String EXTENSION_DATE = "extension_date";
     public static final String TRIGGERING_EVENT_DATE = "triggering_event_date";
     public static final String VERIFICATION_DUE_DATE = "verification_due_date";
     public static final String ACTION_DUE_DATE = "action_due_date";

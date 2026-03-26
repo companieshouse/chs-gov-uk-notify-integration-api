@@ -8,9 +8,9 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 import java.io.IOException;
 import java.io.InputStream;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
@@ -76,7 +76,7 @@ public class SentLetterFetcher {
         }
     }
 
-    private String getHtml(final GovUkLetterDetailsRequest letter,
+    private String getHtml(final LetterRequestDao letter,
                            final String reference,
                            final String contextId) {
         var appId = letter.getSenderDetails().getAppId();

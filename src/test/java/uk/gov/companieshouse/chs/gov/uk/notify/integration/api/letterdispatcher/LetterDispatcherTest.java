@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -49,21 +50,21 @@ class LetterDispatcherTest {
     @Test
     void sendLetter() throws IOException {
         Postage postage = Postage.FIRST_CLASS;
-        String reference = "ref";
-        String appId = "app";
-        String letterId = "letter";
         String templateId = "template";
-        Address address = new Address();
+        AddressDao address = new AddressDao();
         String contextId = "ctx";
         String personalisedLetter = "<html>letter</html>";
-        String govNotifyReference = appId + "-" + letterId + "-" + reference;
+        String govNotifyReference = "app-letter-ref";
         String personalisationDetails = "{}";
+        LetterReference letterReference = new LetterReference("app", "letter", "ref");
         Map<String, String> personalisationDetailsMap = Collections.emptyMap();
 
         when(parser.parsePersonalisationDetails(personalisationDetails, contextId))
                 .thenReturn(personalisationDetailsMap);
         when(templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(appId, letterId, templateId), reference,
+                new LetterTemplateKey(letterReference.appId(), letterReference.letterId(),
+                        templateId),
+                letterReference.reference(),
                 personalisationDetailsMap, address)).thenReturn(personalisedLetter);
 
         InputStream pdfStream = new ByteArrayInputStream(new byte[0]);
@@ -74,8 +75,8 @@ class LetterDispatcherTest {
         when(govUkNotifyService.sendLetter(postage, govNotifyReference, pdfStream))
                 .thenReturn(letterResp);
 
-        GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, reference,
-                appId, letterId, templateId, address, personalisationDetails, contextId);
+        GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, letterReference,
+                templateId, address, personalisationDetails, contextId);
 
         assertSame(letterResp, result);
         verify(notificationDatabaseService).storeResponse(letterResp);
@@ -84,21 +85,22 @@ class LetterDispatcherTest {
     @Test
     void sendOldLetter() throws IOException {
         Postage postage = Postage.ECONOMY;
-        String reference = "ref";
-        String appId = "app";
-        String letterId = null; // An old letter does not have a letterId
         String templateId = "template";
-        Address address = new Address();
+        AddressDao address = new AddressDao();
         String contextId = "ctx";
         String personalisedLetter = "<html>letter</html>";
-        String govNotifyReference = reference;
+        String govNotifyReference = "ref";
         String personalisationDetails = "{}";
+        // An old letter does not have a letterId
+        LetterReference letterReference = new LetterReference("app", null, "ref");
         Map<String, String> personalisationDetailsMap = Collections.emptyMap();
 
         when(parser.parsePersonalisationDetails(personalisationDetails, contextId))
                 .thenReturn(personalisationDetailsMap);
         when(templatePersonaliser.personaliseLetterTemplate(
-                new LetterTemplateKey(appId, letterId, templateId), reference,
+                new LetterTemplateKey(letterReference.appId(), letterReference.letterId(),
+                        templateId),
+                letterReference.reference(),
                 personalisationDetailsMap, address)).thenReturn(personalisedLetter);
 
         InputStream pdfStream = new ByteArrayInputStream(new byte[0]);
@@ -109,8 +111,8 @@ class LetterDispatcherTest {
         when(govUkNotifyService.sendLetter(postage, govNotifyReference, pdfStream))
                 .thenReturn(letterResp);
 
-        GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, reference,
-                appId, letterId, templateId, address, personalisationDetails, contextId);
+        GovUkNotifyService.LetterResp result = letterDispatcher.sendLetter(postage, letterReference,
+                templateId, address, personalisationDetails, contextId);
 
         assertSame(letterResp, result);
         verify(notificationDatabaseService).storeResponse(letterResp);
