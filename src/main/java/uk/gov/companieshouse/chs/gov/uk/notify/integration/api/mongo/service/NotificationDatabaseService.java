@@ -40,23 +40,8 @@ public class NotificationDatabaseService {
     }
 
     @Transactional( readOnly = true )
-    public Optional<NotificationEmailRequest> getEmail(final String id) {
-        return notificationEmailRequestRepository.findById(id);
-    }
-
-    @Transactional( readOnly = true )
     public Optional<NotificationEmailRequest> getEmail(final String appId, final String reference) {
         return notificationEmailRequestRepository.findByUniqueReference(appId, reference);
-    }
-
-    @Transactional( readOnly = true )
-    public List<NotificationEmailRequest> getEmailByReference(final String reference) {
-        return notificationEmailRequestRepository.findByReference(reference);
-    }
-
-    @Transactional( readOnly = true )
-    public List<NotificationEmailRequest> findAllEmails() {
-        return notificationEmailRequestRepository.findAll();
     }
 
     @Transactional( readOnly = true )
@@ -117,11 +102,6 @@ public class NotificationDatabaseService {
                 letterSendingDate + UTC_TIMEZONE_SUFFIX,
                 nextDay + UTC_TIMEZONE_SUFFIX,
                 PageRequest.of(letterNumber - 1, 1));
-    }
-
-    @Transactional( readOnly = true )
-    public List<NotificationLetterRequest> findAllLetters() {
-        return notificationLetterRequestRepository.findAll();
     }
 
     @Transactional()

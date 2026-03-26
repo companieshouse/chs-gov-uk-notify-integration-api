@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.ITemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;

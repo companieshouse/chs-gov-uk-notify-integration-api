@@ -6,8 +6,6 @@ import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -30,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Map;
 import org.apache.pdfbox.Loader;
 import org.junit.jupiter.api.DisplayName;
@@ -48,18 +45,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -71,7 +62,6 @@ import uk.gov.service.notify.NotificationClient;
 class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
-    private static final String TEST_EMAIL = "test@example.com";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
     private static final String ERIC_IDENTITY_VALUE = "65e73495c8e2";
     private static final String ERIC_IDENTITY_OAUTH2_TYPE = "oauth2";
@@ -111,8 +101,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final int LETTER_3 = 3;
     private static final int LETTER_4 = 4;
 
-    private static final String GET_LETTER_DETAILS_BY_REFERENCE_PATH =
-            "/gov-uk-notify-integration/letters/reference";
     private static final String VIEW_LETTER_PDF_BY_REFERENCE =
             "/gov-uk-notify-integration/letters/view_by_reference";
     private static final String VIEW_LETTER_PDFS_BY_REFERENCE =
@@ -122,8 +110,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private static final String VIEW_LETTER_PDFS =
             "/gov-uk-notify-integration/letters/paginated_view/";
 
-    private static final String VIEW_LETTERS_BY_REFERENCE_URI =
-            VIEW_LETTER_PDFS_BY_REFERENCE + "1?reference=reference";
     private static final String VIEW_LETTER_BY_SELECTION_CRITERIA_URI =
             VIEW_LETTER_PDF + "?"
             + "letter_sending_date=2025-10-14"
@@ -159,73 +145,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     private InputStream precompiledPdfInputStream;
 
     @Test
-    void When_RequestingAllEmails_Expect_SuccessfulResponseWithEmailList() throws Exception {
-        notificationEmailRequestRepository.deleteAll();
-
-        EmailRequestDao emailRequest = TestUtils.createEmailRequest(TEST_EMAIL);
-        saveEmail(emailRequest);
-
-        MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/emails")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", CONTEXT_ID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        List<GovUkEmailDetailsRequest> emailResponses = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-        );
-
-        assertNotNull(emailResponses);
-        assertEquals(1, emailResponses.size());
-        assertEquals(TEST_EMAIL, emailResponses.get(0).getRecipientDetails().getEmailAddress());
-    }
-
-    @Test
-    void When_RequestingAllLetters_Expect_SuccessfulResponseWithLetterList() throws Exception {
-        notificationLetterRequestRepository.deleteAll();
-
-        var letterRequest = createLetter();
-
-        MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/letters")
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", CONTEXT_ID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        List<GovUkLetterDetailsRequest> letterResponses = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-        );
-
-        assertNotNull(letterResponses);
-        assertEquals(1, letterResponses.size());
-        assertEquals(letterRequest, LetterRequestMapper.toDao(letterResponses.get(0)));
-    }
-
-    @Test
-    void When_RequestingEmailById_Expect_SuccessfulResponseWithMatchingEmail() throws Exception {
-        EmailRequestDao emailRequest = TestUtils.createEmailRequest(TEST_EMAIL);
-        NotificationEmailRequest savedEmail = saveEmail(emailRequest);
-        String emailId = savedEmail.getId();
-
-        MvcResult result = mockMvc.perform(get("/gov-uk-notify-integration/email/" + emailId)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Request-ID", CONTEXT_ID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        GovUkEmailDetailsRequest emailResponse = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                GovUkEmailDetailsRequest.class);
-
-        assertNotNull(emailResponse);
-        assertEquals(TEST_EMAIL, emailResponse.getRecipientDetails().getEmailAddress());
-    }
-
-    @Test
     void When_RequestingNonExistentEmailById_Expect_NotFoundResponse() throws Exception {
         String nonExistentId = "nonexistent123456789";
 
@@ -249,19 +168,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("no authorised identity"), is(true));
     }
 
-    @DisplayName("Reports unauthenticated view letters request as unauthorised")
-    @Test
-    void viewLettersWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
-        mockMvc.perform(
-                get(VIEW_LETTERS_BY_REFERENCE_URI)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_PDF_VALUE)
-                        .header(X_REQUEST_ID, CONTEXT_ID))
-                .andExpect(status().isUnauthorized());
-
-        assertThat(log.getAll().contains("no authorised identity"), is(true));
-    }
-
     @DisplayName("Reports unauthenticated view letter request with selection criteria as unauthorised")
     @Test
     void viewLetterByPscCompanyLetterTypeAndDateWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
@@ -270,19 +176,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_PDF_VALUE)
                         .header(X_REQUEST_ID, CONTEXT_ID))
-                .andExpect(status().isUnauthorized());
-
-        assertThat(log.getAll().contains("no authorised identity"), is(true));
-    }
-
-    @DisplayName("Reports unauthenticated get letter details by reference request as unauthorised")
-    @Test
-    void getLetterDetailsWithoutAuthIsUnauthorised(CapturedOutput log) throws Exception {
-        mockMvc.perform(
-                        get(GET_LETTER_DETAILS_BY_REFERENCE_PATH + "?reference=reference")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON)
-                                .header(X_REQUEST_ID, CONTEXT_ID))
                 .andExpect(status().isUnauthorized());
 
         assertThat(log.getAll().contains("no authorised identity"), is(true));
@@ -622,32 +515,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 is(true));
         assertThat(log.getAll().contains(
                 "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
-                is(true));
-    }
-
-    @Test
-    @DisplayName("Get letter details by reference successfully")
-    void getLetterDetailsByReferenceSuccessfully(CapturedOutput log) throws Exception {
-
-        // Given
-        createLetter();
-
-        // When
-        mockMvc.perform(get(GET_LETTER_DETAILS_BY_REFERENCE_PATH
-                        + "?reference=" + TOKEN_REFERENCE)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(X_REQUEST_ID, CONTEXT_ID)
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
-                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
-                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
-                .andExpect(status().isOk());
-
-        // Then
-        assertThat(log.getAll().contains(EXPECTED_SECURITY_OK_LOG_MESSAGE), is(true));
-        assertThat(log.getAll().contains(
-                getExpectedGetLetterDetailsByReferenceInvocationLogMessage(
-                        TOKEN_REFERENCE)),
                 is(true));
     }
 
@@ -1296,15 +1163,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
         letterRequest.getLetterDetails().setPersonalisationDetails("{ \"verification_due_date\": \"17 September 2025\", \"company_name\": \"TEST COMPANY LTD\", \"company_number\": \"00006400\", \"is_llp\": \"no\"}");
         return saveLetter(letterRequest).getRequest();
     }
-    
-    private NotificationEmailRequest saveEmail(EmailRequestDao request) throws Exception {
-        var responseReceived = new LetterResponse(
-                resourceToString("/fixtures/send-letter-response.json", UTF_8));
-        when(notificationClient.sendPrecompiledLetterWithInputStream(
-                anyString(), any(InputStream.class), anyString())).thenReturn(responseReceived);
-
-        return notificationEmailRequestRepository.save(new NotificationEmailRequest(request));
-    }
 
     private void implementLetterNotFoundTest(CapturedOutput log,
                                              String pscName,
@@ -1489,14 +1347,6 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
                 + "\"letter\":" + letterNumber + ","
                 + "\"action\":\"view_letter_pdfs\","
                 + "\"message\":\"Starting viewLetterPdfsByReference process\","
-                + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
-    }
-
-    private static String getExpectedGetLetterDetailsByReferenceInvocationLogMessage(
-            String reference) {
-        return   "{\"reference\":\"" + reference + "\","
-                + "\"action\":\"get_letter_by_reference\","
-                + "\"message\":\"Retrieving letter notifications by reference: " + reference + "\","
                 + "\"request_id\":\"X9uND6rXQxfbZNcMVFA7JI4h2KOh\"}";
     }
 
