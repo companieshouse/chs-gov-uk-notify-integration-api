@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrat
 import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
 import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
@@ -32,12 +34,12 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     /**
      * Set of letters that should be sent using second class postage
      */
-    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = Set.of(
-            LetterTemplateKey.CHIPS_DIRECTION_LETTER_1,
-            LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-            LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-            LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-            LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1);
+    private static final Set<LetterTemplateKey> SECOND_CLASS_LETTERS = new HashSet<>();
+    static {
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES);
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES);
+        SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.IDVPSCEXT_TEMPLATES);
+    }
 
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
@@ -61,18 +63,28 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             @Valid final GovUkEmailDetailsRequest govUkEmailDetailsRequest,
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String xHeaderId
     ) {
-        Map<String, Object> logMap = createLogMap("", "letter_send");
+        var logMap = createLogMap(xHeaderId, "email_send");
         logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
 
-        logger.infoContext(xHeaderId, "Starting sendEmail process", createLogMap(xHeaderId, "email_send_start"));
+        logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
 
-        Map<String, String> personalisationDetails;
+        var senderDetails = govUkEmailDetailsRequest.getSenderDetails();
+        var reference = senderDetails.getReference();
+        var appId = senderDetails.getAppId();
+        var savedRequest = notificationDatabaseService.getEmail(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(xHeaderId, new IllegalStateException(
+                    "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var emailRequest = savedRequest.get().getRequest();
+
+        Map<String, Object> personalisationDetails;
         try {
             logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
-                    govUkEmailDetailsRequest.getEmailDetails().getPersonalisationDetails(),
-                    new TypeReference<Map<String, String>>() {
-                    }
+                    emailRequest.getEmailDetails().getPersonalisationDetails(),
+                    new TypeReference<>() { }
             );
         } catch (JsonProcessingException e) {
             logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));
@@ -87,16 +99,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        logger.debugContext(xHeaderId,"Storing email request in database", createLogMap(xHeaderId, "store_email"));
-        notificationDatabaseService.storeEmail(govUkEmailDetailsRequest);
-
-        logger.infoContext(xHeaderId, "Sending email to " + govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
+        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
         var emailResp = govUkNotifyService.sendEmail(
-                govUkEmailDetailsRequest.getRecipientDetails().getEmailAddress(),
-                govUkEmailDetailsRequest.getEmailDetails().getTemplateId(),
-                govUkEmailDetailsRequest.getSenderDetails().getReference(),
+                emailRequest.getRecipientDetails().getEmailAddress(),
+                emailRequest.getEmailDetails().getTemplateId(),
+                emailRequest.getSenderDetails().getReference(),
                 personalisationDetails
         );
 
@@ -120,31 +129,36 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         Map<String, Object> logMap = createLogMap(contextId, "letter_send");
         logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
 
-        logger.infoContext( contextId,"Starting sendLetter process", logMap );
-
-        logger.debugContext( contextId, "Storing letter request in database", createLogMap(contextId, "store_letter"));
-        notificationDatabaseService.storeLetter(govUkLetterDetailsRequest);
-
-        logger.infoContext( contextId, "Processing letter for "
-                        + govUkLetterDetailsRequest.getRecipientDetails().getName(),
-                createLogMap(contextId, "process_letter"));
+        logger.infoContext(contextId, "Starting sendLetter process", logMap );
 
         var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
         var reference = senderDetails.getReference();
         var appId = senderDetails.getAppId();
-        var letterDetails = govUkLetterDetailsRequest.getLetterDetails();
+        var savedRequest = notificationDatabaseService.getLetter(appId, reference);
+        if (savedRequest.isEmpty()) {
+            logger.errorContext(contextId,
+                    new IllegalStateException("Letter request not found in database"),
+                    createLogMap(contextId, "read_request"));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var letterRequest = savedRequest.get().getRequest();
+
+        logger.infoContext( contextId, "Processing letter for "
+                        + letterRequest.getRecipientDetails().getName(),
+                createLogMap(contextId, "process_letter"));
+
+        var letterDetails = letterRequest.getLetterDetails();
         var letterId = letterDetails.getLetterId();
+        var fullReference = new LetterReference(appId, letterId, reference);
         var templateId = letterDetails.getTemplateId();
         var postage = determinePostage(appId, letterId, templateId);
-        var address = govUkLetterDetailsRequest.getRecipientDetails().getPhysicalAddress();
+        var address = letterRequest.getRecipientDetails().getPhysicalAddress();
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
             var response = letterDispatcher.sendLetter(
                     postage,
-                    reference,
-                    appId,
-                    letterId,
+                    fullReference,
                     templateId,
                     address,
                     personalisationDetails,

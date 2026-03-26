@@ -1,26 +1,25 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterWithReference;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createSampleLetterRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterRequestWithAddressLine1;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createLetterRequestWithReference;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.document.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 
 @SpringBootTest
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
@@ -30,18 +29,15 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     private static final Pageable LETTER_3 = PageRequest.of(2, 1);
     private static final Pageable LETTER_4 = PageRequest.of(3, 1);
 
-    @Autowired
-    private NotificationLetterRequestRepository requestRepository;
-
     @Test
     void When_NewRequestSaved_Expect_IdAssigned() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("123 Main St");
+        LetterRequestDao letterRequest = createLetterRequestWithAddressLine1("123 Main St");
         NotificationLetterRequest notificationLetterRequest = new NotificationLetterRequest();
         notificationLetterRequest.setRequest(letterRequest);
         notificationLetterRequest.setId(null);
         notificationLetterRequest.setCreatedAt(null);
         notificationLetterRequest.setUpdatedAt(null);
-        NotificationLetterRequest savedRequest = requestRepository.save(notificationLetterRequest);
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(notificationLetterRequest);
 
         assertNotNull(savedRequest.toString());
         assertNotNull(savedRequest.getId());
@@ -51,10 +47,10 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_RequestSaved_Expect_DataCanBeRetrievedById() {
-        GovUkLetterDetailsRequest letterRequest = createSampleLetterRequest("456 Oak Ave");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
+        LetterRequestDao letterRequest = createLetterRequestWithAddressLine1("456 Oak Ave");
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letterRequest, null));
 
-        Optional<NotificationLetterRequest> retrievedRequest = requestRepository.findById(savedRequest.getId());
+        Optional<NotificationLetterRequest> retrievedRequest = notificationLetterRequestRepository.findById(savedRequest.getId());
 
         assertTrue(retrievedRequest.isPresent());
         assertEquals(savedRequest.getId(), retrievedRequest.get().getId());
@@ -63,35 +59,35 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test
     void When_MultipleRequestsSaved_Expect_AllCanBeRetrieved() {
-        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("123 First St"), null));
-        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("456 Second Ave"), null));
-        requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("789 Third Blvd"), null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("123 First St"), null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("456 Second Ave"), null));
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("789 Third Blvd"), null));
 
-        List<NotificationLetterRequest> allRequests = requestRepository.findAll();
+        List<NotificationLetterRequest> allRequests = notificationLetterRequestRepository.findAll();
 
         assertTrue(allRequests.size() >= 3);
     }
 
     @Test
     void When_RequestDeleted_Expect_RequestNotFoundById() {
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, createSampleLetterRequest("Test Address"), null));
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, createLetterRequestWithAddressLine1("Test Address"), null));
 
-        requestRepository.deleteById(savedRequest.getId());
+        notificationLetterRequestRepository.deleteById(savedRequest.getId());
 
-        Optional<NotificationLetterRequest> deletedRequest = requestRepository.findById(savedRequest.getId());
+        Optional<NotificationLetterRequest> deletedRequest = notificationLetterRequestRepository.findById(savedRequest.getId());
         assertFalse(deletedRequest.isPresent());
     }
 
     @Test
     void When_RequestUpdated_Expect_ChangesReflectedInDatabase() {
-        GovUkLetterDetailsRequest initialRequest = createSampleLetterRequest("Initial Address");
-        NotificationLetterRequest savedRequest = requestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
+        LetterRequestDao initialRequest = createLetterRequestWithAddressLine1("Initial Address");
+        NotificationLetterRequest savedRequest = notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, initialRequest, null));
 
         savedRequest.getRequest().getRecipientDetails().getPhysicalAddress().setAddressLine1( "Updated Address" );
 
-        requestRepository.save(savedRequest);
+        notificationLetterRequestRepository.save(savedRequest);
 
-        NotificationLetterRequest retrievedRequest = requestRepository.findById(savedRequest.getId()).orElse(null);
+        NotificationLetterRequest retrievedRequest = notificationLetterRequestRepository.findById(savedRequest.getId()).orElse(null);
 
         assertNotNull(retrievedRequest);
         assertEquals("Updated Address", retrievedRequest.getRequest().getRecipientDetails().getPhysicalAddress().getAddressLine1());
@@ -105,10 +101,10 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
         saveLetterWithReference("Reference 2");
         saveLetterWithReference("Reference 3");
 
-        var firstLetter = requestRepository.findByReference("Reference", LETTER_1);
-        var secondLetter = requestRepository.findByReference("Reference", LETTER_2);
-        var lastLetter = requestRepository.findByReference("Reference", LETTER_3);
-        var noLetter = requestRepository.findByReference("Reference", LETTER_4);
+        var firstLetter = notificationLetterRequestRepository.findByReference("Reference", LETTER_1);
+        var secondLetter = notificationLetterRequestRepository.findByReference("Reference", LETTER_2);
+        var lastLetter = notificationLetterRequestRepository.findByReference("Reference", LETTER_3);
+        var noLetter = notificationLetterRequestRepository.findByReference("Reference", LETTER_4);
 
         assertThat(firstLetter.stream().findFirst().isPresent(), is(true));
         assertThat(firstLetter.stream().
@@ -132,7 +128,7 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
         saveThreeLettersWithReferences();
 
-        var firstLetter = requestRepository.findByReference("Not The Reference", LETTER_1);
+        var firstLetter = notificationLetterRequestRepository.findByReference("Not The Reference", LETTER_1);
         assertThat(firstLetter.isEmpty(), is(true));
     }
 
@@ -143,8 +139,16 @@ class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
     }
 
     private void saveLetterWithReference(String reference) {
-        var letter = createLetterWithReference(reference);
-        requestRepository.save(new NotificationLetterRequest(null, null, letter, null));
+        var letter = createLetterRequestWithReference(reference);
+        letter.setCreatedAt(OffsetDateTime.now());
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letter, null));
+    }
+
+    private LetterRequestDao saveLetterWithReference(String appId, String reference) {
+        var letter = createLetterRequestWithReference(reference);
+        letter.getSenderDetails().setAppId(appId);
+        notificationLetterRequestRepository.save(new NotificationLetterRequest(null, null, letter, null));
+        return letter;
     }
 
 }

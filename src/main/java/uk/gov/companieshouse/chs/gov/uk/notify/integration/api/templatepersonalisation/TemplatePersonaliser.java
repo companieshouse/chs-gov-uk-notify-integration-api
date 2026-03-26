@@ -10,16 +10,12 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_5;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_6;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_7;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ORIGINAL_SENDING_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -32,6 +28,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.AbstractConfigurableTemplateResolver;
 import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
@@ -74,7 +71,7 @@ public class TemplatePersonaliser {
     public String personaliseLetterTemplate(LetterTemplateKey templateLookupKey,
                                             String reference,
                                             Map<String, String> personalisationDetails,
-                                            Address address) {
+                                            AddressDao address) {
 
         validatePersonalisationDetails(personalisationDetails);
 
@@ -82,9 +79,8 @@ public class TemplatePersonaliser {
         populateLetterWithDynamicDates(context, personalisationDetails, templateLookupKey);
         populateLetterWithTriggeringEventDate(context, personalisationDetails, templateLookupKey);
         context.setVariable(REFERENCE, reference);
-        var upperCaseCompanyName = getUpperCasedCompanyName(personalisationDetails);
-        populateAddress(context, address, upperCaseCompanyName);
-        personaliseLetter(context, personalisationDetails, upperCaseCompanyName);
+        populateAddress(context, address);
+        personaliseLetter(context, personalisationDetails);
 
         validator.validateContextForTemplate(context, templateLookupKey);
 
@@ -106,17 +102,7 @@ public class TemplatePersonaliser {
         }
     }
 
-    private String getUpperCasedCompanyName(Map<String, String> personalisationDetails) {
-        // Company name must be provided and is always rendered in UPPER CASE in the letter.
-        var companyName = personalisationDetails.get(COMPANY_NAME);
-        if (isBlank(companyName)) {
-            throw new LetterValidationException(
-                    "No company name found in the letter personalisation details.");
-        }
-        return companyName.toUpperCase();
-    }
-
-    private void populateAddress(Context context, Address address, String upperCaseCompanyName) {
+    private void populateAddress(Context context, AddressDao address) {
         var addressLines = Map.of(
                 ADDRESS_LINE_1, blankIfNull(address.getAddressLine1()),
                 ADDRESS_LINE_2, blankIfNull(address.getAddressLine2()),
@@ -129,7 +115,7 @@ public class TemplatePersonaliser {
 
         addressLines.forEach((key, value) -> {
             if (!isBlank(value)) {
-                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName));
+                context.setVariable(key, value);
             }
         });
     }
@@ -139,24 +125,8 @@ public class TemplatePersonaliser {
     }
 
     private void personaliseLetter(Context context,
-                                   Map<String, String> personalisationDetails,
-                                   String upperCaseCompanyName) {
-        personalisationDetails.forEach((key, value) ->
-                context.setVariable(key, uppercaseIfCompanyName(value, upperCaseCompanyName)));
-    }
-
-    /**
-     * If the address line is the company name, this serves to replace the company name with an
-     * uppercased version of the same.
-     *
-     * @param addressLine          the address line to be checked
-     * @param uppercaseCompanyName the uppercased company name
-     * @return either the uppercased version of the company name if the address line is the
-    company name, or otherwise the original address line, unchanged.
-     */
-    private String uppercaseIfCompanyName(String addressLine, String uppercaseCompanyName) {
-        return addressLine != null && addressLine.equalsIgnoreCase(uppercaseCompanyName)
-                ? uppercaseCompanyName : addressLine;
+                                   Map<String, String> personalisationDetails) {
+        personalisationDetails.forEach(context::setVariable);
     }
 
     /**
@@ -208,10 +178,9 @@ public class TemplatePersonaliser {
     private void populateLetterWithTriggeringEventDate(Context context,
                                                        Map<String, String> personalisationDetails,
                                                        LetterTemplateKey templateLookupKey) {
-        if (templateLookupKey.equals(CHIPS_NEW_PSC_DIRECTION_LETTER_1)) {
+        if (LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES.contains(templateLookupKey)) {
             context.setVariable(TRIGGERING_EVENT_DATE, personalisationDetails.get(IDV_START_DATE));
-        } else if (templateLookupKey.equals(CHIPS_EXTENSION_ACCEPTANCE_LETTER_1)
-                || templateLookupKey.equals(CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1)) {
+        } else if (LetterTemplateKey.IDVPSCEXT_TEMPLATES.contains(templateLookupKey)) {
             context.setVariable(TRIGGERING_EVENT_DATE,
                     personalisationDetails.get(EXTENSION_REQUEST_DATE));
         }

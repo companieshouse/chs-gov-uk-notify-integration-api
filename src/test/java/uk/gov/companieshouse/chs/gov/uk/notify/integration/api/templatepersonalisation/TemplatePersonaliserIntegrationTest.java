@@ -10,25 +10,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ACTION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.DEADLINE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_VERIFICATION_DUE_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_LLP;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_FULL_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_EXTENSION_ACCEPTANCE_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_NEW_PSC_DIRECTION_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey.CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
@@ -42,8 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.thymeleaf.context.Context;
-import uk.gov.companieshouse.api.chs.notification.model.Address;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
@@ -52,27 +45,30 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 class TemplatePersonaliserIntegrationTest {
 
     private static final String LETTER_TITLE =
-            "Verify your identity —Person with significant control";
+            "Default letter— overdue identity verification statement";
 
     private static final Map<String, String> PERSONALISATION_DETAILS =
             Map.of("company_name", "Amazon");
 
-    private static final Address ADDRESS = new Address()
-                        .addressLine1("Line 1")
-                        .addressLine2("Line 2")
-                        .addressLine3("Line 3")
-                        .addressLine4("Line 4")
-                        .addressLine5("Line 5")
-                        .addressLine6("Line 6")
-                        .addressLine7("Line 7");
-
-    private static final Address SHORTER_ADDRESS = new Address()
-            .addressLine1("Line 1")
-            .addressLine2("Line 2")
-            .addressLine3("Line 3")
-            .addressLine4("Line 4");
+    private static final AddressDao ADDRESS = new AddressDao();
+    private static final AddressDao SHORTER_ADDRESS = new AddressDao();
+    static {
+        ADDRESS.setAddressLine1("Company Name");
+        ADDRESS.setAddressLine2("Line 2");
+        ADDRESS.setAddressLine3("Line 3");
+        ADDRESS.setAddressLine4("Line 4");
+        ADDRESS.setAddressLine5("Line 5");
+        ADDRESS.setAddressLine6("Line 6");
+        ADDRESS.setAddressLine7("Line 7");
+        
+        SHORTER_ADDRESS.setAddressLine1("Company Name");
+        SHORTER_ADDRESS.setAddressLine2("Line 2");
+        SHORTER_ADDRESS.setAddressLine3("Line 3");
+        SHORTER_ADDRESS.setAddressLine4("Line 4");
+    }
 
     private static final String TOKEN_VALUE = "Token value";
+    private static final String REFERENCE = "reference";
 
     private static final String VALID_PSC_APPOINTMENT_DATE = "24 June 2025";
     private static final String VALID_IDV_START_DATE = "30 June 2025";
@@ -83,7 +79,7 @@ class TemplatePersonaliserIntegrationTest {
     private static final String EXPECTED_TODAYS_DATE_IN_WELSH;
     static {
         EXPECTED_TODAYS_DATE = LocalDate.now().format(DATE_FORMATTER);
-        EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE, "today's date");
+        EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE);
     }
 
     private static final String EXPECTED_WELSH_PSC_APPOINTMENT_DATE = "24 Mehefin 2025";
@@ -103,8 +99,10 @@ class TemplatePersonaliserIntegrationTest {
             "welsh_pages_2_onwards_footer_artwork.svg";
 
     private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
-            "Context variable(s) [extension_request_date] missing for LetterTemplateKey"
-                    + "[appId=chips, letterId=null, templateId=extension_acceptance_letter_v1].";
+            "Context variable(s) [extension_request_date] missing for %s.";
+
+    private static final LetterTemplateKey LETTER_TEMPLATE_KEY = new LetterTemplateKey("chips",
+            "IDVPSCDEFAULT", "v1.0");
 
     @Autowired
     private TemplatePersonaliser templatePersonalisation;
@@ -121,12 +119,14 @@ class TemplatePersonaliserIntegrationTest {
 
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_DIRECTION_LETTER_1,
+                LETTER_TEMPLATE_KEY,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Joe Bloggs",
-                        COMPANY_NAME, "Tŷ'r Cwmnïau",
-                        DEADLINE_DATE, "18 August 2025",
-                        EXTENSION_DATE, "1 September 2025"),
+                Map.of(PSC_NAME, "Joe Bloggs",
+                        COMPANY_NAME, "COMPANY NAME",
+                        COMPANY_NUMBER, "12345678",
+                        IS_LLP, "false",
+                        ACTION_DUE_DATE, "18 March 2025",
+                        VERIFICATION_DUE_DATE, "28 February 2025"),
                 ADDRESS));
 
         // Then
@@ -140,17 +140,20 @@ class TemplatePersonaliserIntegrationTest {
     void generateLetterHtmlSuccessfullyWithShorterAddress() {
         // Given and when
         var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_DIRECTION_LETTER_1,
+                LETTER_TEMPLATE_KEY,
                 "the reference",
-                Map.of(PSC_FULL_NAME, "Joe Bloggs",
-                        COMPANY_NAME, "Tŷ'r Cwmnïau",
-                        DEADLINE_DATE, "18 August 2025",
-                        EXTENSION_DATE, "1 September 2025"),
+                Map.of(PSC_NAME, "Joe Bloggs",
+                        COMPANY_NAME, "COMPANY NAME",
+                        COMPANY_NUMBER, "12345678",
+                        IS_LLP, "false",
+                        ACTION_DUE_DATE, "18 March 2025",
+                        VERIFICATION_DUE_DATE, "28 February 2025"),
                 SHORTER_ADDRESS));
 
         // Then
         verifyLetterPersonalised(letter);
         verifyLetterAddressedWithShorterAddress(letter);
+        verifyLetterDateIsTodaysDate(letter);
     }
 
     @Test
@@ -205,196 +208,185 @@ class TemplatePersonaliserIntegrationTest {
     @Test
     @DisplayName("Generate English New PSC Direction Letter HTML successfully")
     void generateEnglishNewPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                            IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                "English New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
-                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsIdvStartDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsIdvStartDate(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate Welsh New PSC Direction Letter HTML successfully")
     void generateWelshNewPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.NEW_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
+                            IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_NEW_PSC_DIRECTION_LETTER_1,
-                "Welsh New PSC Direction Letter",
-                Map.of(PSC_APPOINTMENT_DATE, VALID_PSC_APPOINTMENT_DATE,
-                        IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyWelshDatesInLetter(letter);
-        verifyEnglishDatesInLetter(letter);
-        verifyWelshImagesInLetter(letter);
-        verifyEnglishImagesInLetter(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyWelshDatesInLetter(letter);
+            verifyEnglishDatesInLetter(letter);
+            verifyWelshImagesInLetter(letter);
+            verifyEnglishImagesInLetter(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate English Transitional Non-director PSC Information Letter HTML successfully")
     void generateEnglishTransitionalPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            TODAYS_DATE, EXPECTED_TODAYS_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                "English Transitional Non-director PSC Information Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsTodaysDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsTodaysDate(letter);
+        }
     }
 
     @Test
     @DisplayName("Generate Welsh Transitional Non-director PSC Information Letter HTML successfully")
     void generateWelshTransitionalPscLetterHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.TRANSITIONAL_PSC_DIRECTION_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            TODAYS_DATE, EXPECTED_TODAYS_DATE,
+                            IDV_START_DATE, VALID_IDV_START_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_TRANSITIONAL_NON_DIRECTOR_PSC_INFORMATION_LETTER_1,
-                "Welsh Transitional Non-director PSC Information Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        TODAYS_DATE, EXPECTED_TODAYS_DATE,
-                        IDV_START_DATE, VALID_IDV_START_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsTodaysDate(letter);
-        verifyWelshLetterDateIsTodaysDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsTodaysDate(letter);
+            verifyWelshLetterDateIsTodaysDate(letter);
+        }
     }
 
     @Test
-    @DisplayName("Generate English Extension Acceptance Letter HTML successfully")
-    void generateEnglishExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate English Extension Acceptance Letters HTML successfully")
+    void generateEnglishExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                "English Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsEnglishOnly(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test
-    @DisplayName("Generate English Extension Acceptance Letter HTML with missing extension_request_date fails correctly")
-    void generateEnglishExtensionAcceptanceLetterHtmlWithMissingExtensionRequestDateFailsCorrectly()
-    {
+    @DisplayName("Generate English Extension Acceptance Letters HTML with missing extension_request_date fails correctly")
+    void generateEnglishExtensionAcceptanceLettersHtmlWithMissingExtensionRequestDateFailsCorrectly() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
+                    VALID_IDV_VERIFICATION_DUE_DATE,
+                    COMPANY_NUMBER, TOKEN_VALUE,
+                    COMPANY_NAME, TOKEN_VALUE,
+                    PSC_NAME, TOKEN_VALUE);
+            var validationError = assertThrows(LetterValidationException.class,
+                    () -> templatePersonalisation.personaliseLetterTemplate(
+                            templateKey,
+                            REFERENCE,
+                            personalisationDetails,
+                            ADDRESS));
 
-        // Given and when
-        var personalisationDetails = Map.of(IDV_VERIFICATION_DUE_DATE,
-                VALID_IDV_VERIFICATION_DUE_DATE,
-                COMPANY_NUMBER, TOKEN_VALUE,
-                COMPANY_NAME, TOKEN_VALUE,
-                PSC_NAME, TOKEN_VALUE);
-        var validationError = assertThrows(LetterValidationException.class,
-                () -> templatePersonalisation.personaliseLetterTemplate(
-                        CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                        "English Extension Acceptance Letter",
-                        personalisationDetails,
-                        ADDRESS));
-
-        assertThat(validationError.getMessage(), is(EXPECTED_VALIDATION_ERROR_MESSAGE));
+            String expectedErrorMessage = String.format(EXPECTED_VALIDATION_ERROR_MESSAGE,
+                    templateKey);
+            assertThat(validationError.getMessage(), is(expectedErrorMessage));
+        }
     }
 
     @Test
-    @DisplayName("Generate Welsh Extension Acceptance Letter HTML successfully")
-    void generateWelshExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate Welsh Extension Acceptance Letters HTML successfully")
+    void generateWelshExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_EXTENSION_ACCEPTANCE_LETTER_1,
-                "Welsh Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-        verifyWelshLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+            verifyWelshLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test
-    @DisplayName("Generate English Second Extension Acceptance Letter HTML successfully")
-    void generateEnglishSecondExtensionAcceptanceLetterHtmlSuccessfully() {
+    @DisplayName("Generate Welsh Second Extension Acceptance Letters HTML successfully")
+    void generateWelshSecondExtensionAcceptanceLettersHtmlSuccessfully() {
+        for (LetterTemplateKey templateKey : LetterTemplateKey.IDVPSCEXT_TEMPLATES) {
+            // Given and when
+            var letter = parse(templatePersonalisation.personaliseLetterTemplate(
+                    templateKey,
+                    REFERENCE,
+                    Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
+                            EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
+                            COMPANY_NUMBER, TOKEN_VALUE,
+                            COMPANY_NAME, TOKEN_VALUE,
+                            PSC_NAME, TOKEN_VALUE,
+                            IS_WELSH, "true"),
+                    ADDRESS));
 
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                "English Second Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsEnglishOnly(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-    }
-
-    @Test
-    @DisplayName("Generate Welsh Second Extension Acceptance Letter HTML successfully")
-    void generateWelshSecondExtensionAcceptanceLetterHtmlSuccessfully() {
-
-        // Given and when
-        var letter = parse(templatePersonalisation.personaliseLetterTemplate(
-                CHIPS_SECOND_EXTENSION_ACCEPTANCE_LETTER_1,
-                "Welsh Second Extension Acceptance Letter",
-                Map.of(IDV_VERIFICATION_DUE_DATE, VALID_IDV_VERIFICATION_DUE_DATE,
-                        EXTENSION_REQUEST_DATE, VALID_EXTENSION_REQUEST_DATE,
-                        COMPANY_NUMBER, TOKEN_VALUE,
-                        COMPANY_NAME, TOKEN_VALUE,
-                        PSC_NAME, TOKEN_VALUE,
-                        IS_WELSH, "true"),
-                ADDRESS));
-
-        // Then
-        verifyLetterIsBilingualEnglishAndWelsh(letter);
-        verifyLetterDateIsExtensionRequestDate(letter);
-        verifyWelshLetterDateIsExtensionRequestDate(letter);
+            // Then
+            verifyLetterIsBilingualEnglishAndWelsh(letter);
+            verifyLetterDateIsExtensionRequestDate(letter);
+            verifyWelshLetterDateIsExtensionRequestDate(letter);
+        }
     }
 
     @Test
@@ -499,12 +491,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
     }
 
@@ -530,12 +522,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
         String letterHtml = letter.html();
         assertThat(letterHtml.contains("PAC"), is(true));
@@ -640,12 +632,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
     }
 
@@ -671,12 +663,12 @@ class TemplatePersonaliserIntegrationTest {
                 is(
                         WelshDatesPublisher.getWelshDate(LocalDate.parse(EXPECTED_TODAYS_DATE, DATE_FORMATTER).
                                 plusDays(28).
-                                format(DATE_FORMATTER), "test")
+                                format(DATE_FORMATTER))
                 )
         );
         assertThat(
                 getText(letter, "#welsh-verification-due-date"),
-                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE, "test"))
+                is(WelshDatesPublisher.getWelshDate(VALID_IDV_VERIFICATION_DUE_DATE))
         );
         String letterHtml = letter.html();
         assertThat(letterHtml.contains("PAC"), is(true));
@@ -748,16 +740,14 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterPersonalised(final Document letter) {
-        assertThat(getText(letter, ".direction-letter-title"), is(LETTER_TITLE));
-        assertThat(getText(letter, ".close-packed-top .emphasis"), is("Joe Bloggs"));
-        assertThat(getText(letter, "p .subject-line"), is("Tŷ'r Cwmnïau".toUpperCase()));
-        assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("the reference"));
-        assertThat(getText(letter, "#deadline-date"), is("18 August 2025"));
-        assertThat(getText(letter, "#extension-date"), is("1 September 2025"));
+        assertThat(getText(letter, ".IDVPSCDEFAULT-title"), is(LETTER_TITLE));
+        assertThat(getText(letter, ".date-and-ref tr:nth-child(5)"), is("12345678"));
+        assertThat(getText(letter, "#verification-due-date"), is("28 February 2025"));
+        assertThat(getText(letter, "#action-due-date"), is("18 March 2025"));
     }
 
     private static void verifyLetterAddressed(final Document letter) {
-        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 1), is("Company Name"));
         assertThat(getAddressLine(letter, 2), is("Line 2"));
         assertThat(getAddressLine(letter, 3), is("Line 3"));
         assertThat(getAddressLine(letter, 4), is("Line 4"));
@@ -767,7 +757,7 @@ class TemplatePersonaliserIntegrationTest {
     }
 
     private static void verifyLetterAddressedWithShorterAddress(final Document letter) {
-        assertThat(getAddressLine(letter, 1), is("Line 1"));
+        assertThat(getAddressLine(letter, 1), is("Company Name"));
         assertThat(getAddressLine(letter, 2), is("Line 2"));
         assertThat(getAddressLine(letter, 3), is("Line 3"));
         assertThat(getAddressLine(letter, 4), is("Line 4"));
