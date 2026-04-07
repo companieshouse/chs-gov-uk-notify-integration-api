@@ -86,8 +86,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
             INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX + "\"" + REQUEST_ID_PATTERN + "\"";
     private static final String EXPECTED_NULL_FIELDS_ERRORS =
             "Error(s) in chs-gov-uk-notify-integration-api: "
-            + "[govUkLetterDetailsRequest senderDetails.appId must not be null, "
-            + "govUkLetterDetailsRequest senderDetails.reference must not be null]";
+            + "[letterRequest appId must not be null, "
+            + "letterRequest reference must not be null]";
     private static final String NON_INTERNAL_USER_ROLES = "role1 role2";
     private static final String X_REQUEST_ID = "X-Request-ID";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
@@ -204,7 +204,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("reference: test-reference"), is(true));
+        assertThat(log.getAll().contains("\"reference\":\"test-reference\""), is(true));
+        assertThat(log.getAll().contains("\"app_id\":\"chips\""), is(true));
 
         verifyLetterResponseStoredCorrectly(responseReceived);
         verifyLetterPdfSent(capturedFileSignature);
@@ -258,7 +259,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("reference: test-reference"), is(true));
+        assertThat(log.getAll().contains("\"reference\":\"test-reference\""), is(true));
+        assertThat(log.getAll().contains("\"app_id\":\"chips\""), is(true));
 
         verifyLetterErrorResponseStored();
     }
@@ -290,9 +292,7 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     void sendLetterWithInvalidRequest(CapturedOutput log) throws Exception {
 
         // When and then
-        postSendLetterRequest(mockMvc,
-                resourceToString("/fixtures/invalid-api-request-missing-reference-and-appid.json",
-                        UTF_8),
+        postSendLetterRequest(mockMvc, "{}",
                 status().isBadRequest())
                 .andExpect(content().string(EXPECTED_NULL_FIELDS_ERRORS));
 
@@ -434,7 +434,8 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
         assertThat(log.getAll().contains("\"context\":\"" + REQUEST_ID + "\""), is(true));
         assertThat(log.getAll().contains("authorised as api key (internal user)"), is(true));
         assertThat(log.getAll().contains("\"request_id\":\"" + REQUEST_ID + "\""), is(true));
-        assertThat(log.getAll().contains("reference: test-reference"), is(true));
+        assertThat(log.getAll().contains("\"reference\":\"test-reference\""), is(true));
+        assertThat(log.getAll().contains("\"app_id\":\"chips\""), is(true));
 
         verifyLetterResponseStoredCorrectly(responseReceived);
         verify(precompiledPdfInputStream).close();

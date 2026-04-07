@@ -1,16 +1,10 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
-import static java.time.format.DateTimeFormatter.ISO_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDF;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.VIEW_LETTER_PDFS;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -18,172 +12,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationRetrieverControllerInterface;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.EmailRequestMapper;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.sentletterfetcher.SentLetterFetcher;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.ViewLetterValidator;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @RestController
 public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterface {
 
-    private static final String RETRIEVED = "Retrieved ";
     private static final String REFERENCE = "reference";
     private static final String LETTER_PDF_IO_ERROR_MESSAGE =
             "Failed to load precompiled letter PDF. Caught IOException: ";
-    // Filename element separator. Constant name made short for intelligibility of code composing
-    // filenames.
-    private static final String SEP = "-";
-    private static final String LETTER_ID = "letter_id";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
-    private final NotificationDatabaseService notificationDatabaseService;
     private final SentLetterFetcher fetcher;
-    private final ViewLetterValidator validator;
 
-    public ReaderRestApi(final NotificationDatabaseService notificationDatabaseService,
-                         final SentLetterFetcher fetcher,
-                         final ViewLetterValidator validator) {
-        this.notificationDatabaseService = notificationDatabaseService;
+    public ReaderRestApi(final SentLetterFetcher fetcher) {
         this.fetcher = fetcher;
-        this.validator = validator;
-    }
-
-    @Override
-    public ResponseEntity<List<GovUkEmailDetailsRequest>> getAllEmails(
-            final String xRequestId
-    ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_all_emails");
-        LOGGER.info("Retrieving all email notifications", logMap);
-
-        List<NotificationEmailRequest> emails = notificationDatabaseService.findAllEmails();
-
-        logMap.put("email_count", emails.size());
-        LOGGER.info(RETRIEVED + emails.size() + " email notifications", logMap);
-
-        return new ResponseEntity<>(
-                emails.stream()
-                        .map(NotificationEmailRequest::getRequest)
-                        .map(EmailRequestMapper::fromDao)
-                        .toList(),
-                HttpStatus.OK
-        );
-    }
-
-    @Override
-    public ResponseEntity<GovUkEmailDetailsRequest> getEmailDetailsById(
-            final String id,
-            final String xRequestId
-    ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_email_by_id");
-        logMap.put("email_id", id);
-        LOGGER.info("Retrieving email notification by ID: " + id, logMap);
-
-        Optional<NotificationEmailRequest> emailRequest = notificationDatabaseService.getEmail(id);
-
-        if (emailRequest.isPresent()) {
-            LOGGER.info("Email notification found with ID: " + id, logMap);
-            GovUkEmailDetailsRequest request = EmailRequestMapper.fromDao(emailRequest.get().getRequest());
-            return new ResponseEntity<>(request, HttpStatus.OK);
-        } else {
-            LOGGER.info("Email notification not found with ID: " + id, logMap);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @Override
-    public ResponseEntity<List<GovUkEmailDetailsRequest>> getEmailDetailsByReference(
-            final String reference,
-            final String xRequestId
-    ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_email_by_reference");
-        logMap.put(REFERENCE, reference);
-        LOGGER.info("Retrieving email notifications by reference: " + reference, logMap);
-
-        List<NotificationEmailRequest> emails = notificationDatabaseService.getEmailByReference(reference);
-
-        logMap.put("email_count", emails.size());
-        LOGGER.info(RETRIEVED + emails.size() + " email notifications with reference: " + reference, logMap);
-
-        return new ResponseEntity<>(
-                emails.stream()
-                        .map(NotificationEmailRequest::getRequest)
-                        .map(EmailRequestMapper::fromDao)
-                        .toList(),
-                HttpStatus.OK
-        );
-    }
-
-    @Override
-    public ResponseEntity<List<GovUkLetterDetailsRequest>> getAllLetters(
-            final String xRequestId
-    ) {
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_all_letters");
-        LOGGER.info("Retrieving all letter notifications", logMap);
-
-        List<NotificationLetterRequest> letters = notificationDatabaseService.findAllLetters();
-
-        logMap.put("letter_count", letters.size());
-        LOGGER.info(RETRIEVED + letters.size() + " letter notifications", logMap);
-
-        return new ResponseEntity<>(
-                letters.stream()
-                        .map(NotificationLetterRequest::getRequest)
-                        .map(LetterRequestMapper::fromDao)
-                        .toList(),
-                HttpStatus.OK
-        );
-    }
-
-    @Override
-    public ResponseEntity<GovUkLetterDetailsRequest> getLetterDetailsById(
-            final String id,
-            final String xRequestId
-    ) {
-
-        Map<String, Object> logMap = createLogMap(xRequestId, "get_letter_by_id");
-        logMap.put(LETTER_ID, id);
-        LOGGER.info("Retrieving letter notification by ID: " + id, logMap);
-
-        Optional<NotificationLetterRequest> letterRequest = notificationDatabaseService.getLetter(id);
-
-        if (letterRequest.isPresent()) {
-            LOGGER.info("Letter notification found with ID: " + id, logMap);
-            GovUkLetterDetailsRequest request = LetterRequestMapper.fromDao(letterRequest.get().getRequest());
-            return new ResponseEntity<>(request, HttpStatus.OK);
-        } else {
-            LOGGER.info("Letter notification not found with ID: " + id, logMap);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @Override
-    public ResponseEntity<List<GovUkLetterDetailsRequest>> getLetterDetailsByReference(
-            final String reference,
-            final String contextId
-    ) {
-        Map<String, Object> logMap = createLogMap(contextId, "get_letter_by_reference");
-        logMap.put(REFERENCE, reference);
-        LOGGER.info("Retrieving letter notifications by reference: " + reference, logMap);
-
-        List<NotificationLetterRequest> letters = notificationDatabaseService.getLetterByReference(reference);
-
-        logMap.put("letter_count", letters.size());
-        LOGGER.info(RETRIEVED + letters.size() + " letter notifications with reference: " + reference, logMap);
-
-        return new ResponseEntity<>(
-                letters.stream()
-                        .map(NotificationLetterRequest::getRequest)
-                        .map(LetterRequestMapper::fromDao)
-                        .toList(),
-                HttpStatus.OK
-        );
     }
 
     @Override
@@ -203,111 +47,6 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         } catch (IOException ioe) {
             LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
                     createLogMap(contextId, "load_pdf_error"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
-    public ResponseEntity<Object> viewLetterPdfsByReference(
-            final String reference,
-            final Integer letterNumber,
-            final String contextId) {
-
-        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
-        logMap.put(REFERENCE, reference);
-        logMap.put("letter", letterNumber);
-        LOGGER.info("Starting viewLetterPdfsByReference process", logMap);
-
-        try {
-            var fetchedLetter = fetcher.fetchLetter(reference, letterNumber, contextId);
-            var fileName =
-                    reference + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
-            return ResponseEntity
-                    .ok()
-                    .headers(suggestFilename(fileName))
-                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
-        } catch (IOException ioe) {
-            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
-                    createLogMap(contextId, "load_pdf_error"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
-    public ResponseEntity<Object> viewLetterPdf(
-            final String companyNumber,
-            final String templateId,
-            final LocalDate letterSendingDate,
-            final String contextId,
-            final String pscName,
-            final String letterId) {
-
-        var logMap = createLogMap(contextId, VIEW_LETTER_PDF);
-        logMap.put("psc_name", pscName);
-        logMap.put("company_number", companyNumber);
-        logMap.put(LETTER_ID, letterId);
-        logMap.put("template_id", templateId);
-        logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
-        LOGGER.info("Starting viewLetterPdf process", logMap);
-
-        validator.validateViewLetterInputs(pscName, letterId);
-
-        try {
-            return ResponseEntity
-                .ok()
-                .headers(suggestFilename(pscName + SEP + templateId + SEP + letterSendingDate))
-                .body(IOUtils.toByteArray(
-                        fetcher.fetchLetter(
-                                pscName,
-                                companyNumber,
-                                letterId,
-                                templateId,
-                                letterSendingDate,
-                                contextId)));
-        } catch (IOException ioe) {
-            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
-    public ResponseEntity<Object> viewLetterPdfs(
-            final String companyNumber,
-            final String templateId,
-            final LocalDate letterSendingDate,
-            final Integer letterNumber,
-            final String contextId,
-            final String pscName,
-            final String letterId) {
-
-        var logMap = createLogMap(contextId, VIEW_LETTER_PDFS);
-        logMap.put("psc_name", pscName);
-        logMap.put("company_number", companyNumber);
-        logMap.put(LETTER_ID, letterId);
-        logMap.put("template_id", templateId);
-        logMap.put("letter_sending_date", letterSendingDate.format(ISO_DATE));
-        logMap.put("letter", letterNumber);
-        LOGGER.info("Starting viewLetterPdfs process", logMap);
-
-        validator.validateViewLetterInputs(pscName, letterId);
-
-        try {
-            var fetchedLetter = fetcher.fetchLetter(
-                    pscName,
-                    companyNumber,
-                    letterId,
-                    templateId,
-                    letterSendingDate,
-                    letterNumber,
-                    contextId);
-            var fileName = pscName + SEP + templateId + SEP + letterSendingDate
-                    + "_" + letterNumber + "_of_" + fetchedLetter.numberOfLetters();
-            return ResponseEntity
-                    .ok()
-                    .headers(suggestFilename(fileName))
-                    .body(IOUtils.toByteArray(fetchedLetter.letter()));
-        } catch (IOException ioe) {
-            LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(), logMap);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

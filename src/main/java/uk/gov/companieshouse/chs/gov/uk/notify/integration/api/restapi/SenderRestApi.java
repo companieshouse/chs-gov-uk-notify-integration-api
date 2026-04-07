@@ -15,8 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import uk.gov.companieshouse.api.chs.notification.integration.api.NotifyIntegrationSenderControllerInterface;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkEmailDetailsRequest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
+import uk.gov.companieshouse.api.chs.notification.integration.model.EmailRequest;
+import uk.gov.companieshouse.api.chs.notification.integration.model.LetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
@@ -61,17 +61,18 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     @Override
     public ResponseEntity<Void> sendEmail(
-            @Valid final GovUkEmailDetailsRequest govUkEmailDetailsRequest,
+            @Valid final EmailRequest request,
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String xHeaderId
     ) {
+        var reference = request.getReference();
+        var appId = request.getAppId();
+
         var logMap = createLogMap(xHeaderId, "email_send");
-        logMap.put("govUkEmailDetailsRequest", govUkEmailDetailsRequest.toString());
+        logMap.put("app_id", appId);
+        logMap.put("reference", reference);
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
 
-        var senderDetails = govUkEmailDetailsRequest.getSenderDetails();
-        var reference = senderDetails.getReference();
-        var appId = senderDetails.getAppId();
         var savedRequest = notificationDatabaseService.getEmail(appId, reference);
         if (savedRequest.isEmpty()) {
             logger.errorContext(xHeaderId, new IllegalStateException(
@@ -130,17 +131,18 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     @Override
     public ResponseEntity<Void> sendLetter(
-            @Valid final GovUkLetterDetailsRequest govUkLetterDetailsRequest,
+            @Valid final LetterRequest request,
             @Pattern(regexp = "[0-9A-Za-z-_]{8,32}") final String contextId
     ) {
+        var reference = request.getReference();
+        var appId = request.getAppId();
+
         Map<String, Object> logMap = createLogMap(contextId, "letter_send");
-        logMap.put("govUkLetterDetailsRequest", govUkLetterDetailsRequest.toString());
+        logMap.put("app_id", appId);
+        logMap.put("reference", reference);
 
         logger.infoContext(contextId, "Starting sendLetter process", logMap );
 
-        var senderDetails = govUkLetterDetailsRequest.getSenderDetails();
-        var reference = senderDetails.getReference();
-        var appId = senderDetails.getAppId();
         var savedRequest = notificationDatabaseService.getLetter(appId, reference);
         if (savedRequest.isEmpty()) {
             logger.errorContext(contextId,

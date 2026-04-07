@@ -15,7 +15,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uk.gov.companieshouse.api.chs.notification.model.GovUkLetterDetailsRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
@@ -24,7 +23,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.Notif
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailResponse;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterResponse;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.mapper.LetterRequestMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 
 @SpringBootTest
@@ -32,26 +30,6 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
     @Autowired
     private NotificationDatabaseService notificationDatabaseService;
-
-    @Test
-    void When_GetEmailById_ThenEmailRetrieved() {
-        EmailRequestDao emailRequest = createEmailRequest("jane.smith@example.com");
-        NotificationEmailRequest savedRequest = saveEmail(emailRequest);
-        String id = savedRequest.getId();
-
-        Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService.getEmail(id);
-
-        assertTrue(retrievedRequest.isPresent());
-        assertEquals(id, retrievedRequest.get().getId());
-        assertEquals("jane.smith@example.com", retrievedRequest.get().getRequest().getRecipientDetails().getEmailAddress());
-    }
-
-    @Test
-    void When_GetEmailByIdWithInvalidId_ThenEmptyOptionalReturned() {
-        Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService.getEmail("nonexistent-id");
-
-        assertFalse(retrievedRequest.isPresent());
-    }
 
     @Test
     void When_GetEmailByUniqueReference_ThenEmailRetrieved() {
@@ -86,39 +64,6 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         Optional<NotificationEmailRequest> retrievedRequest = notificationDatabaseService
                 .getEmail("invalid", email.getSenderDetails().getReference());
-
-        assertFalse(retrievedRequest.isPresent());
-    }
-
-    @Test
-    void When_FindAllEmails_ThenAllEmailsRetrieved() {
-        saveEmail(createEmailRequest("user1@example.com"));
-        saveEmail(createEmailRequest("user2@example.com"));
-
-        List<NotificationEmailRequest> allEmails = notificationDatabaseService.findAllEmails();
-
-        assertNotNull(allEmails);
-        assertTrue(allEmails.size() >= 2);
-    }
-
-    @Test
-    void When_GetLetter_ThenLetterRetrieved() {
-        LetterRequestDao letterRequest = createLetterRequestWithAddressLine1("456 High Street");
-        NotificationLetterRequest savedRequest = saveLetter(letterRequest);
-        String id = savedRequest.getId();
-
-        Optional<NotificationLetterRequest> retrievedRequest = notificationDatabaseService.getLetter(id);
-
-        assertTrue(retrievedRequest.isPresent());
-        assertEquals(id, retrievedRequest.get().getId());
-        LetterRequestDao mongoLetter = retrievedRequest.get().getRequest();
-        GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
-        assertEquals("456 High Street", mapped.getRecipientDetails().getPhysicalAddress().getAddressLine1());
-    }
-
-    @Test
-    void When_GetLetterWithInvalidId_ThenEmptyOptionalReturned() {
-        Optional<NotificationLetterRequest> retrievedRequest = notificationDatabaseService.getLetter("nonexistent-id");
 
         assertFalse(retrievedRequest.isPresent());
     }
@@ -161,39 +106,6 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void When_FindAllLetters_ThenAllLettersRetrieved() {
-        saveLetter(createLetterRequestWithAddressLine1("789 Broadway"));
-        saveLetter(createLetterRequestWithAddressLine1("101 Park Avenue"));
-
-        List<NotificationLetterRequest> allLetters = notificationDatabaseService.findAllLetters();
-
-        assertNotNull(allLetters);
-        assertTrue(allLetters.size() >= 2);
-    }
-
-    @Test
-    void When_GetEmailByReference_ThenEmailsRetrieved() {
-        String reference = "REF-123-EMAIL";
-        EmailRequestDao emailRequest = createEmailRequest("user1@example.com");
-        emailRequest.getSenderDetails().setReference(reference);
-        saveEmail(emailRequest);
-
-        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
-
-        assertNotNull(retrievedEmails);
-        assertFalse(retrievedEmails.isEmpty());
-        assertEquals(reference, retrievedEmails.get(0).getRequest().getSenderDetails().getReference());
-    }
-
-    @Test
-    void When_GetEmailByNonexistentReference_ThenEmptyListReturned() {
-        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference("NONEXISTENT-REF");
-
-        assertNotNull(retrievedEmails);
-        assertTrue(retrievedEmails.isEmpty());
-    }
-
-    @Test
     void When_GetLetterByReference_ThenLettersRetrieved() {
         LetterRequestDao letterRequest = createLetterRequestWithAddressLine1("123 Main Street");
         String reference = letterRequest.getSenderDetails().getReference();
@@ -204,8 +116,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
         assertNotNull(retrievedLetters);
         assertFalse(retrievedLetters.isEmpty());
         LetterRequestDao mongoLetter = retrievedLetters.get(0).getRequest();
-        GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
-        assertEquals(reference, mapped.getSenderDetails().getReference());
+        assertEquals(reference, mongoLetter.getSenderDetails().getReference());
     }
 
     @Test
@@ -231,25 +142,6 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
     }
 
     @Test
-    void When_MultipleEmailsWithSameReference_ThenAllRetrieved() {
-        String reference = "MULTI-EMAIL-REF";
-        EmailRequestDao email1 = createEmailRequest("user1@example.com");
-        email1.getSenderDetails().setReference(reference);
-        EmailRequestDao email2 = createEmailRequest("user2@example.com");
-        email2.getSenderDetails().setReference(reference);
-
-        saveEmail(email1);
-        saveEmail(email2);
-
-        List<NotificationEmailRequest> retrievedEmails = notificationDatabaseService.getEmailByReference(reference);
-
-        assertNotNull(retrievedEmails);
-        assertEquals(2, retrievedEmails.size());
-        assertEquals(reference, retrievedEmails.get(0).getRequest().getSenderDetails().getReference());
-        assertEquals(reference, retrievedEmails.get(1).getRequest().getSenderDetails().getReference());
-    }
-
-    @Test
     void When_MultipleLettersWithSameReference_ThenAllRetrieved() {
         LetterRequestDao letter1 = createLetterRequestWithAddressLine1("123 Main St");
         LetterRequestDao letter2 = createLetterRequestWithAddressLine1("456 High St");
@@ -265,8 +157,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
         assertEquals(2, retrievedLetters.size());
         for (NotificationLetterRequest req : retrievedLetters) {
             LetterRequestDao mongoLetter = req.getRequest();
-            GovUkLetterDetailsRequest mapped = LetterRequestMapper.fromDao(mongoLetter);
-            assertEquals(reference, mapped.getSenderDetails().getReference());
+            assertEquals(reference, mongoLetter.getSenderDetails().getReference());
         }
     }
 
