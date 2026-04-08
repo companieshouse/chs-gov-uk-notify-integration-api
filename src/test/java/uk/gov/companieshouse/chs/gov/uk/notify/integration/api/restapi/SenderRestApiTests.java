@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -97,7 +96,6 @@ class SenderRestApiTests {
         verify(govUKNotifyEmailFacade).sendEmail(emaiAddress, templateId, reference,
                 VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        assertNotNull(response);
 
         verify(notificationDatabaseService, times(2)).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.SENT);
@@ -112,7 +110,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        assertNotNull(response);
 
         verifyNoInteractions(govUKNotifyEmailFacade);
         verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
@@ -129,7 +126,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-        assertNotNull(response);
 
         verifyNoInteractions(govUKNotifyEmailFacade);
         verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
@@ -151,7 +147,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        assertNotNull(response);
 
         verify(notificationDatabaseService).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
@@ -174,7 +169,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertNotNull(response);
 
         verify(notificationDatabaseService).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
