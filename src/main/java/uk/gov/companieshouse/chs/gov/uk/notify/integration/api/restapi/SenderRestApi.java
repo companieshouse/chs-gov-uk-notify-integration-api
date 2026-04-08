@@ -81,6 +81,11 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
 
         var emailRequest = savedRequest.get();
+        if (RequestStatus.SENT.equals(emailRequest.getStatus())) {
+            logger.infoContext(xHeaderId, "Email request ignored as already sent",
+                    createLogMap(xHeaderId, "duplicate_email"));
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
         emailRequest.setStatus(RequestStatus.PROCESSING);
         emailRequest = notificationDatabaseService.saveEmail(emailRequest);
 
@@ -152,6 +157,11 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         }
 
         var letterRequest = savedRequest.get();
+        if (RequestStatus.SENT.equals(letterRequest.getStatus())) {
+            logger.infoContext(contextId, "Letter request ignored as already sent",
+                    createLogMap(contextId, "letter_success"));
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
         letterRequest.setStatus(RequestStatus.PROCESSING);
         letterRequest = notificationDatabaseService.saveLetter(letterRequest);
 

@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -97,10 +96,23 @@ class SenderRestApiTests {
         verify(govUKNotifyEmailFacade).sendEmail(emaiAddress, templateId, reference,
                 VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
-        assertNotNull(response);
 
         verify(notificationDatabaseService, times(2)).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.SENT);
+    }
+
+    @Test
+    void whenEmailRequestAlreadySentExpectSkipRequest(){
+        NotificationEmailRequest notificationRequest = mockEmailRequest();
+        notificationRequest.setStatus(RequestStatus.SENT);
+
+        EmailRequest req = createSampleEmailRequest(notificationRequest.getRequest());
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+
+        verifyNoInteractions(govUKNotifyEmailFacade);
+        verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
     }
 
     @Test
@@ -114,7 +126,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-        assertNotNull(response);
 
         verifyNoInteractions(govUKNotifyEmailFacade);
         verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
@@ -136,7 +147,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-        assertNotNull(response);
 
         verify(notificationDatabaseService).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
@@ -159,7 +169,6 @@ class SenderRestApiTests {
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
-        assertNotNull(response);
 
         verify(notificationDatabaseService).saveEmail(notificationRequest);
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
@@ -193,7 +202,7 @@ class SenderRestApiTests {
         when(notificationDatabaseService.saveLetter(notificationRequest))
                 .thenReturn(notificationRequest);
 
-        LetterRequest req = createSampleLetterRequest(letterRequest);
+        LetterRequest req = createSampleLetterRequest(notificationRequest);
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, contextId);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
@@ -226,18 +235,28 @@ class SenderRestApiTests {
                 letterDetails.getPersonalisationDetails(), contextId))
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
-        LetterRequest req = createSampleLetterRequest(letterRequest);
+        LetterRequest req = createSampleLetterRequest(notificationRequest);
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
     }
 
     @Test
-    void sendLetter_shouldReturnNotFound_requestNotFoundInDb() {
-        LetterRequestDao letterRequest = TestUtils.createLetterRequest();
-        String appId = letterRequest.getSenderDetails().getAppId();
-        String reference = letterRequest.getSenderDetails().getReference();
+    void sendLetter_shouldNotSendDuplicate_requestAlreadySent() {
+        NotificationLetterRequest letterRequest = mockLetterRequest("letterId", "other");
+        letterRequest.setStatus(RequestStatus.SENT);
         LetterRequest req = createSampleLetterRequest(letterRequest);
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+        verifyNoInteractions(letterDispatcher);
+    }
+
+    @Test
+    void sendLetter_shouldReturnNotFound_requestNotFoundInDb() {
+        String appId = "app";
+        String reference = "reference";
+        LetterRequest req = new LetterRequest(appId, reference);
         when(notificationDatabaseService.getLetter(appId, reference)).thenReturn(Optional.empty());
 
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
@@ -249,7 +268,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onDispatcherFailure() throws Exception {
         NotificationLetterRequest letterRequest = mockLetterRequest("letterId", "other");
-        LetterRequest req = createSampleLetterRequest(letterRequest.getRequest());
+        LetterRequest req = createSampleLetterRequest(letterRequest);
         when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any()))
                 .thenReturn(new GovUkNotifyService.LetterResp(false, new LetterResponse("{ id: bff67204-a33f-4dcf-8ec3-49fa5fce0321 }")));
 
@@ -265,7 +284,7 @@ class SenderRestApiTests {
     @Test
     void sendLetter_shouldReturnInternalServerError_onIOException() throws Exception {
         NotificationLetterRequest letterRequest = mockLetterRequest("letterId", "other");
-        LetterRequest req = createSampleLetterRequest(letterRequest.getRequest());
+        LetterRequest req = createSampleLetterRequest(letterRequest);
         when(letterDispatcher.sendLetter(any(), any(), any(), any(), any(), any()))
                 .thenThrow(new IOException("PDF error"));
 
@@ -278,9 +297,9 @@ class SenderRestApiTests {
         assertThat(letterRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
     }
 
-    private LetterRequest createSampleLetterRequest(LetterRequestDao letterRequest) {
-        String appId = letterRequest.getSenderDetails().getAppId();
-        String reference = letterRequest.getSenderDetails().getReference();
+    private LetterRequest createSampleLetterRequest(NotificationLetterRequest letterRequest) {
+        String appId = letterRequest.getRequest().getSenderDetails().getAppId();
+        String reference = letterRequest.getRequest().getSenderDetails().getReference();
         return new LetterRequest(appId, reference);
     }
 
@@ -300,6 +319,7 @@ class SenderRestApiTests {
         letterRequest.getLetterDetails().setTemplateId(templateId);
         NotificationLetterRequest notificationRequest = new NotificationLetterRequest(
                 letterRequest);
+        notificationRequest.setStatus(RequestStatus.PENDING);
         when(notificationDatabaseService.getLetter(appId, reference))
                 .thenReturn(Optional.of(notificationRequest));
         return notificationRequest;
@@ -316,6 +336,7 @@ class SenderRestApiTests {
         emailRequest.getEmailDetails().setPersonalisationDetails(REQUEST_BODY_PERSONALISATION);
         NotificationEmailRequest notificationRequest = new NotificationEmailRequest(
                 emailRequest);
+        notificationRequest.setStatus(RequestStatus.PENDING);
         when(notificationDatabaseService.getEmail(appId, reference))
                 .thenReturn(Optional.of(notificationRequest));
         return notificationRequest;
