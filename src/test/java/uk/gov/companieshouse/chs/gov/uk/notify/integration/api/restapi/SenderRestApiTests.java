@@ -83,8 +83,9 @@ class SenderRestApiTests {
         String emaiAddress = emailRequest.getRecipientDetails().getEmailAddress();
         String templateId = emailRequest.getEmailDetails().getTemplateId();
         String reference = emailRequest.getSenderDetails().getReference();
+        String attachementId = emailRequest.getEmailDetails().getAttachmentId();
 
-        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference,
+        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference, attachementId,
                 VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
@@ -93,7 +94,7 @@ class SenderRestApiTests {
         EmailRequest req = createSampleEmailRequest(emailRequest);
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
-        verify(govUKNotifyEmailFacade).sendEmail(emaiAddress, templateId, reference,
+        verify(govUKNotifyEmailFacade).sendEmail(emaiAddress, templateId, reference, attachementId,
                 VALID_PERSONALISATION);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
 
@@ -159,7 +160,8 @@ class SenderRestApiTests {
         String emaiAddress = emailRequest.getRecipientDetails().getEmailAddress();
         String templateId = emailRequest.getEmailDetails().getTemplateId();
         String reference = emailRequest.getSenderDetails().getReference();
-        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference,
+        String attachmentId = emailRequest.getEmailDetails().getAttachmentId();
+        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference, attachmentId,
                 VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
@@ -175,13 +177,13 @@ class SenderRestApiTests {
     }
 
     @ParameterizedTest
-    @CsvSource(value = { 
+    @CsvSource(value = {
             "ANY,version",
-            "null,other", 
-            "null,CSIDVDEFLET_v1", 
+            "null,other",
+            "null,CSIDVDEFLET_v1",
             "null,CSIDVDEFLET_v1.1",
-            "null,IDVPSCDEFAULT_v1", 
-            "null,IDVPSCDEFAULT_v1.1", 
+            "null,IDVPSCDEFAULT_v1",
+            "null,IDVPSCDEFAULT_v1.1",
             "IDVPSCDEFAULT,v1.0",
             "CSIDVDEFLET,v1.0"}, nullValues = { "null" })
     void sendLetter_shouldReturnCreated_defaultPostage(String letterId, String templateId) throws Exception {
@@ -211,7 +213,7 @@ class SenderRestApiTests {
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.SENT);
     }
 
-    @CsvSource(value = { 
+    @CsvSource(value = {
             "null,direction_letter_v1",
             "null,new_psc_direction_letter_v1",
             "null,transitional_non_director_psc_information_letter_v1",

@@ -30,10 +30,12 @@ public class GovUkNotifyService {
 
     private final NotificationClient client;
     private final ObjectMapper objectMapper;
+    private final S3ClientService s3ClientService;
 
-    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper) {
+    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper, S3ClientService s3ClientService) {
         this.client = client;
         this.objectMapper = objectMapper;
+        this.s3ClientService = s3ClientService;
     }
 
     public record EmailResp(boolean success, SendEmailResponse response) {
@@ -54,6 +56,40 @@ public class GovUkNotifyService {
             LOGGER.error("Failed to send email", e, logData);
             return new EmailResp(false, null);
         }
+    }
+
+
+    public EmailResp sendEmail(
+            @NotBlank @Email String recipient,
+            @NotBlank String templateId,
+            @NotBlank String reference,
+            String attachmentId,
+            Map<String, ?> personalisation) {
+        try {
+            // poc - add cert file
+            Map<String, Object> personalisationWithFile = new HashMap<>(personalisation);
+            personalisationWithFile.put("file_download_link",
+                    NotificationClient.prepareUpload(getFileContents(attachmentId), "LP-Certificate.pdf"));
+            return sendEmail(recipient, templateId, reference, personalisationWithFile);
+        } catch (NotificationClientException e) {
+            Map<String, Object> logData = createLogData(reference);
+            logData.putAll(Map.of("recipient", recipient, "templateId", templateId));
+            LOGGER.error("Failed to add attachment to email", e, logData);
+            return new EmailResp(false, null);
+        }
+    }
+
+    private byte[] getFileContents(String attachmentId) {
+        // replace with retrieval from S3 bucket using attachmentId
+//        try (InputStream is = getClass().getClassLoader().getResourceAsStream("LP5DScotland.pdf")) {
+//            if (is == null) {
+//                throw new RuntimeException("Resource not found: LP5DScotland.pdf");
+//            }
+//            return is.readAllBytes();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        return s3ClientService.getFile(attachmentId);
     }
 
     public record LetterResp(boolean success, LetterResponse response) {

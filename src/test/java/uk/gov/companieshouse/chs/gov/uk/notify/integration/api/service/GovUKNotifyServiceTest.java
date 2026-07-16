@@ -53,6 +53,9 @@ public class GovUKNotifyServiceTest {
     @Mock
     private NotificationClient mockClient;
 
+    @Mock
+    private S3ClientService mockS3ClientService;
+
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,7 +81,7 @@ public class GovUKNotifyServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient, objectMapper));
+        ProxyFactory factory = new ProxyFactory(new GovUkNotifyService(mockClient, objectMapper, mockS3ClientService));
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
         factory.addAdvice(new MethodValidationInterceptor(validator));
         govUkNotifyService = (GovUkNotifyService) factory.getProxy();

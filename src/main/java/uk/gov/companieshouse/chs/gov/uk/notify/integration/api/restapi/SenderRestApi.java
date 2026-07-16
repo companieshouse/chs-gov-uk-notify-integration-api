@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.Logg
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.EmailResp;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher;
@@ -76,7 +78,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var savedRequest = notificationDatabaseService.getEmail(appId, reference);
         if (savedRequest.isEmpty()) {
             logger.errorContext(xHeaderId, new IllegalStateException(
-                    "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
+                            "Email request not found in database"),
+                    createLogMap(xHeaderId, "read_request"));
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
@@ -91,33 +94,54 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         Map<String, Object> personalisationDetails;
         try {
-            logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
+            logger.debugContext(xHeaderId, "Parsing personalisation details",
+                    createLogMap(xHeaderId, "parse_details"));
             personalisationDetails = OBJECT_MAPPER.readValue(
                     emailRequest.getRequest().getEmailDetails().getPersonalisationDetails(),
-                    new TypeReference<>() { }
+                    new TypeReference<>() {
+                    }
             );
         } catch (JsonProcessingException e) {
-            logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));
+            logger.errorContext(xHeaderId,
+                    new Exception("Failed to parse personalisation details: " + e.getMessage()),
+                    createLogMap(xHeaderId, "parse_error"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         try {
             WelshDatesPublisher.publishWelshDates(personalisationDetails);
         } catch (Exception e) {
-            logger.errorContext(xHeaderId, new Exception("Failed to publish Welsh dates: " + e.getMessage()),
+            logger.errorContext(xHeaderId,
+                    new Exception("Failed to publish Welsh dates: " + e.getMessage()),
                     createLogMap(xHeaderId, "welsh_dates_error"));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
+        logger.infoContext(xHeaderId,
+                "Sending email to " + emailRequest.getRequest().getRecipientDetails()
+                        .getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
-        var emailResp = govUkNotifyService.sendEmail(
-                emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
-                emailRequest.getRequest().getEmailDetails().getTemplateId(),
-                emailRequest.getRequest().getSenderDetails().getReference(),
-                personalisationDetails
-        );
+        EmailResp emailResp = null;
+        String attachmentId = emailRequest.getRequest().getEmailDetails().getAttachmentId();
+        if (StringUtils.isNotEmpty(attachmentId)) {
+            logger.infoContext(xHeaderId, "Email has attachment with ID: " + attachmentId,
+                    createLogMap(xHeaderId, "email_attachment"));
+            emailResp = govUkNotifyService.sendEmail(
+                    emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
+                    emailRequest.getRequest().getEmailDetails().getTemplateId(),
+                    emailRequest.getRequest().getSenderDetails().getReference(),
+                    emailRequest.getRequest().getEmailDetails().getAttachmentId(),
+                    personalisationDetails
+            );
+        } else {
+            emailResp = govUkNotifyService.sendEmail(
+                    emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
+                    emailRequest.getRequest().getEmailDetails().getTemplateId(),
+                    emailRequest.getRequest().getSenderDetails().getReference(),
+                    personalisationDetails
+            );
+        }
 
         logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
         notificationDatabaseService.storeResponse(emailResp);

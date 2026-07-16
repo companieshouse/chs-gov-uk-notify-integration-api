@@ -10,6 +10,9 @@ public class EmailDetailsDao {
     @Field("personalisation_details")
     private String personalisationDetails;
 
+    @Field("attachment_id")
+    private String attachmentId = "LP5DScotland.pdf"; //POC
+
     public String getTemplateId() {
         return templateId;
     }
@@ -25,6 +28,10 @@ public class EmailDetailsDao {
     public void setPersonalisationDetails(String personalisationDetails) {
         this.personalisationDetails = personalisationDetails;
     }
+
+    public String getAttachmentId() { return attachmentId; }
+
+    public void setAttachmentId(String attachmentId) { this.attachmentId = attachmentId; }
 
     @Override
     public int hashCode() {
