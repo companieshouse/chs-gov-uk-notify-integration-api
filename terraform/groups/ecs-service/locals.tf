@@ -24,13 +24,6 @@ locals {
   use_eric_reverse_proxy = true
   eric_port              = "3001" # container port plus 1
 
-  # create a map of secret name => secret arn to pass into ecs service module
-  # using the trimprefix function to remove the prefixed path from the secret name
-  secrets_arn_map = {
-    for sec in data.aws_ssm_parameter.secret :
-    trimprefix(sec.name, "/${local.name_prefix}/") => sec.arn
-  }
-
   service_secrets_arn_map = {
     for sec in module.secrets.secrets :
     trimprefix(sec.name, "/${local.service_name}-${var.environment}/") => sec.arn
