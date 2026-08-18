@@ -37,6 +37,7 @@ module "ecs-service" {
   vpc_id                  = data.aws_vpc.vpc.id
   ecs_cluster_id          = data.aws_ecs_cluster.ecs_cluster.id
   task_execution_role_arn = data.aws_iam_role.ecs_cluster_iam_role.arn
+  task_role_arn           = aws_iam_role.notifications_read.arn
 
   # Load balancer configuration
   lb_listener_arn                   = data.aws_lb_listener.service_lb_listener.arn
@@ -46,9 +47,9 @@ module "ecs-service" {
   health_check_grace_period_seconds = 240
 
   # Service Healthcheck configuration
-  use_task_container_healthcheck    = true
-  healthcheck_path                  = local.healthcheck_path
-  healthcheck_matcher               = local.healthcheck_matcher
+  use_task_container_healthcheck = true
+  healthcheck_path               = local.healthcheck_path
+  healthcheck_matcher            = local.healthcheck_matcher
 
   # Docker container details
   docker_registry   = var.docker_registry
@@ -90,5 +91,5 @@ module "ecs-service" {
   eric_cpus                 = var.eric_cpus
   eric_memory               = var.eric_memory
 
-  depends_on=[module.secrets]
+  depends_on = [module.secrets]
 }
