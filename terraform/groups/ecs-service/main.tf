@@ -1,34 +1,33 @@
+terraform {
+  required_version = ">= 1.3.0, < 2.0.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 6.0.0, < 7.0.0"
+    }
+    vault = {
+      source  = "hashicorp/vault"
+      version = ">= 5.0.0, < 6.0.0"
+    }
+  }
+  backend "s3" {}
+}
+
 provider "aws" {
   region = var.aws_region
 }
 
-terraform {
-  backend "s3" {
-  }
-  required_version = "~> 1.3"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.54.0"
-    }
-    vault = {
-      source  = "hashicorp/vault"
-      version = "~> 3.18.0"
-    }
-  }
-}
-
 module "secrets" {
-  source = "git@github.com:companieshouse/terraform-modules//aws/ecs/secrets?ref=1.0.296"
+  source = "git@github.com:companieshouse/terraform-modules//aws/parameter-store?ref=1.0.408"
 
   name_prefix = "${local.service_name}-${var.environment}"
-  environment = var.environment
   kms_key_id  = data.aws_kms_key.kms_key.id
   secrets     = nonsensitive(local.service_secrets)
 }
 
 module "ecs-service" {
-  source = "git@github.com:companieshouse/terraform-modules//aws/ecs/ecs-service?ref=1.0.296"
+  source = "git@github.com:companieshouse/terraform-modules//aws/ecs/ecs-service?ref=1.0.408"
 
   # Environmental configuration
   environment             = var.environment
@@ -37,6 +36,7 @@ module "ecs-service" {
   vpc_id                  = data.aws_vpc.vpc.id
   ecs_cluster_id          = data.aws_ecs_cluster.ecs_cluster.id
   task_execution_role_arn = data.aws_iam_role.ecs_cluster_iam_role.arn
+  task_role_arn           = aws_iam_role.notifications_read.arn
 
   # Load balancer configuration
   lb_listener_arn                   = data.aws_lb_listener.service_lb_listener.arn
@@ -46,9 +46,9 @@ module "ecs-service" {
   health_check_grace_period_seconds = 240
 
   # Service Healthcheck configuration
-  use_task_container_healthcheck    = true
-  healthcheck_path                  = local.healthcheck_path
-  healthcheck_matcher               = local.healthcheck_matcher
+  use_task_container_healthcheck = true
+  healthcheck_path               = local.healthcheck_path
+  healthcheck_matcher            = local.healthcheck_matcher
 
   # Docker container details
   docker_registry   = var.docker_registry
@@ -90,5 +90,5 @@ module "ecs-service" {
   eric_cpus                 = var.eric_cpus
   eric_memory               = var.eric_memory
 
-  depends_on=[module.secrets]
+  depends_on = [module.secrets]
 }

@@ -38,18 +38,7 @@ data "aws_lb" "service_lb" {
 
 data "aws_lb_listener" "service_lb_listener" {
   load_balancer_arn = data.aws_lb.service_lb.arn
-  port = 443
-}
-
-# retrieve all secrets for this stack using the stack path
-data "aws_ssm_parameters_by_path" "secrets" {
-  path = "/${local.name_prefix}"
-}
-
-# create a list of secrets names to retrieve them in a nicer format and lookup each secret by name
-data "aws_ssm_parameter" "secret" {
-  for_each = toset(data.aws_ssm_parameters_by_path.secrets.names)
-  name = each.key
+  port              = 443
 }
 
 # retrieve all global secrets for this env using global path
@@ -66,4 +55,29 @@ data "aws_ssm_parameter" "global_secret" {
 // --- s3 bucket for shared services config ---
 data "vault_generic_secret" "shared_s3" {
   path = "aws-accounts/shared-services/s3"
+}
+
+data "aws_s3_bucket" "notification_attachments" {
+  bucket = "notification-attachments-${var.environment}"
+}
+
+# policy on the role allowing ecs to read from s3 bucket
+data "aws_iam_policy_document" "read_trust" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "read_from_s3" {
+  statement {
+    sid       = "ReadFromBucket"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${data.aws_s3_bucket.notification_attachments.arn}/*"]
+  }
 }
