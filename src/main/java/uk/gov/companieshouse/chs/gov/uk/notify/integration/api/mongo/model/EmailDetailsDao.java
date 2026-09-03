@@ -1,14 +1,19 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
+import java.util.Map;
 import java.util.Objects;
+
+import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mongodb.core.mapping.Field;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.MapPropertyConverter;
 
 public class EmailDetailsDao {
     @Field("template_id")
     private String templateId;
 
     @Field("personalisation_details")
-    private String personalisationDetails;
+    @ValueConverter(MapPropertyConverter.class)
+    private Map<String, Object> personalisationDetails;
 
     public String getTemplateId() {
         return templateId;
@@ -18,11 +23,11 @@ public class EmailDetailsDao {
         this.templateId = templateId;
     }
 
-    public String getPersonalisationDetails() {
+    public Map<String, Object> getPersonalisationDetails() {
         return personalisationDetails;
     }
 
-    public void setPersonalisationDetails(String personalisationDetails) {
+    public void setPersonalisationDetails(Map<String, Object> personalisationDetails) {
         this.personalisationDetails = personalisationDetails;
     }
 

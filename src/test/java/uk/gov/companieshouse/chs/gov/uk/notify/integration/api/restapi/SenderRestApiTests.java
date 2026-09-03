@@ -15,6 +15,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.json.JSONObject;
@@ -54,7 +55,6 @@ class SenderRestApiTests {
             "verification_due_date", "15 February 2024",
             "welsh_verification_due_date", "15 Chwefror 2024"
     );
-    private static final String REQUEST_BODY_PERSONALISATION = new JSONObject().put("name", "Test User").put("verification_due_date", "15 February 2024").toString();
     private static final String XHEADER = "1";
     private static final String APP_ID = "chips";
 
@@ -135,10 +135,9 @@ class SenderRestApiTests {
     void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
         NotificationEmailRequest notificationRequest = mockEmailRequest();
         EmailRequestDao emailRequest = notificationRequest.getRequest();
-        emailRequest.getEmailDetails().setPersonalisationDetails(new JSONObject()
-                .put("name", "Test User")
-                .put("verification_due_date", "15  2024")
-                .toString());
+        emailRequest.getEmailDetails().setPersonalisationDetails(Map.of(
+                "name", "Test User",
+                "verification_due_date", "15  2024"));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
                 .thenReturn(notificationRequest);
@@ -333,7 +332,9 @@ class SenderRestApiTests {
         emailRequest.getSenderDetails().setAppId(appId);
         emailRequest.getSenderDetails().setReference(reference);
         emailRequest.getEmailDetails().setTemplateId(templateId);
-        emailRequest.getEmailDetails().setPersonalisationDetails(REQUEST_BODY_PERSONALISATION);
+        emailRequest.getEmailDetails().setPersonalisationDetails(new HashMap<>(Map.of(
+                "name", "Test User",
+                "verification_due_date", "15 February 2024")));
         NotificationEmailRequest notificationRequest = new NotificationEmailRequest(
                 emailRequest);
         notificationRequest.setStatus(RequestStatus.PENDING);
