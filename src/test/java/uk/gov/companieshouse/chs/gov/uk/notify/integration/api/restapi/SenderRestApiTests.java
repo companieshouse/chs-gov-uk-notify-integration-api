@@ -17,7 +17,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,7 +53,7 @@ class SenderRestApiTests {
             "verification_due_date", "15 February 2024",
             "welsh_verification_due_date", "15 Chwefror 2024"
     );
-    private static final String REQUEST_BODY_PERSONALISATION = new JSONObject().put("name", "Test User").put("verification_due_date", "15 February 2024").toString();
+    private static final Map<String, Object> REQUEST_BODY_PERSONALISATION = Map.of("name", "Test User", "verification_due_date", "15 February 2024");
     private static final String XHEADER = "1";
     private static final String APP_ID = "chips";
 
@@ -135,10 +134,9 @@ class SenderRestApiTests {
     void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
         NotificationEmailRequest notificationRequest = mockEmailRequest();
         EmailRequestDao emailRequest = notificationRequest.getRequest();
-        emailRequest.getEmailDetails().setPersonalisationDetails(new JSONObject()
-                .put("name", "Test User")
-                .put("verification_due_date", "15  2024")
-                .toString());
+        emailRequest.getEmailDetails().setPersonalisationDetails(Map.of(
+                "name", "Test User",
+                "verification_due_date", "15  2024"));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
                 .thenReturn(notificationRequest);
