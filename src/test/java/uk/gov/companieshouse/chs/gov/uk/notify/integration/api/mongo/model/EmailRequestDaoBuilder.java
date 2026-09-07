@@ -1,38 +1,25 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailDetailsBuilder.emailDetailsBuilder;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRecipientDetailsBuilder.emailRecipientDetailsBuilder;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.SenderDetailsBuilder.senderDetailsBuilder;
 
-import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
+import java.time.OffsetDateTime;
 
 /**
  * Builder class for creating instances of EmailRequestDao for testing purposes.
  */
 public class EmailRequestDaoBuilder {
 
-    private String appId = "chips";
-    private String reference = RandomStringUtils.randomNumeric(10);
-    private Map<String, Object> personalisationDetails;
-    private String templateId = UUID.randomUUID().toString();
+    private SenderDetailsDao senderDetails = senderDetailsBuilder().build();
+    private EmailRecipientDetailsDao recipientDetails = emailRecipientDetailsBuilder().build();
+    private EmailDetailsDao emailDetails = emailDetailsBuilder().build();
 
     public static EmailRequestDaoBuilder emailRequestDaoBuilder() {
         return new EmailRequestDaoBuilder();
     }
 
     public EmailRequestDao build() {
-        SenderDetailsDao senderDetails = new SenderDetailsDao();
-        senderDetails.setAppId(appId);
-        senderDetails.setReference(reference);
-        EmailRecipientDetailsDao recipientDetails = new EmailRecipientDetailsDao();
-        recipientDetails.setName("Test User");
-        recipientDetails.setEmailAddress("test@example");
-        EmailDetailsDao emailDetails = new EmailDetailsDao();
-        emailDetails.setTemplateId(templateId);
-        emailDetails.setPersonalisationDetails(personalisationDetails);
-
         EmailRequestDao emailRequest = new EmailRequestDao();
         emailRequest.setSenderDetails(senderDetails);
         emailRequest.setRecipientDetails(recipientDetails);
@@ -41,28 +28,13 @@ public class EmailRequestDaoBuilder {
         return emailRequest;
     }
 
-    public EmailRequestDaoBuilder withAppId(String appId) {
-        this.appId = appId;
+    public EmailRequestDaoBuilder withSenderDetails(SenderDetailsDao senderDetailsDao) {
+        this.senderDetails = senderDetailsDao;
         return this;
     }
 
-    public EmailRequestDaoBuilder withReference(String reference) {
-        this.reference = reference;
-        return this;
-    }
-
-    public EmailRequestDaoBuilder withPersonalisationDetails(Map<String, Object> personalisationDetails) {
-        this.personalisationDetails = Objects.nonNull(personalisationDetails) ? new HashMap<>(personalisationDetails) : null;
-        return this;
-    }
-
-    public EmailRequestDaoBuilder withRandomMockNotifyReference() {
-        this.reference = String.format("use-mock-notify-%s", RandomStringUtils.randomNumeric(10));
-        return this;
-    }
-
-    public EmailRequestDaoBuilder withTemplateId(String templateId) {
-        this.templateId = templateId;
+    public EmailRequestDaoBuilder withEmailDetails(EmailDetailsDao emailDetailsDao) {
+        this.emailDetails = emailDetailsDao;
         return this;
     }
 }
