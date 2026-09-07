@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import static java.lang.String.format;
 
+import com.google.common.base.Preconditions;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class EmailService {
 
     public NotificationEmailRequest validateEmailRequest(@Nullable String contextId,
                                                          @NonNull EmailRequest emailRequest) {
+        Preconditions.checkNotNull(emailRequest, "emailRequest is marked non-null but is null");
         NotificationEmailRequest notificationEmailRequest = notificationDatabaseService.getEmail(emailRequest.getAppId(), emailRequest.getReference())
                 .orElseThrow(() -> new EmailNotFoundException(format("Email request not found in database for request: %s %s", contextId, emailRequest)));
         if (RequestStatus.SENT.equals(notificationEmailRequest.getStatus())) {
