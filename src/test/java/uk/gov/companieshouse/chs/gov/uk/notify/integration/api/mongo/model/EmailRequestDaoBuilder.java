@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
@@ -51,7 +52,7 @@ public class EmailRequestDaoBuilder {
     }
 
     public EmailRequestDaoBuilder withPersonalisationDetails(Map<String, Object> personalisationDetails) {
-        this.personalisationDetails = new HashMap<>(personalisationDetails);
+        this.personalisationDetails = Objects.nonNull(personalisationDetails) ? new HashMap<>(personalisationDetails) : null;
         return this;
     }
 

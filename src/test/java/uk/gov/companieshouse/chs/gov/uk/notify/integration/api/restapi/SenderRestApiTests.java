@@ -2,23 +2,19 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDaoBuilder.emailRequestDaoBuilder;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.json.JSONObject;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +35,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.Notif
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.EmailService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.EmailResp;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.service.notify.LetterResponse;
@@ -48,13 +44,7 @@ import uk.gov.service.notify.LetterResponse;
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
 class SenderRestApiTests {
-    private static final String VALID_TEMPLATE_ID = "valid-template-id";
     private static final String VALID_REFERENCE = "valid-reference";
-    private static final Map<String, String> VALID_PERSONALISATION = Map.of(
-            "name", "Test User",
-            "verification_due_date", "15 February 2024",
-            "welsh_verification_due_date", "15 Chwefror 2024"
-    );
     private static final String XHEADER = "1";
     private static final String APP_ID = "chips";
 
@@ -65,13 +55,13 @@ class SenderRestApiTests {
     private NotificationDatabaseService notificationDatabaseService;
 
     @Mock
+    private EmailService emailService;
+
+    @Mock
     private LetterDispatcher letterDispatcher;
 
-    // This allows us to see what is logged during unit test execution, assuming that is
-    // thought useful, when the logger is injected. If what is logged is
-    // not of interest, then just inject the logger with @Mock.
-    @SuppressWarnings("java:S1068") // This field is actually used.
-    private final Logger logger = mock(Logger.class, withSettings().verboseLogging());
+    @Mock
+    private Logger logger;
 
     @InjectMocks
     private SenderRestApi notifyIntegrationSenderController;
@@ -80,12 +70,13 @@ class SenderRestApiTests {
     void whenEmailRequestIsValidExpectEmailMessageIsSentSuccessfully(){
         NotificationEmailRequest notificationRequest = mockEmailRequest();
         EmailRequestDao emailRequest = notificationRequest.getRequest();
-        String emaiAddress = emailRequest.getRecipientDetails().getEmailAddress();
+        String emailAddress = emailRequest.getRecipientDetails().getEmailAddress();
         String templateId = emailRequest.getEmailDetails().getTemplateId();
         String reference = emailRequest.getSenderDetails().getReference();
+        Map<String, Object> personalisationDetails = emailRequest.getEmailDetails().getPersonalisationDetails();
 
-        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference,
-                VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
+        when(govUKNotifyEmailFacade.sendEmail(emailAddress, templateId, reference,
+                personalisationDetails)).thenReturn(new GovUkNotifyService.EmailResp(true, null));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
                 .thenReturn(notificationRequest);
@@ -93,8 +84,8 @@ class SenderRestApiTests {
         EmailRequest req = createSampleEmailRequest(emailRequest);
         ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
 
-        verify(govUKNotifyEmailFacade).sendEmail(emaiAddress, templateId, reference,
-                VALID_PERSONALISATION);
+        verify(govUKNotifyEmailFacade).sendEmail(emailAddress, templateId, reference,
+                personalisationDetails);
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
 
         verify(notificationDatabaseService, times(2)).saveEmail(notificationRequest);
@@ -102,64 +93,15 @@ class SenderRestApiTests {
     }
 
     @Test
-    void whenEmailRequestAlreadySentExpectSkipRequest(){
-        NotificationEmailRequest notificationRequest = mockEmailRequest();
-        notificationRequest.setStatus(RequestStatus.SENT);
-
-        EmailRequest req = createSampleEmailRequest(notificationRequest.getRequest());
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
-
-        assertThat(response.getStatusCode()).isEqualTo(CREATED);
-
-        verifyNoInteractions(govUKNotifyEmailFacade);
-        verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
-    }
-
-    @Test
-    void whenEmailRequestNotInDbExpectNotFoundErrorResponse(){
-        EmailRequestDao emailRequest = TestUtils.createEmailRequest();
-        String appId = emailRequest.getSenderDetails().getAppId();
-        String reference = emailRequest.getSenderDetails().getReference();
-        EmailRequest req = createSampleEmailRequest(emailRequest);
-        when(notificationDatabaseService.getEmail(appId, reference)).thenReturn(Optional.empty());
-
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
-
-        assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
-
-        verifyNoInteractions(govUKNotifyEmailFacade);
-        verify(notificationDatabaseService, never()).storeResponse(any(EmailResp.class));
-    }
-
-    @Test
-    void whenEmailContainsBadDateVariablesExpectFailedToPublishWelshDatesError(){
-        NotificationEmailRequest notificationRequest = mockEmailRequest();
-        EmailRequestDao emailRequest = notificationRequest.getRequest();
-        emailRequest.getEmailDetails().setPersonalisationDetails(Map.of(
-                "name", "Test User",
-                "verification_due_date", "15  2024"));
-
-        when(notificationDatabaseService.saveEmail(notificationRequest))
-                .thenReturn(notificationRequest);
-
-        EmailRequest req = createSampleEmailRequest(emailRequest);
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendEmail(req, XHEADER);
-
-        assertThat(response.getStatusCode()).isEqualTo(BAD_REQUEST);
-
-        verify(notificationDatabaseService).saveEmail(notificationRequest);
-        assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
-    }
-
-    @Test
     void whenEmailRequestIsInValidExpectInternalSeverErrorResponse(){
         NotificationEmailRequest notificationRequest = mockEmailRequest();
         EmailRequestDao emailRequest = notificationRequest.getRequest();
-        String emaiAddress = emailRequest.getRecipientDetails().getEmailAddress();
+        String emailAddress = emailRequest.getRecipientDetails().getEmailAddress();
         String templateId = emailRequest.getEmailDetails().getTemplateId();
         String reference = emailRequest.getSenderDetails().getReference();
-        when(govUKNotifyEmailFacade.sendEmail(emaiAddress, templateId, reference,
-                VALID_PERSONALISATION)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
+        Map<String, Object> personalisation = emailRequest.getEmailDetails().getPersonalisationDetails();
+        when(govUKNotifyEmailFacade.sendEmail(emailAddress, templateId, reference,
+                personalisation)).thenReturn(new GovUkNotifyService.EmailResp(false, null));
 
         when(notificationDatabaseService.saveEmail(notificationRequest))
                 .thenReturn(notificationRequest);
@@ -174,13 +116,13 @@ class SenderRestApiTests {
     }
 
     @ParameterizedTest
-    @CsvSource(value = { 
+    @CsvSource(value = {
             "ANY,version",
-            "null,other", 
-            "null,CSIDVDEFLET_v1", 
+            "null,other",
+            "null,CSIDVDEFLET_v1",
             "null,CSIDVDEFLET_v1.1",
-            "null,IDVPSCDEFAULT_v1", 
-            "null,IDVPSCDEFAULT_v1.1", 
+            "null,IDVPSCDEFAULT_v1",
+            "null,IDVPSCDEFAULT_v1.1",
             "IDVPSCDEFAULT,v1.0",
             "CSIDVDEFLET,v1.0"}, nullValues = { "null" })
     void sendLetter_shouldReturnCreated_defaultPostage(String letterId, String templateId) throws Exception {
@@ -302,9 +244,9 @@ class SenderRestApiTests {
         return new LetterRequest(appId, reference);
     }
 
-    private EmailRequest createSampleEmailRequest(EmailRequestDao letterRequest) {
-        String appId = letterRequest.getSenderDetails().getAppId();
-        String reference = letterRequest.getSenderDetails().getReference();
+    private EmailRequest createSampleEmailRequest(EmailRequestDao emailRequest) {
+        String appId = emailRequest.getSenderDetails().getAppId();
+        String reference = emailRequest.getSenderDetails().getReference();
         return new EmailRequest(appId, reference);
     }
 
@@ -325,21 +267,18 @@ class SenderRestApiTests {
     }
 
     private NotificationEmailRequest mockEmailRequest() {
-        String appId = APP_ID;
-        String reference = VALID_REFERENCE;
-        String templateId = VALID_TEMPLATE_ID;
-        EmailRequestDao emailRequest = TestUtils.createEmailRequest();
-        emailRequest.getSenderDetails().setAppId(appId);
-        emailRequest.getSenderDetails().setReference(reference);
-        emailRequest.getEmailDetails().setTemplateId(templateId);
-        emailRequest.getEmailDetails().setPersonalisationDetails(new HashMap<>(Map.of(
+        EmailRequestDao emailRequest = emailRequestDaoBuilder()
+                .withPersonalisationDetails(Map.of(
                 "name", "Test User",
-                "verification_due_date", "15 February 2024")));
-        NotificationEmailRequest notificationRequest = new NotificationEmailRequest(
-                emailRequest);
+                "verification_due_date", "15 February 2024"))
+                .build();
+        NotificationEmailRequest notificationRequest = new NotificationEmailRequest(emailRequest);
         notificationRequest.setStatus(RequestStatus.PENDING);
-        when(notificationDatabaseService.getEmail(appId, reference))
-                .thenReturn(Optional.of(notificationRequest));
+        when(emailService.validateEmailRequest(XHEADER,
+                new EmailRequest(
+                        emailRequest.getSenderDetails().getAppId(),
+                        emailRequest.getSenderDetails().getReference())))
+                .thenReturn(notificationRequest);
         return notificationRequest;
     }
 
