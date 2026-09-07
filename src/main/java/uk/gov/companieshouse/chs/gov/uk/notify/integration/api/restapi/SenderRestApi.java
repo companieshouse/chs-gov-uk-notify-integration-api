@@ -20,7 +20,6 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.Notif
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.EmailService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.logging.Logger;
@@ -38,20 +37,17 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         SECOND_CLASS_LETTERS.addAll(LetterTemplateKey.IDVPSCEXT_TEMPLATES);
     }
 
-    private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
     private final EmailService emailService;
     private final LetterDispatcher letterDispatcher;
     private final Logger logger;
 
     public SenderRestApi(
-            final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
             final EmailService emailService,
             final LetterDispatcher letterDispatcher,
             final Logger logger
     ) {
-        this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
         this.emailService = emailService;
         this.letterDispatcher = letterDispatcher;
@@ -73,33 +69,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
 
         NotificationEmailRequest emailRequest = emailService.validateEmailRequest(xHeaderId, request);
-
-        emailRequest.setStatus(RequestStatus.PROCESSING);
-        emailRequest = notificationDatabaseService.saveEmail(emailRequest);
-
-        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
-                createLogMap(xHeaderId, "send_email"));
-
-        var emailResp = govUkNotifyService.sendEmail(
-                emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
-                emailRequest.getRequest().getEmailDetails().getTemplateId(),
-                emailRequest.getRequest().getSenderDetails().getReference(),
-                emailRequest.getRequest().getEmailDetails().getPersonalisationDetails()
-        );
-
-        logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
-        notificationDatabaseService.storeResponse(emailResp);
-
-        if (emailResp.success()) {
-            emailRequest.setStatus(RequestStatus.SENT);
-            notificationDatabaseService.saveEmail(emailRequest);
-
-            logger.infoContext(xHeaderId, "Email sent successfully", createLogMap(xHeaderId, "email_success"));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } else {
-            logger.errorContext(xHeaderId, new Exception( "Failed to send email" ), createLogMap(xHeaderId, "email_failure"));
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        emailService.sendEmail(xHeaderId, emailRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @Override

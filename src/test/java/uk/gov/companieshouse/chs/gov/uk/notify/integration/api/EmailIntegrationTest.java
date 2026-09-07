@@ -1,10 +1,14 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postEmailRequestEntity;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailDetailsBuilder.emailDetailsBuilder;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDaoBuilder.emailRequestDaoBuilder;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.SenderDetailsBuilder.senderDetailsBuilder;
 
-import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -27,12 +32,18 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.Email
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationEmailRequestRepository;
+import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
+import uk.gov.service.notify.SendEmailResponse;
 
 @ActiveProfiles("test")
 @ExtendWith(OutputCaptureExtension.class)
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EmailIntegrationTest {
+
+    @MockitoBean
+    private NotificationClient notificationClient;
 
     @Container
     static final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:6.0.19"));
@@ -43,14 +54,14 @@ class EmailIntegrationTest {
     }
 
     @Test
-    void shouldSendEmailWithAttachmentFileUpload(@Autowired NotificationEmailRequestRepository notificationEmailRequestRepository,
-                                                 @Autowired TestRestTemplate testRestTemplate) {
+    void shouldSendEmail(@Autowired NotificationEmailRequestRepository notificationEmailRequestRepository,
+                         @Autowired TestRestTemplate testRestTemplate) throws Exception {
         // Given
         EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
-                .withRandomMockNotifyReference()
-                .withPersonalisationDetails(Map.of(
-                        "companyName", "Test Company",
-                        "companyNumber", "1298749"))
+                .withSenderDetails(senderDetailsBuilder()
+                        .withAppId("chips")
+                        .withReference(UUID.randomUUID().toString())
+                        .build())
                 .build();
 
         notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
@@ -58,6 +69,8 @@ class EmailIntegrationTest {
         EmailRequest emailRequest = new EmailRequest(
                 emailRequestDao.getSenderDetails().getAppId(),
                 emailRequestDao.getSenderDetails().getReference());
+
+        givenSentEmailIsSuccessful(emailRequestDao);
 
         // When
         ResponseEntity<Void> response = testRestTemplate.exchange(postEmailRequestEntity(emailRequest), Void.class);
@@ -91,16 +104,13 @@ class EmailIntegrationTest {
     @Test
     void shouldReturnCreatedGivenRequestHasAlreadyBeenProcessed(@Autowired TestRestTemplate testRestTemplate,
                                                                 @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository,
-                                                                CapturedOutput capturedOutput) {
+                                                                CapturedOutput capturedOutput) throws Exception {
         // Given
-        EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
-                .withRandomMockNotifyReference()
-                .withPersonalisationDetails(Map.of(
-                        "companyName", "Test Company",
-                        "companyNumber", "1298749"))
-                .build();
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder().build();
 
         notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        givenSentEmailIsSuccessful(emailRequestDao);
 
         EmailRequest emailRequest = new EmailRequest(
                 emailRequestDao.getSenderDetails().getAppId(),
@@ -122,8 +132,9 @@ class EmailIntegrationTest {
                                                         CapturedOutput capturedOutput) {
         // Given
         EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
-                .withRandomMockNotifyReference()
-                .withPersonalisationDetails(null)
+                .withEmailDetails(emailDetailsBuilder()
+                        .withPersonalisationDetails(null)
+                        .build())
                 .build();
 
         notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
@@ -139,5 +150,128 @@ class EmailIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(capturedOutput.getOut()).contains("Error in chs-gov-uk-notify-integration-api: " +
                 "Request: X9uND6rXQxfbZNcMVFA7JI4h2KOh Failed to publish Welsh dates: Cannot invoke \\\"java.util.Map.keySet()\\\" because \\\"personalisationDetails\\\" is null, action: welsh_dates_error");
+    }
+
+    @Test
+    void shouldReturnBadRequestGivenAppIdIsNull(@Autowired TestRestTemplate testRestTemplate,
+                                                @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository) {
+        // Given
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
+                .withSenderDetails(senderDetailsBuilder()
+                        .withAppId(null)
+                        .build())
+                .build();
+
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        EmailRequest emailRequest = new EmailRequest(
+                emailRequestDao.getSenderDetails().getAppId(),
+                emailRequestDao.getSenderDetails().getReference());
+
+        // When
+        ResponseEntity<Void> response = testRestTemplate.exchange(postEmailRequestEntity(emailRequest), Void.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturnBadRequestGivenReferenceIsNull(@Autowired TestRestTemplate testRestTemplate,
+                                                    @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository) {
+        // Given
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
+                .withSenderDetails(senderDetailsBuilder()
+                        .withReference(null)
+                        .build())
+                .build();
+
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        EmailRequest emailRequest = new EmailRequest(
+                emailRequestDao.getSenderDetails().getAppId(),
+                emailRequestDao.getSenderDetails().getReference());
+
+        // When
+        ResponseEntity<Void> response = testRestTemplate.exchange(postEmailRequestEntity(emailRequest), Void.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorGivenExceptionThrownFromNotificationClient(@Autowired TestRestTemplate testRestTemplate,
+                                                                                   @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository) throws Exception {
+        // Given
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder().build();
+
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        EmailRequest emailRequest = new EmailRequest(
+                emailRequestDao.getSenderDetails().getAppId(),
+                emailRequestDao.getSenderDetails().getReference());
+
+        given(notificationClient.sendEmail(
+                emailRequestDao.getEmailDetails().getTemplateId(),
+                emailRequestDao.getRecipientDetails().getEmailAddress(),
+                emailRequestDao.getEmailDetails().getPersonalisationDetails(),
+                emailRequestDao.getSenderDetails().getReference()))
+                .willThrow(new NotificationClientException("Notification client exception"));
+
+        // When
+        ResponseEntity<Void> response = testRestTemplate.exchange(postEmailRequestEntity(emailRequest), Void.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    void proveValidationAnnotationsNotWorkingForEmailAddress(@Autowired TestRestTemplate testRestTemplate,
+                                                             @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository) throws Exception {
+        // Given
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
+                .withSenderDetails(senderDetailsBuilder()
+                        .withEmailAddress("invalid-email-address")
+                        .build())
+                .build();
+
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        givenSentEmailIsSuccessful(emailRequestDao);
+
+        EmailRequest emailRequest = new EmailRequest(
+                emailRequestDao.getSenderDetails().getAppId(),
+                emailRequestDao.getSenderDetails().getReference());
+
+        // When
+        ResponseEntity<Void> response = testRestTemplate.exchange(postEmailRequestEntity(emailRequest), Void.class);
+
+        // Then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    private void givenSentEmailIsSuccessful(EmailRequestDao emailRequestDao) throws NotificationClientException {
+        given(notificationClient.sendEmail(
+                emailRequestDao.getEmailDetails().getTemplateId(),
+                emailRequestDao.getRecipientDetails().getEmailAddress(),
+                emailRequestDao.getEmailDetails().getPersonalisationDetails(),
+                emailRequestDao.getSenderDetails().getReference()))
+                .willReturn(new SendEmailResponse(format("""
+                        {
+                            "id": "%s",
+                            "reference": "%s",
+                            "content": {
+                                "subject": "Test Email Subject",
+                                "body": "Test Email Body"
+                            },
+                            "template": {
+                                "id": "%s",
+                                "version": 1,
+                                "uri": "https://api.notifications.service.gov.uk/v2/template/%s"
+                            }
+                        }""",
+                        UUID.randomUUID(),
+                        emailRequestDao.getSenderDetails().getReference(),
+                        emailRequestDao.getEmailDetails().getTemplateId(),
+                        emailRequestDao.getEmailDetails().getTemplateId())));
     }
 }
