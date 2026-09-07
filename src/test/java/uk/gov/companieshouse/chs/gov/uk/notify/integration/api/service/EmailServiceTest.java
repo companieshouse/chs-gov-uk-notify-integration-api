@@ -124,4 +124,14 @@ class EmailServiceTest {
                         .containsEntry("welsh_verification_due_date", "15 Chwefror 2024"));
     }
 
+    @Test
+    void shouldThrowNullPointerExceptionWhenEmailRequestIsNull() {
+        // Given
+        String contextId = UUID.randomUUID().toString();
+
+        // When & Then
+        assertThatThrownBy(() -> emailService.validateEmailRequest(contextId, null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("emailRequest is marked non-null but is null");
+    }
 }
