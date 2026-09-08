@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
+import static org.apache.commons.lang3.RandomStringUtils.secure;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,8 @@ import java.util.UUID;
 public class EmailDetailsBuilder {
 
     private String templateId = UUID.randomUUID().toString();
-    private HashMap<String, Object> personalisationDetails = new HashMap<>(Map.of("companyNumber", randomNumeric(8)));
+    private String attachmentId;
+    private HashMap<String, Object> personalisationDetails = new HashMap<>(Map.of("companyNumber", secure().nextNumeric(8)));
 
     public static EmailDetailsBuilder emailDetailsBuilder() {
         return new EmailDetailsBuilder();
@@ -19,6 +20,7 @@ public class EmailDetailsBuilder {
     public EmailDetailsDao build() {
         EmailDetailsDao emailDetailsDao = new EmailDetailsDao();
         emailDetailsDao.setTemplateId(templateId);
+        emailDetailsDao.setAttachmentId(attachmentId);
         emailDetailsDao.setPersonalisationDetails(personalisationDetails);
         return emailDetailsDao;
     }
@@ -33,4 +35,8 @@ public class EmailDetailsBuilder {
         return this;
     }
 
+    public EmailDetailsBuilder withAttachmentId(String attachmentId) {
+        this.attachmentId = attachmentId;
+        return this;
+    }
 }

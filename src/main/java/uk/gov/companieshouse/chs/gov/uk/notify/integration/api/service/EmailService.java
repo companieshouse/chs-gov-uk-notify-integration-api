@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,16 @@ public class EmailService {
 
     private final NotificationDatabaseService notificationDatabaseService;
     private final GovUkNotifyService govUkNotifyService;
+    private final AttachmentStorageService attachmentStorageService;
     private final Logger logger;
 
     public EmailService(NotificationDatabaseService notificationDatabaseService,
                         GovUkNotifyService govUkNotifyService,
+                        AttachmentStorageService attachmentStorageService,
                         Logger logger) {
         this.notificationDatabaseService = notificationDatabaseService;
         this.govUkNotifyService = govUkNotifyService;
+        this.attachmentStorageService = attachmentStorageService;
         this.logger = logger;
     }
 
@@ -59,11 +63,24 @@ public class EmailService {
         logger.infoContext(xHeaderId, "Sending email to " + emailRequestDao.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
-        var emailResp = govUkNotifyService.sendEmail(
-                emailRequestDao.getRecipientDetails().getEmailAddress(),
-                emailRequestDao.getEmailDetails().getTemplateId(),
-                emailRequestDao.getSenderDetails().getReference(),
-                emailRequestDao.getEmailDetails().getPersonalisationDetails());
+        GovUkNotifyService.EmailResp emailResp;
+        if (StringUtils.isNotBlank(emailRequestDao.getEmailDetails().getAttachmentId())) {
+            AttachmentFile attachment = attachmentStorageService.getAttachment(
+                    xHeaderId,
+                    emailRequestDao.getEmailDetails().getAttachmentId());
+            emailResp = govUkNotifyService.sendEmailWithAttachment(new GovNotificationEmailRequest(
+                    emailRequestDao.getRecipientDetails().getEmailAddress(),
+                    emailRequestDao.getEmailDetails().getTemplateId(),
+                    emailRequestDao.getSenderDetails().getReference(),
+                    emailRequestDao.getEmailDetails().getPersonalisationDetails(),
+                    attachment));
+        } else {
+            emailResp = govUkNotifyService.sendEmail(
+                    emailRequestDao.getRecipientDetails().getEmailAddress(),
+                    emailRequestDao.getEmailDetails().getTemplateId(),
+                    emailRequestDao.getSenderDetails().getReference(),
+                    emailRequestDao.getEmailDetails().getPersonalisationDetails());
+        }
 
         logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
         notificationDatabaseService.storeResponse(emailResp);

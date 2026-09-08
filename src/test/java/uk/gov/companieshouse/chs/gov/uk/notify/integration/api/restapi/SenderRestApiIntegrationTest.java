@@ -39,6 +39,7 @@ import java.util.Objects;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,13 +56,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
@@ -75,7 +78,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class, MockitoExtension.class})
-class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
+class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
 
     private static final String REQUEST_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
     private static final String INVALID_REQUEST_ID = "X9uND6rXQxfbZ:cMVFA7JI4h2KOh";
@@ -148,6 +151,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private NotificationLetterRequestRepository notificationLetterRequestRepository;
+
+    @Autowired
+    private NotificationLetterResponseRepository notificationLetterResponseRepository;
+
     @MockitoBean
     private NotificationClient notificationClient;
 
@@ -173,6 +182,12 @@ class SenderRestApiIntegrationTest extends AbstractMongoDBTest {
     private SvgReplacedElementFactory svgReplacedElementFactory;
 
     private LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+
+    @AfterEach
+    void tearDown() {
+        notificationLetterRequestRepository.deleteAll();
+        notificationLetterResponseRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("Send letter successfully")
