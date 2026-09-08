@@ -11,6 +11,9 @@ public class EmailDetailsDao {
     @Field("template_id")
     private String templateId;
 
+    @Field("attachment_id")
+    private String attachmentId;
+
     @Field("personalisation_details")
     @ValueConverter(MapPropertyConverter.class)
     private Map<String, Object> personalisationDetails;
@@ -23,6 +26,14 @@ public class EmailDetailsDao {
         this.templateId = templateId;
     }
 
+    public String getAttachmentId() {
+        return attachmentId;
+    }
+
+    public void setAttachmentId(String attachmentId) {
+        this.attachmentId = attachmentId;
+    }
+
     public Map<String, Object> getPersonalisationDetails() {
         return personalisationDetails;
     }
@@ -33,7 +44,7 @@ public class EmailDetailsDao {
 
     @Override
     public int hashCode() {
-        return Objects.hash(personalisationDetails, templateId);
+        return Objects.hash(attachmentId, personalisationDetails, templateId);
     }
 
     @Override
@@ -48,7 +59,8 @@ public class EmailDetailsDao {
             return false;
         }
         EmailDetailsDao other = (EmailDetailsDao) obj;
-        return Objects.equals(personalisationDetails, other.personalisationDetails)
+        return Objects.equals(attachmentId, other.attachmentId)
+                && Objects.equals(personalisationDetails, other.personalisationDetails)
                 && Objects.equals(templateId, other.templateId);
     }
 

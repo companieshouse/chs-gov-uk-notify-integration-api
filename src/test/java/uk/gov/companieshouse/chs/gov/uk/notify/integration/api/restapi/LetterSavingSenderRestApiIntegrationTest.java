@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,10 +39,11 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -52,10 +54,13 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
         "logging.level.org.thymeleaf=TRACE"})
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class})
-class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
+class LetterSavingSenderRestApiIntegrationTest extends ApplicationIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private NotificationLetterRequestRepository notificationLetterRequestRepository;
 
     @MockitoBean
     private NotificationClient notificationClient;
@@ -65,6 +70,11 @@ class LetterSavingSenderRestApiIntegrationTest extends AbstractMongoDBTest {
     @BeforeEach
     void setUp() {
         System.getProperties().setProperty("xr.util-logging.loggingEnabled", "true");
+    }
+
+    @AfterEach
+    void tearDown() {
+        notificationLetterRequestRepository.deleteAll();
     }
 
     @Test
