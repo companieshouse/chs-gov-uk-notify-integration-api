@@ -12,9 +12,12 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.Already
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailClientException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailDetailsDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRecipientDetailsDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.SenderDetailsDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher;
 import uk.gov.companieshouse.logging.Logger;
@@ -24,13 +27,16 @@ public class EmailService {
 
     private final NotificationDatabaseService notificationDatabaseService;
     private final GovUkNotifyService govUkNotifyService;
+    private final AttachmentStorageService attachmentStorageService;
     private final Logger logger;
 
     public EmailService(NotificationDatabaseService notificationDatabaseService,
                         GovUkNotifyService govUkNotifyService,
+                        AttachmentStorageService attachmentStorageService,
                         Logger logger) {
         this.notificationDatabaseService = notificationDatabaseService;
         this.govUkNotifyService = govUkNotifyService;
+        this.attachmentStorageService = attachmentStorageService;
         this.logger = logger;
     }
 
@@ -56,15 +62,31 @@ public class EmailService {
         emailRequest = notificationDatabaseService.saveEmail(emailRequest);
 
         EmailRequestDao emailRequestDao = emailRequest.getRequest();
-        logger.infoContext(xHeaderId, "Sending email to " + emailRequestDao.getRecipientDetails().getEmailAddress(),
+        EmailRecipientDetailsDao recipientDetails = emailRequestDao.getRecipientDetails();
+        EmailDetailsDao emailDetails = emailRequestDao.getEmailDetails();
+        SenderDetailsDao senderDetails = emailRequestDao.getSenderDetails();
+
+        logger.infoContext(xHeaderId, "Sending email to " + recipientDetails.getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
-        var emailResp = govUkNotifyService.sendEmail(
-                emailRequestDao.getRecipientDetails().getEmailAddress(),
-                emailRequestDao.getEmailDetails().getTemplateId(),
-                emailRequestDao.getSenderDetails().getReference(),
-                emailRequestDao.getEmailDetails().getPersonalisationDetails());
-
+        GovUkNotifyService.EmailResp emailResp;
+        if (emailDetails.hasAttachment()) {
+            AttachmentFile attachment = attachmentStorageService.getAttachment(
+                    xHeaderId,
+                    emailDetails.getAttachmentId());
+            emailResp = govUkNotifyService.sendEmailWithAttachment(new GovNotificationEmailRequest(
+                    recipientDetails.getEmailAddress(),
+                    emailDetails.getTemplateId(),
+                    senderDetails.getReference(),
+                    emailDetails.getPersonalisationDetails(),
+                    attachment));
+        } else {
+            emailResp = govUkNotifyService.sendEmail(
+                    recipientDetails.getEmailAddress(),
+                    emailDetails.getTemplateId(),
+                    senderDetails.getReference(),
+                    emailDetails.getPersonalisationDetails());
+        }
         logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
         notificationDatabaseService.storeResponse(emailResp);
 

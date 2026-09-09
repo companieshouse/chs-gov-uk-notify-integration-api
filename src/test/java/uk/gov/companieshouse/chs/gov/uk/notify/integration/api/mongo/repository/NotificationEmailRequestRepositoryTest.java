@@ -20,14 +20,17 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 
-@SpringBootTest
+@DataMongoTest
+@Import(MongoConfig.class)
 class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test

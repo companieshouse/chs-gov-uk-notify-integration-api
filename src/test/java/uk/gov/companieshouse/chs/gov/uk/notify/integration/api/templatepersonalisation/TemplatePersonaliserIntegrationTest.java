@@ -32,17 +32,16 @@ import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.thymeleaf.context.Context;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
-@SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
-class TemplatePersonaliserIntegrationTest {
+class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
 
     private static final String LETTER_TITLE =
             "Default letter— overdue identity verification statement";

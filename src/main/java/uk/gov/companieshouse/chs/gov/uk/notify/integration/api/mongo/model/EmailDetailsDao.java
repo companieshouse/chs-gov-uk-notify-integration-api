@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.MapPropertyConverter;
@@ -10,6 +11,9 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.M
 public class EmailDetailsDao {
     @Field("template_id")
     private String templateId;
+
+    @Field("attachment_id")
+    private String attachmentId;
 
     @Field("personalisation_details")
     @ValueConverter(MapPropertyConverter.class)
@@ -23,6 +27,18 @@ public class EmailDetailsDao {
         this.templateId = templateId;
     }
 
+    public String getAttachmentId() {
+        return attachmentId;
+    }
+
+    public void setAttachmentId(String attachmentId) {
+        this.attachmentId = attachmentId;
+    }
+
+    public boolean hasAttachment() {
+        return StringUtils.isNotBlank(attachmentId);
+    }
+
     public Map<String, Object> getPersonalisationDetails() {
         return personalisationDetails;
     }
@@ -33,7 +49,7 @@ public class EmailDetailsDao {
 
     @Override
     public int hashCode() {
-        return Objects.hash(personalisationDetails, templateId);
+        return Objects.hash(attachmentId, personalisationDetails, templateId);
     }
 
     @Override
@@ -48,7 +64,8 @@ public class EmailDetailsDao {
             return false;
         }
         EmailDetailsDao other = (EmailDetailsDao) obj;
-        return Objects.equals(personalisationDetails, other.personalisationDetails)
+        return Objects.equals(attachmentId, other.attachmentId)
+                && Objects.equals(personalisationDetails, other.personalisationDetails)
                 && Objects.equals(templateId, other.templateId);
     }
 
