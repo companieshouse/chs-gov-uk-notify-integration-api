@@ -12,6 +12,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.Already
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailClientException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailValidationException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
@@ -54,14 +55,15 @@ public class EmailService {
         emailRequest.setStatus(RequestStatus.PROCESSING);
         emailRequest = notificationDatabaseService.saveEmail(emailRequest);
 
-        logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
+        EmailRequestDao emailRequestDao = emailRequest.getRequest();
+        logger.infoContext(xHeaderId, "Sending email to " + emailRequestDao.getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));
 
         var emailResp = govUkNotifyService.sendEmail(
-                emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
-                emailRequest.getRequest().getEmailDetails().getTemplateId(),
-                emailRequest.getRequest().getSenderDetails().getReference(),
-                emailRequest.getRequest().getEmailDetails().getPersonalisationDetails());
+                emailRequestDao.getRecipientDetails().getEmailAddress(),
+                emailRequestDao.getEmailDetails().getTemplateId(),
+                emailRequestDao.getSenderDetails().getReference(),
+                emailRequestDao.getEmailDetails().getPersonalisationDetails());
 
         logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));
         notificationDatabaseService.storeResponse(emailResp);
@@ -71,7 +73,7 @@ public class EmailService {
             notificationDatabaseService.saveEmail(emailRequest);
             logger.infoContext(xHeaderId, "Email sent successfully", createLogMap(xHeaderId, "email_success"));
         } else {
-            throw new EmailClientException(format("Failed to send email for request: %s %s", xHeaderId, emailRequest.getRequest()));
+            throw new EmailClientException(format("Failed to send email for request: %s %s", xHeaderId, emailRequestDao));
         }
 
     }
