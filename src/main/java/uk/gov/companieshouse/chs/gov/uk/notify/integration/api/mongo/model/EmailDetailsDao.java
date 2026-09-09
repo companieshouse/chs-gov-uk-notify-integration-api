@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.convert.ValueConverter;
 import org.springframework.data.mongodb.core.mapping.Field;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.converter.MapPropertyConverter;
@@ -32,6 +33,10 @@ public class EmailDetailsDao {
 
     public void setAttachmentId(String attachmentId) {
         this.attachmentId = attachmentId;
+    }
+
+    public boolean hasAttachment() {
+        return StringUtils.isNotBlank(attachmentId);
     }
 
     public Map<String, Object> getPersonalisationDetails() {
