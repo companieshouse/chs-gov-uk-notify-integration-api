@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORISED_KEY_ROLES;
 import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
@@ -10,14 +8,17 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.json.JSONObject;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import uk.gov.companieshouse.api.chs.notification.integration.model.EmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailDetailsDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRecipientDetailsDao;
@@ -95,10 +96,10 @@ public class TestUtils {
         senderDetails.setReference("test-reference");
         EmailRecipientDetailsDao recipientDetails = new EmailRecipientDetailsDao();
         recipientDetails.setName("Test User");
-        recipientDetails.setEmailAddress("test@example");
+        recipientDetails.setEmailAddress("test@example.com");
         EmailDetailsDao emailDetails = new EmailDetailsDao();
         emailDetails.setTemplateId("template-123");
-        emailDetails.setPersonalisationDetails("Hello {{name}}");
+        emailDetails.setPersonalisationDetails(Map.of("greeting", "Hello", "name", "name"));
 
         EmailRequestDao emailRequest = new EmailRequestDao();
         emailRequest.setSenderDetails(senderDetails);
@@ -157,5 +158,17 @@ public class TestUtils {
                         .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
                         .content(requestBody))
                 .andExpect(expectedResponseStatus);
+    }
+
+    public static RequestEntity<EmailRequest> postEmailRequestEntity(EmailRequest emailRequest) {
+        return RequestEntity
+                .post("/gov-uk-notify-integration/email")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .header(X_REQUEST_ID, CONTEXT_ID)
+                .header(ERIC_IDENTITY, ERIC_IDENTITY_VALUE)
+                .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE)
+                .body(emailRequest);
     }
 }

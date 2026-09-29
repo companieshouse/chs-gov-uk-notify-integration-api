@@ -37,6 +37,7 @@
         <batik-transcoder-version>1.18</batik-transcoder-version>
         <pdfbox-version>3.0.7</pdfbox-version>
         <grpc-context.version>1.73.0</grpc-context.version>
+        <json-unit-assertj.version>5.1.2</json-unit-assertj.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
@@ -256,6 +257,12 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.json-unit</groupId>
+            <artifactId>json-unit-assertj</artifactId>
+            <version>${json-unit-assertj.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

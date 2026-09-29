@@ -2,8 +2,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -29,8 +27,6 @@ import uk.gov.companieshouse.logging.Logger;
 
 @Controller
 public class SenderRestApi implements NotifyIntegrationSenderControllerInterface {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * Set of letters that should be sent using second class postage
@@ -89,20 +85,8 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         emailRequest.setStatus(RequestStatus.PROCESSING);
         emailRequest = notificationDatabaseService.saveEmail(emailRequest);
 
-        Map<String, Object> personalisationDetails;
         try {
-            logger.debugContext( xHeaderId,"Parsing personalisation details", createLogMap(xHeaderId, "parse_details"));
-            personalisationDetails = OBJECT_MAPPER.readValue(
-                    emailRequest.getRequest().getEmailDetails().getPersonalisationDetails(),
-                    new TypeReference<>() { }
-            );
-        } catch (JsonProcessingException e) {
-            logger.errorContext(xHeaderId, new Exception( "Failed to parse personalisation details: " + e.getMessage() ), createLogMap(xHeaderId, "parse_error"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        try {
-            WelshDatesPublisher.publishWelshDates(personalisationDetails);
+            WelshDatesPublisher.publishWelshDates(emailRequest.getRequest().getEmailDetails().getPersonalisationDetails());
         } catch (Exception e) {
             logger.errorContext(xHeaderId, new Exception("Failed to publish Welsh dates: " + e.getMessage()),
                     createLogMap(xHeaderId, "welsh_dates_error"));
@@ -116,7 +100,7 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
                 emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
                 emailRequest.getRequest().getEmailDetails().getTemplateId(),
                 emailRequest.getRequest().getSenderDetails().getReference(),
-                personalisationDetails
+                emailRequest.getRequest().getEmailDetails().getPersonalisationDetails()
         );
 
         logger.debugContext(xHeaderId, "Storing email response in database", createLogMap(xHeaderId, "store_response"));

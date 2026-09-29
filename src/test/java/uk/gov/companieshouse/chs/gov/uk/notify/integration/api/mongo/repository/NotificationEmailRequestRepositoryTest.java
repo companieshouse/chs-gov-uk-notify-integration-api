@@ -1,16 +1,27 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository;
 
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createEmailRequest;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.DocumentBuilder.documentBuilder;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDaoBuilder.emailRequestDaoBuilder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
@@ -111,6 +122,59 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
 
         assertNotNull(result);
         assertFalse(result.isPresent());
+    }
+
+    @Test
+    void shouldUtiliseSpringDataCustomConvertersForPersonalisationMapFromString(@Autowired MongoTemplate mongoTemplate) {
+        // Given
+        String appId = "chips";
+        String reference = RandomStringUtils.randomNumeric(10);
+
+        MongoCollection<Document> collection = mongoTemplate.getCollection("email_details");
+        Document notificationEmailRequest = documentBuilder()
+                .withEntry("request", documentBuilder()
+                        .withEntry("sender_details", documentBuilder()
+                            .withEntry("app_id", appId)
+                            .withEntry("reference", reference).build())
+                        .withEntry("email_details", documentBuilder()
+                                .withEntry("personalisation_details", "{ \"name\": \"John Doe\", \"orderId\": 12345 }")
+                                .build())
+                        .build())
+                .build();
+
+        collection.insertOne(notificationEmailRequest);
+
+        // When & Then
+        assertThat(notificationEmailRequestRepository.findByUniqueReference(appId, reference))
+                .isPresent()
+                .hasValueSatisfying(request -> assertThat(request.getRequest().getEmailDetails().getPersonalisationDetails())
+                        .containsEntry("name", "John Doe")
+                        .containsEntry("orderId", 12345));
+    }
+
+    @Test
+    void shouldUtiliseSpringDataCustomConvertersForPersonalisationMapToString(@Autowired MongoTemplate mongoTemplate) {
+        // Given
+        EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
+                .withPersonalisationDetails(Map.of("name", "John Doe", "orderId", 12345))
+                .build();
+
+        // When
+        notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
+
+        // Then
+        assertThat(mongoTemplate.getCollection("email_details"))
+                .isNotNull()
+                .satisfies(document -> {
+                    String personalisationDetails = document.find().first()
+                            .get("request", Document.class)
+                            .get("email_details", Document.class)
+                            .getString("personalisation_details");
+                    assertThatJson(personalisationDetails)
+                            .isObject()
+                            .containsEntry("name", "John Doe")
+                            .containsEntry("orderId", 12345);
+                });
     }
 
     private EmailRequestDao saveEmailWithReference(String appId, String reference) {
