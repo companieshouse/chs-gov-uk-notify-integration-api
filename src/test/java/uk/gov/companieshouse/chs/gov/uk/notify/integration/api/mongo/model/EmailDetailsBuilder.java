@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 
 import java.util.HashMap;
 import java.util.Map;
