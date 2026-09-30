@@ -83,7 +83,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmailClientException.class)
     public ResponseEntity<Object> handleEmailClientException(EmailClientException ce) {
-        // TODO: Consider returning a 503 Service Unavailable response instead of 500 Internal Server Error
         return reportInternalServerError(ce, null);
     }
 
@@ -221,7 +220,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Provides a more legible/meaningful substitution for part of a message originating from a
      * low level exception.
-     * 
+     *
      * @param exceptionMessage the message provided by the intercepted exception
      * @return the sanitised version of the message
      */
