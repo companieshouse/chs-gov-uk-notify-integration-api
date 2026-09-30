@@ -2,7 +2,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import java.io.IOException;
@@ -17,12 +16,13 @@ import uk.gov.companieshouse.api.chs.notification.integration.model.EmailRequest
 import uk.gov.companieshouse.api.chs.notification.integration.model.LetterRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationEmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.RequestStatus;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.NotificationDatabaseService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.EmailService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.LetterTemplateKey;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher;
 import uk.gov.companieshouse.logging.Logger;
 
 @Controller
@@ -40,17 +40,20 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
     private final GovUkNotifyService govUkNotifyService;
     private final NotificationDatabaseService notificationDatabaseService;
+    private final EmailService emailService;
     private final LetterDispatcher letterDispatcher;
     private final Logger logger;
 
     public SenderRestApi(
             final GovUkNotifyService govUkNotifyService,
             final NotificationDatabaseService notificationDatabaseService,
+            final EmailService emailService,
             final LetterDispatcher letterDispatcher,
             final Logger logger
     ) {
         this.govUkNotifyService = govUkNotifyService;
         this.notificationDatabaseService = notificationDatabaseService;
+        this.emailService = emailService;
         this.letterDispatcher = letterDispatcher;
         this.logger = logger;
     }
@@ -69,29 +72,10 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
 
         logger.infoContext(xHeaderId, "Starting sendEmail process", logMap);
 
-        var savedRequest = notificationDatabaseService.getEmail(appId, reference);
-        if (savedRequest.isEmpty()) {
-            logger.errorContext(xHeaderId, new IllegalStateException(
-                    "Email request not found in database"), createLogMap(xHeaderId, "read_request"));
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        NotificationEmailRequest emailRequest = emailService.validateEmailRequest(xHeaderId, request);
 
-        var emailRequest = savedRequest.get();
-        if (RequestStatus.SENT.equals(emailRequest.getStatus())) {
-            logger.infoContext(xHeaderId, "Email request ignored as already sent",
-                    createLogMap(xHeaderId, "duplicate_email"));
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        }
         emailRequest.setStatus(RequestStatus.PROCESSING);
         emailRequest = notificationDatabaseService.saveEmail(emailRequest);
-
-        try {
-            WelshDatesPublisher.publishWelshDates(emailRequest.getRequest().getEmailDetails().getPersonalisationDetails());
-        } catch (Exception e) {
-            logger.errorContext(xHeaderId, new Exception("Failed to publish Welsh dates: " + e.getMessage()),
-                    createLogMap(xHeaderId, "welsh_dates_error"));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
 
         logger.infoContext(xHeaderId, "Sending email to " + emailRequest.getRequest().getRecipientDetails().getEmailAddress(),
                 createLogMap(xHeaderId, "send_email"));

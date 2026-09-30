@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.thymeleaf.exceptions.TemplateInputException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.AlreadyProcessedException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.SvgImageException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.TooManyLettersFoundException;
@@ -61,6 +63,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(message);
+    }
+
+    /**
+     * Returns HTTP Status 201 Created when there is an exception implying that
+     * the incoming request has already be processed and the request is idempotent.
+     *
+     * @param ape exception thrown when request has already been processed and is idempotent
+     * @return response with payload reporting underlying cause
+     */
+    @ExceptionHandler(AlreadyProcessedException.class)
+    public ResponseEntity<Object> handleAlreadyProcessedException(AlreadyProcessedException ape) {
+        var message = ERROR_CONTEXT + buildMessage(ape.getMessage());
+        myLogger.error(WILL_HANDLE + message + "` by responding with 201 Created.",
+                getLogMap(message));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     /**
@@ -115,13 +132,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      * Returns HTTP Status 404 Not Found when there is an exception implying that
      * a letter sought cannot be found.
      *
-     * @param lnfe exception thrown when no letter can be found
+     * @param exception exception thrown when no letter or email can be found
      * @return response with payload reporting underlying cause
      */
-    @ExceptionHandler(LetterNotFoundException.class)
-    public ResponseEntity<Object> handleLetterNotFoundException(
-            LetterNotFoundException lnfe) {
-        var message = ERROR_CONTEXT + buildMessage(lnfe.getMessage());
+    @ExceptionHandler({LetterNotFoundException.class, EmailNotFoundException.class})
+    public ResponseEntity<Object> handleLetterNotFoundException(Exception exception) {
+        var message = ERROR_CONTEXT + buildMessage(exception.getMessage());
         myLogger.error(WILL_HANDLE + message + "` by responding with 404 Not Found.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
