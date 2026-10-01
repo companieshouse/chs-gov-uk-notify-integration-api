@@ -10,6 +10,7 @@ import java.util.UUID;
 public class EmailDetailsBuilder {
 
     private String templateId = UUID.randomUUID().toString();
+    private String attachmentId;
     private HashMap<String, Object> personalisationDetails = new HashMap<>(Map.of("companyNumber", insecure().nextNumeric(8)));
 
     public static EmailDetailsBuilder emailDetailsBuilder() {
@@ -19,6 +20,7 @@ public class EmailDetailsBuilder {
     public EmailDetailsDao build() {
         EmailDetailsDao emailDetailsDao = new EmailDetailsDao();
         emailDetailsDao.setTemplateId(templateId);
+        emailDetailsDao.setAttachmentId(attachmentId);
         emailDetailsDao.setPersonalisationDetails(personalisationDetails);
         return emailDetailsDao;
     }
@@ -33,4 +35,8 @@ public class EmailDetailsBuilder {
         return this;
     }
 
+    public EmailDetailsBuilder withAttachmentId(String attachmentId) {
+        this.attachmentId = attachmentId;
+        return this;
+    }
 }

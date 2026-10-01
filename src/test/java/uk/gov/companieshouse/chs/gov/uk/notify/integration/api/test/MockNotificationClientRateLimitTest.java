@@ -10,9 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -23,12 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(properties = {"spring.data.mongodb.uri=mongodb://token_value"})
-@ActiveProfiles("test")
 class MockNotificationClientRateLimitTest {
 
-    @Autowired
-    private MockNotificationClient mockClient;
+    private final MockNotificationClient mockClient = new MockNotificationClient(RandomStringUtils.randomNumeric(10));
 
     private static final String MOCK_REFERENCE = MockNotificationClient.MOCK_REFERENCE_PREFIX + "-test";
     private static final String TEST_TEMPLATE_ID = UUID.randomUUID().toString();
@@ -36,7 +31,7 @@ class MockNotificationClientRateLimitTest {
     private static final InputStream TEST_PDF = new ByteArrayInputStream("test content".getBytes());
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mockClient.resetRateLimits();
         mockClient.setCurrentTimeSupplier(System::currentTimeMillis);
         mockClient.setCurrentDateSupplier(LocalDate::now);
