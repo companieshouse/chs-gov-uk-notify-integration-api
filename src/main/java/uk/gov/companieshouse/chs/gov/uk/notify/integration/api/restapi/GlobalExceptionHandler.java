@@ -19,6 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.thymeleaf.exceptions.TemplateInputException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.AlreadyProcessedException;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailClientException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.EmailNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterNotFoundException;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.SvgImageException;
@@ -78,6 +79,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         myLogger.error(WILL_HANDLE + message + "` by responding with 201 Created.",
                 getLogMap(message));
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @ExceptionHandler(EmailClientException.class)
+    public ResponseEntity<Object> handleEmailClientException(EmailClientException ce) {
+        return reportInternalServerError(ce, null);
     }
 
     /**
@@ -214,7 +220,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Provides a more legible/meaningful substitution for part of a message originating from a
      * low level exception.
-     * 
+     *
      * @param exceptionMessage the message provided by the intercepted exception
      * @return the sanitised version of the message
      */

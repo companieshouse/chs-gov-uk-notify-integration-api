@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.createEmailRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.DocumentBuilder.documentBuilder;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailDetailsBuilder.emailDetailsBuilder;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.EmailRequestDaoBuilder.emailRequestDaoBuilder;
 
 import java.util.List;
@@ -156,7 +157,9 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     void shouldUtiliseSpringDataCustomConvertersForPersonalisationMapToString(@Autowired MongoTemplate mongoTemplate) {
         // Given
         EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
-                .withPersonalisationDetails(Map.of("name", "John Doe", "orderId", 12345))
+                .withEmailDetails(emailDetailsBuilder()
+                        .withPersonalisationDetails(Map.of("name", "John Doe", "orderId", 12345))
+                        .build())
                 .build();
 
         // When
