@@ -294,11 +294,8 @@ class EmailIntegrationTest extends ApplicationIntegrationTest{
                                                              @Autowired NotificationEmailRequestRepository notificationEmailRequestRepository) throws Exception {
         // Given
         EmailRequestDao emailRequestDao = emailRequestDaoBuilder()
-                .withSenderDetails(senderDetailsBuilder()
-                        .withEmailAddress("invalid-email-address")
-                        .build())
                 .build();
-
+        emailRequestDao.getRecipientDetails().setEmailAddress("invalid-email-address");
         notificationEmailRequestRepository.save(new NotificationEmailRequest(emailRequestDao));
 
         givenSentEmailIsSuccessful(emailRequestDao);

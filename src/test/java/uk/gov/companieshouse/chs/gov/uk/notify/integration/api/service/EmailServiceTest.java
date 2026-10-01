@@ -227,5 +227,7 @@ class EmailServiceTest {
                 .isInstanceOf(EmailClientException.class)
                 .hasMessage("Failed to send email for request: %s %s", contextId, notificationEmailRequest.getRequest());
         then(notificationDatabaseService).should().storeResponse(failedResponse);
+        then(notificationDatabaseService).should(times(1)).saveEmail(notificationEmailRequest);
+        assertThat(notificationEmailRequest.getStatus()).isEqualTo(RequestStatus.PROCESSING);
     }
 }

@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
-import static org.apache.commons.lang3.RandomStringUtils.secure;
+import static org.apache.commons.lang3.RandomStringUtils.insecure;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ public class EmailDetailsBuilder {
 
     private String templateId = UUID.randomUUID().toString();
     private String attachmentId;
-    private HashMap<String, Object> personalisationDetails = new HashMap<>(Map.of("companyNumber", secure().nextNumeric(8)));
+    private HashMap<String, Object> personalisationDetails = new HashMap<>(Map.of("companyNumber", insecure().nextNumeric(8)));
 
     public static EmailDetailsBuilder emailDetailsBuilder() {
         return new EmailDetailsBuilder();
