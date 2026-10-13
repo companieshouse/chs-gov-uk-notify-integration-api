@@ -5,7 +5,7 @@
     <parent>
         <groupId>uk.gov.companieshouse</groupId>
         <artifactId>companies-house-parent</artifactId>
-        <version>2.1.12</version>
+        <version>3.0.0</version>
         <relativePath/>
     </parent>
     <artifactId>chs-gov-uk-notify-integration-api</artifactId>
@@ -40,8 +40,6 @@
         <grpc-context.version>1.73.0</grpc-context.version>
         <json-unit-assertj.version>5.1.2</json-unit-assertj.version>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login></sonar.login>
-        <sonar.password></sonar.password>
         <sonar.projectName>chs-gov-uk-notify-integration-api</sonar.projectName>
         <sonar.projectKey>uk.gov.companieshouse:chs-gov-uk-notify-integration-api</sonar.projectKey>
         <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
@@ -105,7 +103,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
