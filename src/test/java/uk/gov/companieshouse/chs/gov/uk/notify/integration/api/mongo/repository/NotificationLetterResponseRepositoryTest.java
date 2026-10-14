@@ -6,8 +6,10 @@ import java.util.UUID;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterResponse;
 import uk.gov.service.notify.LetterResponse;
 
@@ -16,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest
+@DataMongoTest
+@Import(MongoConfig.class)
 class NotificationLetterResponseRepositoryTest extends AbstractMongoDBTest {
     
     @Autowired

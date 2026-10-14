@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import org.apache.pdfbox.Loader;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,10 +44,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
@@ -55,7 +57,7 @@ import uk.gov.service.notify.NotificationClient;
         {"logging.level.org.springframework.data.mongodb.core.MongoTemplate=DEBUG"})
 @AutoConfigureMockMvc
 @ExtendWith(OutputCaptureExtension.class)
-class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
+class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
 
     private static final String CONTEXT_ID = "X9uND6rXQxfbZNcMVFA7JI4h2KOh";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
@@ -82,6 +84,9 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private NotificationLetterRequestRepository notificationLetterRequestRepository;
+
     @MockitoBean
     private NotificationClient notificationClient;
 
@@ -90,6 +95,11 @@ class ReaderRestApiIntegrationTest extends AbstractMongoDBTest {
 
     @Mock
     private InputStream precompiledPdfInputStream;
+
+    @AfterEach
+    void tearDown() {
+        notificationLetterRequestRepository.deleteAll();
+    }
 
     @Test
     void When_RequestingNonExistentEmailById_Expect_NotFoundResponse() throws Exception {

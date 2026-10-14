@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,6 +22,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -30,6 +34,7 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,12 +46,13 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 
 @Tag("unit-test")
-public class GovUKNotifyServiceTest {
+class GovUKNotifyServiceTest {
 
     private GovUkNotifyService govUkNotifyService;
 
@@ -67,6 +73,9 @@ public class GovUKNotifyServiceTest {
 
     @Mock
     private JsonProcessingException mockJsonProcessingException;
+
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> personalisationCaptor;
 
     private static final String VALID_EMAIL = "test@example.com";
     private static final String VALID_TEMPLATE_ID = "valid-template-id";
@@ -149,6 +158,56 @@ public class GovUKNotifyServiceTest {
             assertTrue(result.success());
             assertEquals(mockEmailResponse, result.response());
             verify(mockClient).sendEmail(eq(VALID_TEMPLATE_ID), eq(VALID_EMAIL), isNull(), anyString());
+        }
+
+        @Test
+        void shouldSendAttachmentByPreparingPersonalisationWithFileDownloadLink() throws Exception {
+            // Given
+            Map<String, Object> personalisationDetails = Map.of("name", "Test User");
+            String attachmentContent = "attachment content";
+
+            // When
+            govUkNotifyService.sendEmailWithAttachment(new GovNotificationEmailRequest(
+                    VALID_EMAIL,
+                    VALID_TEMPLATE_ID,
+                    VALID_REFERENCE,
+                    personalisationDetails,
+                    new AttachmentFile("test.pdf", attachmentContent.getBytes())
+            ));
+
+            // Then
+            then(mockClient).should().sendEmail(eq(VALID_TEMPLATE_ID), eq(VALID_EMAIL), personalisationCaptor.capture(), eq(VALID_REFERENCE));
+            Map<String, Object> personalisationCaptorValue = personalisationCaptor.getValue();
+            assertThat(personalisationCaptorValue)
+                    .hasEntrySatisfying(
+                            "file_download_link",
+                            value -> assertThat(value)
+                                    .isInstanceOfSatisfying(JSONObject.class,
+                                            json -> {
+                                        assertThat(json.get("file")).isEqualTo(Base64.getEncoder().encodeToString(attachmentContent.getBytes()));
+                                        assertThat(json.get("filename")).isEqualTo("test.pdf");
+                                        assertThat(json.get("confirm_email_before_download")).isEqualTo(JSONObject.NULL);
+                                        assertThat(json.get("retention_period")).isEqualTo(JSONObject.NULL);
+                                    }));
+        }
+
+        @Test
+        void shouldRespondWithSuccessResponseFalseGivenEmailWithAttachmentFails() {
+            // Given
+            String largerThan2MBContent = "a".repeat(2 * 1024 * 1024 + 1); // 2MB + 1 byte
+
+            GovNotificationEmailRequest govNotificationEmailRequest = new GovNotificationEmailRequest(
+                    VALID_EMAIL,
+                    VALID_TEMPLATE_ID,
+                    VALID_REFERENCE,
+                    Map.of("name", "Test User"),
+                    new AttachmentFile("test.pdf", largerThan2MBContent.getBytes()));
+
+            // When
+            GovUkNotifyService.EmailResp emailResp = govUkNotifyService.sendEmailWithAttachment(govNotificationEmailRequest);
+
+            // Then
+            assertThat(emailResp.success()).isFalse();
         }
     }
 

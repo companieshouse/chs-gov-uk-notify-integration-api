@@ -11,13 +11,16 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
 
 
-@SpringBootTest
+@DataMongoTest
+@Import(MongoConfig.class)
 class NotificationLetterRequestRepositoryTest extends AbstractMongoDBTest {
 
     @Test

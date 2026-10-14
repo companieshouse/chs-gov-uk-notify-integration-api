@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -24,6 +25,7 @@ import uk.gov.service.notify.SendEmailResponse;
 public class GovUkNotifyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
+    private static final String FILE_DOWNLOAD_LINK_KEY = "file_download_link";
 
     public static final String ERROR_MESSAGE_KEY = "error";
     public static final UUID NIL_UUID = new UUID(0L, 0L);
@@ -31,7 +33,8 @@ public class GovUkNotifyService {
     private final NotificationClient client;
     private final ObjectMapper objectMapper;
 
-    public GovUkNotifyService(NotificationClient client, ObjectMapper objectMapper) {
+    public GovUkNotifyService(NotificationClient client,
+                              ObjectMapper objectMapper) {
         this.client = client;
         this.objectMapper = objectMapper;
     }
@@ -49,10 +52,26 @@ public class GovUkNotifyService {
             SendEmailResponse response = client.sendEmail(templateId, recipient, personalisation, reference);
             return new EmailResp(response != null && response.getNotificationId() != null, response);
         } catch (NotificationClientException e) {
-            Map<String, Object> logData = createLogData(reference);
-            logData.putAll(Map.of("recipient", recipient, "templateId", templateId));
-            LOGGER.error("Failed to send email", e, logData);
-            return new EmailResp(false, null);
+            return handleClientException(recipient, templateId, reference, e);
+        }
+    }
+
+    public EmailResp sendEmailWithAttachment(GovNotificationEmailRequest govNotificationEmailRequest) {
+        Map<String, Object> personalisationWithAttachment = new HashMap<>(govNotificationEmailRequest.personalisationDetails());
+        try {
+            personalisationWithAttachment.put(FILE_DOWNLOAD_LINK_KEY, NotificationClient.prepareUpload(
+                    govNotificationEmailRequest.attachment().getContent(),
+                    govNotificationEmailRequest.attachment().getFilename()));
+            return sendEmail(
+                    govNotificationEmailRequest.emailAddress(),
+                    govNotificationEmailRequest.templateId(),
+                    govNotificationEmailRequest.reference(),
+                    personalisationWithAttachment);
+        } catch (NotificationClientException e) {
+            return handleClientException(govNotificationEmailRequest.emailAddress(),
+                    govNotificationEmailRequest.templateId(),
+                    govNotificationEmailRequest.reference(),
+                    e);
         }
     }
 
@@ -106,6 +125,13 @@ public class GovUkNotifyService {
         var response = new LetterResponse(jsonData);
         response.getData().put(ERROR_MESSAGE_KEY, nce.getMessage());
         return response;
+    }
+
+    private EmailResp handleClientException(String recipient, String templateId, String reference, NotificationClientException e) {
+        Map<String, Object> logData = createLogData(reference);
+        logData.putAll(Map.of("recipient", recipient, "templateId", templateId));
+        LOGGER.error("Failed to send email", e, logData);
+        return new EmailResp(false, null);
     }
 
     private Map<String, Object> createLogData(String reference) {
