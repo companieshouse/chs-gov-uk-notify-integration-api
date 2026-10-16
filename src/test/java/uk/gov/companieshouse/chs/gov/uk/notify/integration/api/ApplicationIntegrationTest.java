@@ -21,7 +21,7 @@ public abstract class ApplicationIntegrationTest {
 
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
         registry.add("chs.notification.aws.s3-endpoint", s3Mock::getS3MockEndpoint);
         registry.add("chs.notification.aws.access-key-id", s3Mock::getAccessKeyId);
         registry.add("chs.notification.aws.secret-access-key", s3Mock::getSecretAccessKey);
