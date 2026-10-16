@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model;
 
-import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public class SenderDetailsBuilder {
 

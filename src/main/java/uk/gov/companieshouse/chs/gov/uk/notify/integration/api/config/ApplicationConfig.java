@@ -2,6 +2,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,17 @@ public class ApplicationConfig {
     @Bean
     public InternalUserInterceptor internalUserInterceptor() {
         return new InternalUserInterceptor(APPLICATION_NAMESPACE);
+    }
+
+    /**
+     * Provides a classic Jackson 2 ObjectMapper, as Spring Boot 4 only
+     * auto-configures a Jackson 3 mapper by default.
+     *
+     * @return the object mapper
+     */
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 
     /**

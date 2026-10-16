@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.AbstractMongoDBTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config.MongoConfig;
