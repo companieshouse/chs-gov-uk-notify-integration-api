@@ -8,8 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record AwsProperties(URI s3Endpoint,
                             String region,
                             String bucketName,
-                            String accessKeyId,
-                            String secretAccessKey,
                             Boolean pathStyleAccessEnabled) {
 
 }
