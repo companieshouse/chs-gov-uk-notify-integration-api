@@ -32,20 +32,20 @@
         <div class="frame column address">
             <div class="content">
                 <table id="address-table">
-                    <tr th:text="${address_line_1}"></tr>
-                    <tr th:text="${address_line_2}"></tr>
-                    <tr th:text="${address_line_3}"></tr>
-                    <tr th:text="${address_line_4}" th:if="${address_line_4 != null}"></tr>
-                    <tr th:text="${address_line_5}" th:if="${address_line_5 != null}"></tr>
-                    <tr th:text="${address_line_6}" th:if="${address_line_6 != null}"></tr>
-                    <tr th:text="${address_line_7}" th:if="${address_line_7 != null}"></tr>
+                    <tr><td th:text="${address_line_1}"></td></tr>
+                    <tr><td th:text="${address_line_2}"></td></tr>
+                    <tr><td th:text="${address_line_3}"></td></tr>
+                    <tr th:if="${address_line_4 != null}"><td th:text="${address_line_4}"></td></tr>
+                    <tr th:if="${address_line_5 != null}"><td th:text="${address_line_5}"></td></tr>
+                    <tr th:if="${address_line_6 != null}"><td th:text="${address_line_6}"></td></tr>
+                    <tr th:if="${address_line_7 != null}"><td th:text="${address_line_7}"></td></tr>
                 </table>
             </div>
         </div>
         <div class="frame column date-and-ref">
             <div class="content" th:with="date_label = ${is_welsh_letter} ? 'Dyddiad' : 'Date'">
                 <table id="date-and-reference-table">
-                    <tr class="date-and-reference-label">[[${date_label}]]:</tr>
+                    <tr class="date-and-reference-label"><td>[[${date_label}]]:</td></tr>
                     <tr>
                         <td id="letter-date" th:if="${!is_welsh_letter}">
                             [[${todays_date} ? ${todays_date} : ${triggering_event_date}]]
@@ -55,8 +55,8 @@
                         </td>
                     </tr>
                     <tr class="date-and-reference-spacing"></tr>
-                    <tr class="date-and-reference-label" >[[${referenceLabel}]]:</tr>
-                    <tr>[[${referenceValue}]]</tr>
+                    <tr class="date-and-reference-label" ><td>[[${referenceLabel}]]:</td></tr>
+                    <tr><td>[[${referenceValue}]]</td></tr>
                 </table>
             </div>
         </div>

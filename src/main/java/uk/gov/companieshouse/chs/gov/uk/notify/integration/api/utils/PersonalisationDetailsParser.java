@@ -2,11 +2,11 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -14,7 +14,7 @@ import uk.gov.companieshouse.logging.Logger;
 @Component
 public class PersonalisationDetailsParser {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final JsonMapper OBJECT_MAPPER = JsonMapper.builder().build();
     private final Logger logger;
 
     public PersonalisationDetailsParser(Logger logger) {
@@ -33,8 +33,7 @@ public class PersonalisationDetailsParser {
                     personalisationDetailsString,
                     new TypeReference<>() {}
             );
-        } catch (
-                JsonProcessingException jpe) {
+        } catch (JacksonException jpe) {
             var message = "Failed to parse personalisation details: " + jpe.getMessage();
             logger.error(message, createLogMap(contextId, "parse_error"));
             throw new LetterValidationException(message);

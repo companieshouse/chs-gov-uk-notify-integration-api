@@ -8,12 +8,12 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.data.mongodb.core.convert.MongoConversionContext;
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.json.JsonMapper;
 
 class MapPropertyConverterTest {
 
@@ -22,7 +22,7 @@ class MapPropertyConverterTest {
 
     @BeforeEach
     void setUp() {
-        mapPropertyConverter = new MapPropertyConverter(new ObjectMapper());
+        mapPropertyConverter = new MapPropertyConverter();
         mongoConversionContext = mock(MongoConversionContext.class);
     }
 
@@ -53,10 +53,10 @@ class MapPropertyConverterTest {
     @Test
     void shouldThrowConversionExceptionGivenInvalidMap() throws Exception {
         // Given
-        ObjectMapper mock = mock(ObjectMapper.class);
+        JsonMapper mock = mock(JsonMapper.class);
         Map<String, Object> personalisationMap = Map.of("key1", "value1", "key2", 2);
 
-        given(mock.writeValueAsString(personalisationMap)).willThrow(new JsonParseException("error"));
+        given(mock.writeValueAsString(personalisationMap)).willThrow(new StreamReadException("error"));
         mapPropertyConverter = new MapPropertyConverter(mock);
 
         // When & Then
