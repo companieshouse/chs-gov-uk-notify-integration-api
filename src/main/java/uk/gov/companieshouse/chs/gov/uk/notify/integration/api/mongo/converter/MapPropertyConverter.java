@@ -5,36 +5,37 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.data.convert.PropertyValueConverter;
 import org.springframework.data.mongodb.core.convert.MongoConversionContext;
-import org.springframework.lang.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class MapPropertyConverter implements PropertyValueConverter<Map<String, Object>, String, MongoConversionContext> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public MapPropertyConverter() {
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder().build();
     }
 
-    public MapPropertyConverter(ObjectMapper objectMapper) {
+    public MapPropertyConverter(JsonMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Nullable
     @Override
-    public Map<String, Object> read(String value, MongoConversionContext context) {
+    public Map<String, Object> read(@NonNull String value, @NonNull MongoConversionContext context) {
         try {
             return objectMapper.readValue(value, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Error converting String to Map", e);
             throw new ConversionFailedException(
                     TypeDescriptor.valueOf(String.class),
@@ -44,10 +45,10 @@ public class MapPropertyConverter implements PropertyValueConverter<Map<String, 
 
     @Nullable
     @Override
-    public String write(Map<String, Object> value, MongoConversionContext context) {
+    public String write(@NonNull Map<String, Object> value, @NonNull MongoConversionContext context) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Error converting Map to String", e);
             throw new ConversionFailedException(
                     TypeDescriptor.valueOf(Map.class),

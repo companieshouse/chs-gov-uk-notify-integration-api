@@ -15,27 +15,43 @@
 
     <properties>
         <java.version>21</java.version>
-        <ch-dependency-bom.version>0.1.31</ch-dependency-bom.version>
-        <spring-boot.version>4.1.1</spring-boot.version>
-        <log4j-version>2.25.5</log4j-version>
-        <private-api-sdk-java.version>7.2.22</private-api-sdk-java.version>
+
+        <!-- Internal Dependencies -->
+        <!-- Source: https://github.com/companieshouse/ch-boms/releases -->
+        <ch-dependency-bom.version>0.1.37</ch-dependency-bom.version>
+        <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
+        <private-api-sdk-java.version>7.2.47</private-api-sdk-java.version>
+
+        <!-- External Dependencies -->
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
+        <spring-boot.version>4.1.2</spring-boot.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <!-- Source: https://mvnrepository.com/artifact/uk.gov.service.notify/notifications-java-client -->
         <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
-        <software.amazon.awssdk-bom.version>2.48.0</software.amazon.awssdk-bom.version>
-        <system-stubs.version>2.1.7</system-stubs.version>
-        <jsoup-version>1.20.1</jsoup-version>
+        <!-- Source: https://mvnrepository.com/artifact/uk.org.webcompere/system-stubs-jupiter -->
+        <system-stubs.version>2.1.8</system-stubs.version>
+        <!-- Source: https://mvnrepository.com/artifact/org.jsoup/jsoup -->
+        <jsoup-version>1.24.1</jsoup-version>
+        <!-- Source: https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-core -->
         <flying-saucer-version>12.0.0</flying-saucer-version>
-        <openpdf-version>2.0.3</openpdf-version>
-        <batik-transcoder-version>1.18</batik-transcoder-version>
+        <!-- Source: https://mvnrepository.com/artifact/com.github.librepdf/openpdf -->
+        <openpdf-version>2.0.5</openpdf-version>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-transcoder -->
+        <batik-transcoder-version>1.20</batik-transcoder-version>
+        <!-- Source: https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
         <pdfbox-version>3.0.8</pdfbox-version>
-        <netty.version>4.2.19.Final</netty.version>
-        <grpc-context.version>1.73.0</grpc-context.version>
-        <json-unit-assertj.version>5.1.2</json-unit-assertj.version>
-        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.projectName>chs-gov-uk-notify-integration-api</sonar.projectName>
-        <sonar.projectKey>uk.gov.companieshouse:chs-gov-uk-notify-integration-api</sonar.projectKey>
-        <sonar.java.binaries>${project.basedir}/target,${project.basedir}/target/*</sonar.java.binaries>
+        <!-- Source: https://mvnrepository.com/artifact/io.grpc/grpc-api -->
+        <grpc.version>1.85.1</grpc.version>
+        <!-- Source: https://mvnrepository.com/artifact/net.javacrumbs.json-unit/json-unit-assertj -->
+        <json-unit-assertj.version>6.4.0</json-unit-assertj.version>
+        <!-- Source: https://mvnrepository.com/artifact/io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom -->
+        <opentelemetry.version>2.33.1</opentelemetry.version>
+
+        <!-- Source: https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin -->
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
     </properties>
 
     <profiles>
@@ -51,11 +67,12 @@
         <connection>scm:git:git://github.com/companieshouse/chs-gov-uk-notify-integration-api.git</connection>
         <developerConnection>scm:git:ssh://github.com/companieshouse/chs-gov-uk-notify-integration-api.git
         </developerConnection>
-        <url>http://github.com/companieshouse/chs-gov-uk-notify-integration-api/tree/main</url>
+        <url>https://github.com/companieshouse/chs-gov-uk-notify-integration-api/tree/main</url>
     </scm>
 
     <dependencyManagement>
         <dependencies>
+
             <dependency>
                 <groupId>uk.gov.companieshouse</groupId>
                 <artifactId>ch-dependency-bom</artifactId>
@@ -63,6 +80,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>uk.gov.companieshouse</groupId>
                 <artifactId>ch-test-bom</artifactId>
@@ -70,13 +88,33 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/io.netty/netty-bom -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>${netty.version}</version>
+                <version>4.2.20.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- Source: https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.57.8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -84,35 +122,17 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${software.amazon.awssdk-bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Temporarily overridden dependencies -->
-            <!--
-                Override dependency to fix CVE-2025-68161
-                Review to see if newer version of spring-boot-starter-logging
-                supplies an updated version of this,
-                allowing removal of this dependency.
-            -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j-version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>uk.gov.service.notify</groupId>
             <artifactId>notifications-java-client</artifactId>
             <version>${gov-uk-notify.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -122,10 +142,23 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-opentelemetry</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+            <version>${opentelemetry.version}-alpha</version>
+        </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
@@ -151,23 +184,38 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>rest-service-common-library</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
         </dependency>
+
+        <!-- We need to stay on 3.3.5 and can't update to the 3.4.x series as it's      -->
+        <!-- a breaking change. This is dependent on Thymeleaf which is what pulls in OGNL       -->
+        <!-- Source: https://mvnrepository.com/artifact/ognl/ognl -->
+        <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>3.3.5</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-core</artifactId>
             <version>${flying-saucer-version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
@@ -183,11 +231,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>${openpdf-version}</version>
         </dependency>
+
         <!-- For SVG image support. -->
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
@@ -207,41 +257,49 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-data-mongodb-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-resttestclient</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-restclient</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-mongodb</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
@@ -257,59 +315,70 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-jupiter</artifactId>
             <version>${system-stubs.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-core</artifactId>
             <version>${system-stubs.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>${jsoup-version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox-version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-context</artifactId>
-            <version>${grpc-context.version}</version>
+            <version>${grpc.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+
         <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit-assertj</artifactId>
             <version>${json-unit-assertj.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -326,10 +395,11 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.2</version>
                 <configuration>
                     <from>
                         <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21</image>
@@ -342,15 +412,12 @@
                     </container>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
             </plugin>
-            <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>${sonar-maven-plugin.version}</version>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -365,6 +432,13 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.10.0</version>
+            </plugin>
+
         </plugins>
     </build>
 

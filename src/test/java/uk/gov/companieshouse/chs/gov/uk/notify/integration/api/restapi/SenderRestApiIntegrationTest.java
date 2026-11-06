@@ -102,10 +102,10 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 =
             "Error in chs-gov-uk-notify-integration-api: Failed to parse personalisation details:"
                     + " Unexpected character ('}' (code 125)): was expecting double-quote to "
-                    + "start field name";
+                    + "start property name";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2 =
             " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); "
-                    + "line: 1, column: 208]";
+                    + "byte offset: #UNKNOWN]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
             + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
@@ -181,7 +181,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
     @MockitoSpyBean
     private SvgReplacedElementFactory svgReplacedElementFactory;
 
-    private LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+    private final LetterRequestDao letterRequest = TestUtils.createLetterRequest();
 
     @AfterEach
     void tearDown() {
@@ -749,7 +749,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
 
         final String reference = letterRequest.getSenderDetails().getReference();
         final String appId = letterRequest.getSenderDetails().getAppId();
-        
+
         String govNotifyReference;
         if (StringUtils.isBlank(letterType)) {
             // Old letters do not have letter IDs and use just the reference
