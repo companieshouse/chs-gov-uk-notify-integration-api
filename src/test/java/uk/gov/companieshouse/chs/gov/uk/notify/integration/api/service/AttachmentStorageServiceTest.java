@@ -28,7 +28,7 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
         s3Client.putObject(builder -> builder
                         .bucket(awsProperties.bucketName())
                         .metadata(Map.of("filename", "test.txt" ))
-                        .key(attachmentId).build(),
+                        .key("local/" + attachmentId).build(),
                 RequestBody.fromBytes(attachmentContent));
 
         // When
@@ -49,7 +49,7 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
         String attachmentId = RandomStringUtils.randomNumeric(10);
         s3Client.putObject(builder -> builder
                         .bucket(awsProperties.bucketName())
-                        .key(attachmentId).build(),
+                        .key("local/" + attachmentId).build(),
                 RequestBody.fromBytes(RandomStringUtils.randomAlphanumeric(10).getBytes()));
 
         // When

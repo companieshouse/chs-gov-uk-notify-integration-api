@@ -328,7 +328,7 @@ class EmailIntegrationTest extends ApplicationIntegrationTest{
         String attachmentContentType = Files.probeContentType(classPathResource.getFile().toPath());
         s3Client.putObject(PutObjectRequest.builder()
                         .bucket(awsProperties.bucketName())
-                        .key(emailRequestDao.getSenderDetails().getReference())
+                        .key("local/" + emailRequestDao.getSenderDetails().getReference())
                         .contentEncoding(attachmentContentType)
                         .metadata(Map.of(
                                 "content-type", attachmentContentType,

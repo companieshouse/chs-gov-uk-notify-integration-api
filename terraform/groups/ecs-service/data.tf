@@ -58,7 +58,7 @@ data "vault_generic_secret" "shared_s3" {
 }
 
 data "aws_s3_bucket" "notification_attachments" {
-  bucket = "notification-attachments-${var.environment}"
+  bucket = "${var.aws_profile}.notification-attachments.ch.gov.uk"
 }
 
 # policy on the role allowing ecs to read from s3 bucket
@@ -78,6 +78,6 @@ data "aws_iam_policy_document" "read_from_s3" {
     sid       = "ReadFromBucket"
     effect    = "Allow"
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.notification_attachments.arn}/*"]
+    resources = ["${data.aws_s3_bucket.notification_attachments.arn}/${var.environment}/*"]
   }
 }
