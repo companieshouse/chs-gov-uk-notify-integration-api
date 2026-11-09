@@ -47,10 +47,9 @@ public class AttachmentStorageService {
         }
     }
 
-    // S3 has no real folders: a folder is a key prefix
     private String getObjectKey(String attachmentId) {
-        String folder = StringUtils.strip(awsProperties.attachmentFolder(), "/");
-        return StringUtils.isBlank(folder) ? attachmentId : folder + "/" + attachmentId;
+        String prefix = StringUtils.strip(awsProperties.environmentPrefix(), "/");
+        return StringUtils.isBlank(prefix) ? attachmentId : prefix + "/" + attachmentId;
     }
 
     private HeadObjectResponse getHeadObject(String key) {
