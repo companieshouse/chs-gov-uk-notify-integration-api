@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -31,11 +32,12 @@ public class AttachmentStorageService {
 
     public AttachmentFile getAttachment(String contextId,
                                         String attachmentId) {
+        String key = getObjectKey(attachmentId);
         try(ResponseInputStream<GetObjectResponse> attachmentObject = s3Client.getObject(builder -> builder
                 .bucket(awsProperties.bucketName())
-                .key(attachmentId)
+                .key(key)
                 .build())) {
-            HeadObjectResponse headObject = getHeadObject(attachmentId);
+            HeadObjectResponse headObject = getHeadObject(key);
 
             return new AttachmentFile(
                     firstNonNull(headObject.metadata().get(FILENAME_METADATA_KEY), DEFAULT_ATTACHMENT_FILENAME),
@@ -45,10 +47,15 @@ public class AttachmentStorageService {
         }
     }
 
-    private HeadObjectResponse getHeadObject(String attachmentId) {
+    private String getObjectKey(String attachmentId) {
+        String prefix = StringUtils.strip(awsProperties.environmentPrefix(), "/");
+        return StringUtils.isBlank(prefix) ? attachmentId : prefix + "/" + attachmentId;
+    }
+
+    private HeadObjectResponse getHeadObject(String key) {
         return s3Client.headObject(builder -> builder
                 .bucket(awsProperties.bucketName())
-                .key(attachmentId)
+                .key(key)
                 .build());
     }
 }
