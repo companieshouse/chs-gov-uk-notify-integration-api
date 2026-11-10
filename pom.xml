@@ -24,7 +24,7 @@
         <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
         <software.amazon.awssdk-bom.version>2.48.0</software.amazon.awssdk-bom.version>
         <system-stubs.version>2.1.7</system-stubs.version>
-        <jsoup-version>1.20.1</jsoup-version>
+        <jsoup-version>1.23.2</jsoup-version>
         <flying-saucer-version>12.0.0</flying-saucer-version>
         <openpdf-version>2.0.3</openpdf-version>
         <batik-transcoder-version>1.18</batik-transcoder-version>
