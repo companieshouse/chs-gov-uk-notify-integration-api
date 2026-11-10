@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -29,6 +27,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.validation.beanvalidation.MethodValidationInterceptor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -60,7 +60,7 @@ class GovUKNotifyServiceTest {
     private NotificationClient mockClient;
 
     @Spy
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private JsonMapper objectMapper = JsonMapper.builder().build();
 
     @Mock
     private SendEmailResponse mockEmailResponse;
@@ -72,7 +72,7 @@ class GovUKNotifyServiceTest {
     private InputStream mockPdf;
 
     @Mock
-    private JsonProcessingException mockJsonProcessingException;
+    private JacksonException mockJacksonException;
 
     @Captor
     private ArgumentCaptor<Map<String, Object>> personalisationCaptor;
@@ -272,11 +272,11 @@ class GovUKNotifyServiceTest {
         @Test
         @DisplayName("Error encountered building letter response for error is handled gracefully")
         void errorEncounteredBuildingLetterResponseForErrorIsHandledGracefully()
-                throws NotificationClientException, JsonProcessingException {
+                throws NotificationClientException, JacksonException {
             when(mockClient.sendPrecompiledLetterWithInputStream(anyString(),
                     any(InputStream.class)))
                     .thenThrow(new NotificationClientException("Test exception"));
-            when(objectMapper.writeValueAsString(anyMap())).thenThrow(mockJsonProcessingException);
+            when(objectMapper.writeValueAsString(anyMap())).thenThrow(mockJacksonException);
 
             GovUkNotifyService.LetterResp result =
                     govUkNotifyService.sendLetter(Postage.SECOND_CLASS, VALID_RECIPIENT, mockPdf);
