@@ -25,7 +25,8 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.Templa
 class AuthcodeTemplateTest {
 
     private static final Map<String, String> PERSONALISATION = Map.of(
-            "recipient_name", "EXAMPLE & SONS LIMITED",
+            "recipient_name", "Ms Example Director",
+            "company_name", "EXAMPLE & SONS LIMITED",
             "company_number", "01234567",
             "authcode", "AB12CD");
 
@@ -39,7 +40,7 @@ class AuthcodeTemplateTest {
         personaliser = new TemplatePersonaliser(config.getTemplateEngine(resolver),
                 new TemplateLookup(), resolver, new TemplateContextValidator(), new PathsPublisher());
         address = new AddressDao();
-        address.setAddressLine1("EXAMPLE & SONS LIMITED");
+        address.setAddressLine1("Ms Example Director");
         address.setAddressLine2("100 Example Street");
         address.setAddressLine3("London");
         address.setAddressLine7("SW1P 1JP");
@@ -56,9 +57,21 @@ class AuthcodeTemplateTest {
         assertThat(text, containsString("Authentication code: AB12CD"));
         assertThat(text, containsString("Companies House online filing services"));
         assertThat(letter.select("#address-table").text(),
-                is("EXAMPLE & SONS LIMITED 100 Example Street London SW1P 1JP"));
+                is("Ms Example Director 100 Example Street London SW1P 1JP"));
+        assertThat(text, containsString("Ms Example Director"));
         assertThat(letter.select("#letter-date").text(), is(LocalDate.now().format(DATE_FORMATTER)));
         assertThat(html, containsString("EXAMPLE &amp; SONS LIMITED"));
+    }
+
+    @Test
+    void rejectsPayloadWithoutCompanyName() {
+        var personalisation = new HashMap<>(PERSONALISATION);
+        personalisation.remove("company_name");
+
+        var exception = assertThrows(LetterValidationException.class,
+                () -> personalise(personalisation));
+
+        assertThat(exception.getMessage(), containsString("[company_name] missing"));
     }
 
     @Test
