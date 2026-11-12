@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.AUTHCODE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IDV_START_DATE;
@@ -14,6 +15,8 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.RECIPIENT_NAME;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +24,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.context.Context;
@@ -46,6 +51,34 @@ class TemplateContextValidatorTest {
 
     @InjectMocks
     private TemplateContextValidator validator;
+
+    @Test
+    void acceptsAuthcodeLetterContext() {
+        validator.validateContextForTemplate(authcodeContext(), LetterTemplateKey.AUTHCODE_TEMPLATE);
+        assertThat(validator.requiresTodaysDate(LetterTemplateKey.AUTHCODE_TEMPLATE), is(true));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"recipient_name", "company_number", "authcode"})
+    void rejectsAuthcodeLetterMissingRequiredPersonalisation(String variable) {
+        var context = authcodeContext();
+        context.removeVariable(variable);
+
+        var exception = assertThrows(LetterValidationException.class,
+                () -> validator.validateContextForTemplate(context, LetterTemplateKey.AUTHCODE_TEMPLATE));
+
+        assertThat(exception.getMessage(), is("Context variable(s) [" + variable + "] missing for "
+                + LetterTemplateKey.AUTHCODE_TEMPLATE + "."));
+    }
+
+    private Context authcodeContext() {
+        var context = new Context();
+        for (var variable : Set.of(ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                RECIPIENT_NAME, COMPANY_NUMBER, AUTHCODE, TODAYS_DATE)) {
+            context.setVariable(variable, TOKEN_CONTEXT_VARIABLE_VALUE);
+        }
+        return context;
+    }
 
     @Test
     @DisplayName("Does not raise an error where all required context variables are present")
