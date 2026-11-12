@@ -14,7 +14,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.RECIPIENT_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 
@@ -37,7 +36,7 @@ public class TemplateContextValidator {
         VALID_CONTEXTS = new HashMap<>();
         VALID_CONTEXTS.put(LetterTemplateKey.AUTHCODE_TEMPLATE, Set.of(
                 ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
-                RECIPIENT_NAME,
+                COMPANY_NAME,
                 COMPANY_NUMBER,
                 AUTHCODE,
                 TODAYS_DATE
