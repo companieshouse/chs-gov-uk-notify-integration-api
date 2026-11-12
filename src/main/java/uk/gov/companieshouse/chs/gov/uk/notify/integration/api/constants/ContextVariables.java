@@ -24,6 +24,8 @@ public class ContextVariables {
     public static final String ADDRESS_LINE_7 = "address_line_7";
 
     // Other letter template fields
+    public static final String AUTHCODE = "authcode";
+    public static final String RECIPIENT_NAME = "recipient_name";
     public static final String TODAYS_DATE = "todays_date";
     public static final String PSC_APPOINTMENT_DATE = "psc_appointment_date";
     public static final String IDV_START_DATE = "idv_start_date";

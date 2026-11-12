@@ -4,6 +4,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_1;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_2;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.ADDRESS_LINE_3;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.AUTHCODE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.COMPANY_NUMBER;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.EXTENSION_REQUEST_DATE;
@@ -13,6 +14,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_APPOINTMENT_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.PSC_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.REFERENCE;
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.RECIPIENT_NAME;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TODAYS_DATE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.VERIFICATION_DUE_DATE;
 
@@ -33,6 +35,13 @@ public class TemplateContextValidator {
     
     static {
         VALID_CONTEXTS = new HashMap<>();
+        VALID_CONTEXTS.put(LetterTemplateKey.AUTHCODE_TEMPLATE, Set.of(
+                ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,
+                RECIPIENT_NAME,
+                COMPANY_NUMBER,
+                AUTHCODE,
+                TODAYS_DATE
+        ));
         for (LetterTemplateKey key : LetterTemplateKey.CSIDVDEFLET_TEMPLATES) {
             VALID_CONTEXTS.put(key, Set.of(
                     ADDRESS_LINE_1, ADDRESS_LINE_2, ADDRESS_LINE_3,

@@ -11,6 +11,9 @@ public record LetterTemplateKey(String appId, String letterId, String templateId
 
     public static final String CHIPS_APPLICATION_ID = "chips";
 
+    public static final LetterTemplateKey AUTHCODE_TEMPLATE =
+            new LetterTemplateKey("company-authcode-api", "authcode", "v1.0");
+
     public static Set<LetterTemplateKey> CSIDVDEFLET_TEMPLATES = Set.of(
             new LetterTemplateKey(CHIPS_APPLICATION_ID, null, "CSIDVDEFLET_v1"),
             new LetterTemplateKey(CHIPS_APPLICATION_ID, null, "CSIDVDEFLET_v1.1"),
