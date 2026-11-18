@@ -4,6 +4,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNo
 
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +39,7 @@ public class MockNotificationClient extends NotificationClient {
 
     private final Map<String, List<Long>> minuteRequests = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> dailyRateLimits = new ConcurrentHashMap<>();
-    private LocalDate lastDayReset = LocalDate.now();
+    private LocalDate lastDayReset = LocalDate.now(ZoneId.systemDefault());
     private Supplier<Double> randomSupplier = Math::random;
 
     @Value("${notify.mock.minute-limit:3000}")
@@ -54,12 +55,12 @@ public class MockNotificationClient extends NotificationClient {
     private double failureRate;
 
     private Supplier<Long> currentTimeSupplier = System::currentTimeMillis;
-    private Supplier<LocalDate> currentDateSupplier = LocalDate::now;
+    private Supplier<LocalDate> currentDateSupplier = () -> LocalDate.now(ZoneId.systemDefault());
 
-    private static class NotificationClientExceptionMock extends NotificationClientException {
+    static class NotificationClientExceptionMock extends NotificationClientException {
         private final int httpResult;
 
-        public NotificationClientExceptionMock(String message, int httpResult) {
+        NotificationClientExceptionMock(String message, int httpResult) {
             super(message);
             this.httpResult = httpResult;
         }
@@ -257,4 +258,4 @@ public class MockNotificationClient extends NotificationClient {
     public void setRandomSupplier(Supplier<Double> randomSupplier) {
         this.randomSupplier = randomSupplier;
     }
-} 
+}

@@ -39,10 +39,9 @@ public class EmailRecipientDetailsDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof EmailRecipientDetailsDao other)) {
             return false;
         }
-        EmailRecipientDetailsDao other = (EmailRecipientDetailsDao) obj;
         return Objects.equals(name, other.name)
                 && Objects.equals(emailAddress, other.emailAddress);
     }

@@ -132,7 +132,7 @@ class NotificationEmailRequestRepositoryTest extends AbstractMongoDBTest {
     void shouldUtiliseSpringDataCustomConvertersForPersonalisationMapFromString(@Autowired MongoTemplate mongoTemplate) {
         // Given
         String appId = "chips";
-        String reference = RandomStringUtils.randomNumeric(10);
+        String reference = RandomStringUtils.secure().nextNumeric(10);
 
         MongoCollection<Document> collection = mongoTemplate.getCollection("email_details");
         Document notificationEmailRequest = documentBuilder()

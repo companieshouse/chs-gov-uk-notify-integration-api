@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.config;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,7 @@ public class MongoConfig {
 
     @Bean( name = "mongodbDatetimeProvider" )
     public DateTimeProvider dateTimeProvider() {
-        return () -> Optional.of( LocalDateTime.now() );
+        return () -> Optional.of( LocalDateTime.now(ZoneId.systemDefault()) );
     }
 
     @Bean

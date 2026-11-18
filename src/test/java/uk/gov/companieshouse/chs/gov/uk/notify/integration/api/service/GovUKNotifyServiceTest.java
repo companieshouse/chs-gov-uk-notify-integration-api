@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
@@ -172,7 +173,7 @@ class GovUKNotifyServiceTest {
                     VALID_TEMPLATE_ID,
                     VALID_REFERENCE,
                     personalisationDetails,
-                    new AttachmentFile("test.pdf", attachmentContent.getBytes())
+                    new AttachmentFile("test.pdf", attachmentContent.getBytes(StandardCharsets.UTF_8))
             ));
 
             // Then
@@ -184,7 +185,7 @@ class GovUKNotifyServiceTest {
                             value -> assertThat(value)
                                     .isInstanceOfSatisfying(JSONObject.class,
                                             json -> {
-                                        assertThat(json.get("file")).isEqualTo(Base64.getEncoder().encodeToString(attachmentContent.getBytes()));
+                                        assertThat(json.get("file")).isEqualTo(Base64.getEncoder().encodeToString(attachmentContent.getBytes(StandardCharsets.UTF_8)));
                                         assertThat(json.get("filename")).isEqualTo("test.pdf");
                                         assertThat(json.get("confirm_email_before_download")).isEqualTo(JSONObject.NULL);
                                         assertThat(json.get("retention_period")).isEqualTo(JSONObject.NULL);
@@ -201,7 +202,7 @@ class GovUKNotifyServiceTest {
                     VALID_TEMPLATE_ID,
                     VALID_REFERENCE,
                     Map.of("name", "Test User"),
-                    new AttachmentFile("test.pdf", largerThan2MBContent.getBytes()));
+                    new AttachmentFile("test.pdf", largerThan2MBContent.getBytes(StandardCharsets.UTF_8)));
 
             // When
             GovUkNotifyService.EmailResp emailResp = govUkNotifyService.sendEmailWithAttachment(govNotificationEmailRequest);

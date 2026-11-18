@@ -95,10 +95,9 @@ public class AddressDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof AddressDao other)) {
             return false;
         }
-        AddressDao other = (AddressDao) obj;
         return Objects.equals(addressLine1, other.addressLine1)
                 && Objects.equals(addressLine2, other.addressLine2)
                 && Objects.equals(addressLine3, other.addressLine3)

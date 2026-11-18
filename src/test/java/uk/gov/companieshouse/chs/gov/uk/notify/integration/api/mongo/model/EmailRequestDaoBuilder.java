@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.mode
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.SenderDetailsBuilder.senderDetailsBuilder;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 /**
  * Builder class for creating instances of EmailRequestDao for testing purposes.
@@ -12,7 +13,7 @@ import java.time.OffsetDateTime;
 public class EmailRequestDaoBuilder {
 
     private SenderDetailsDao senderDetails = senderDetailsBuilder().build();
-    private EmailRecipientDetailsDao recipientDetails = emailRecipientDetailsBuilder().build();
+    private final EmailRecipientDetailsDao recipientDetails = emailRecipientDetailsBuilder().build();
     private EmailDetailsDao emailDetails = emailDetailsBuilder().build();
 
     public static EmailRequestDaoBuilder emailRequestDaoBuilder() {
@@ -24,7 +25,7 @@ public class EmailRequestDaoBuilder {
         emailRequest.setSenderDetails(senderDetails);
         emailRequest.setRecipientDetails(recipientDetails);
         emailRequest.setEmailDetails(emailDetails);
-        emailRequest.setCreatedAt(OffsetDateTime.now());
+        emailRequest.setCreatedAt(OffsetDateTime.now(ZoneId.systemDefault()));
         return emailRequest;
     }
 

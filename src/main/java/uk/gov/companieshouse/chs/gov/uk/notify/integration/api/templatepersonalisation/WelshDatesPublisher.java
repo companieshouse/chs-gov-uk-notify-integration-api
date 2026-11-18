@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.google.common.base.Splitter;
 import org.thymeleaf.context.Context;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.LetterValidationException;
 
@@ -71,17 +73,17 @@ public class WelshDatesPublisher {
     }
 
     public static String getWelshDate(final String englishDate) {
-        var dayMonthYear = englishDate.split(" ");
-        if (dayMonthYear.length != 3) {
+        var dayMonthYear = Splitter.on(' ').splitToList(englishDate);
+        if (dayMonthYear.size() != 3) {
             throw new LetterValidationException("Incorrect date format '" + englishDate + "'");
         }
-        var month = dayMonthYear[1];
+        var month = dayMonthYear.get(1);
         var welshMonth = WELSH_MONTHS_DICTIONARY.get(month);
         if (welshMonth == null) {
             throw new LetterValidationException(
                     "Unknown month '" + month + "' in date '" + englishDate + "'");
         }
-        return dayMonthYear[0] + " " + welshMonth + " " + dayMonthYear[2];
+        return dayMonthYear.get(0) + " " + welshMonth + " " + dayMonthYear.get(2);
     }
 
 }

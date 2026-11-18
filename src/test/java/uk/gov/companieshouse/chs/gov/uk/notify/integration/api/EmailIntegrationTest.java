@@ -47,6 +47,7 @@ import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @AutoConfigureTestRestTemplate
 @ActiveProfiles("test")
 @ExtendWith({OutputCaptureExtension.class, MockitoExtension.class})
@@ -146,7 +147,7 @@ class EmailIntegrationTest extends ApplicationIntegrationTest{
                 .hasEntrySatisfying("file_download_link", value -> assertThat(value)
                         .isInstanceOfSatisfying(JSONObject.class,
                                 json -> {
-                                    assertThat(json.get("file")).isEqualTo(Base64.getEncoder().encodeToString(expectedContentBytes.getBytes()));
+                                    assertThat(json.get("file")).isEqualTo(Base64.getEncoder().encodeToString(expectedContentBytes.getBytes(StandardCharsets.UTF_8)));
                                     assertThat(json.get("filename")).isEqualTo(attachmentResource.getFilename());
                                     assertThat(json.get("confirm_email_before_download")).isEqualTo(JSONObject.NULL);
                                     assertThat(json.get("retention_period")).isEqualTo(JSONObject.NULL);
@@ -326,13 +327,15 @@ class EmailIntegrationTest extends ApplicationIntegrationTest{
     private ClassPathResource givenAttachmentIsStoredInS3(AwsProperties awsProperties, S3Client s3Client, EmailRequestDao emailRequestDao) throws IOException {
         ClassPathResource classPathResource = new ClassPathResource("attachments/attachment.txt");
         String attachmentContentType = Files.probeContentType(classPathResource.getFile().toPath());
+        String filename = classPathResource.getFilename();
+        assert filename != null;
         s3Client.putObject(PutObjectRequest.builder()
                         .bucket(awsProperties.bucketName())
                         .key("local/" + emailRequestDao.getSenderDetails().getReference())
                         .contentEncoding(attachmentContentType)
                         .metadata(Map.of(
                                 "content-type", attachmentContentType,
-                                "filename", classPathResource.getFilename()))
+                                "filename", filename))
                         .build(),
                 RequestBody.fromFile(classPathResource.getFile()));
         return classPathResource;

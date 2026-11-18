@@ -72,10 +72,9 @@ public class SenderDetailsDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof SenderDetailsDao other)) {
             return false;
         }
-        SenderDetailsDao other = (SenderDetailsDao) obj;
         return Objects.equals(appId, other.appId)
                 && Objects.equals(emailAddress, other.emailAddress)
                 && Objects.equals(name, other.name) && Objects.equals(reference, other.reference)

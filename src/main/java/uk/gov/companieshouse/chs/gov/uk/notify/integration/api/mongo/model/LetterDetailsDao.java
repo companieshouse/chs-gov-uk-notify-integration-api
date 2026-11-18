@@ -50,10 +50,9 @@ public class LetterDetailsDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof LetterDetailsDao other)) {
             return false;
         }
-        LetterDetailsDao other = (LetterDetailsDao) obj;
         return Objects.equals(letterId, other.letterId)
                 && Objects.equals(personalisationDetails, other.personalisationDetails)
                 && Objects.equals(templateId, other.templateId);

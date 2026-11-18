@@ -37,9 +37,6 @@ class ClasspathResolvingUserAgentTest {
     @InjectMocks
     private ClasspathResolvingUserAgent agentUnderTest;
 
-    @Mock
-    private ITextOutputDevice iTextOutputDevice;
-
     @Test
     @DisplayName("Resolves URI for CSS file outside of application jar")
     void resolveUriForCssOutsideOfJar() {

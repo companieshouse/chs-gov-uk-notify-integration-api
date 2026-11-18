@@ -5,7 +5,8 @@ import java.util.Set;
 /**
  * Key identifying a letter template.
  * @param appId the ID of the client app (aka service) requesting the sending of the letter
- * @param id the template ID (aka name) corresponding to the type of letter to be sent
+ * @param letterId the letter ID (aka name) corresponding to the type of letter to be sent
+ * @param templateId the template ID (aka name) corresponding to the type of letter to be sent
  */
 public record LetterTemplateKey(String appId, String letterId, String templateId) {
 

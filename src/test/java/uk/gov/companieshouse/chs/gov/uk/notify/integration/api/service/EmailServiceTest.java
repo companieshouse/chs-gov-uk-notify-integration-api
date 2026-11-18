@@ -32,6 +32,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.service.Not
 import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unused")
 class EmailServiceTest {
 
     @Mock

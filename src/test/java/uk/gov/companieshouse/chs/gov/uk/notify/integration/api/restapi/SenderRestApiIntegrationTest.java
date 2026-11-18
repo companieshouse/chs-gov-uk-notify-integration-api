@@ -35,6 +35,7 @@ import com.lowagie.text.pdf.internal.PdfXConformanceImp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -203,7 +204,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
                     InputStream inputStream = invocation.getArgument(1);
                     byte[] bytes = new byte[5];
                     if (inputStream.read(bytes) == 5) {
-                        String header = new String(bytes);
+                        String header = new String(bytes, UTF_8);
                         capturedFileSignature.append(header);
                     }
                     return responseReceived;

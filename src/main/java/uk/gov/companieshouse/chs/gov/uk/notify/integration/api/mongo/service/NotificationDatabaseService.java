@@ -54,12 +54,12 @@ public class NotificationDatabaseService {
         return notificationLetterRequestRepository.findByReference(reference);
     }
 
-    @Transactional()
+    @Transactional
     public NotificationEmailResponse storeResponse(final GovUkNotifyService.EmailResp emailResp) {
         return notificationEmailResponseRepository.save(new NotificationEmailResponse(null, null, emailResp.response(), null));
     }
 
-    @Transactional()
+    @Transactional
     public NotificationLetterResponse storeResponse(final GovUkNotifyService.LetterResp letterResp) {
         return notificationLetterResponseRepository.save(new NotificationLetterResponse(null, null, letterResp.response(), null));
     }

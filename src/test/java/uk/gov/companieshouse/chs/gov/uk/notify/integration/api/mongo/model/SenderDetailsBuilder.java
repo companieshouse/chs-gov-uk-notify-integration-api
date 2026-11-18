@@ -5,9 +5,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 public class SenderDetailsBuilder {
 
     private String appId = "chips";
-    private String reference = String.format("use-mock-notify-%s", RandomStringUtils.randomNumeric(10));
-    private String name = "Test User";
-    private String userId = "test-user-id";
+    private String reference = String.format("use-mock-notify-%s", RandomStringUtils.secure().nextNumeric(10));
     private String emailAddress = "test-user@example.com";
 
     public static SenderDetailsBuilder senderDetailsBuilder() {
@@ -18,7 +16,9 @@ public class SenderDetailsBuilder {
         SenderDetailsDao senderDetails = new SenderDetailsDao();
         senderDetails.setAppId(appId);
         senderDetails.setReference(reference);
+        String name = "Test User";
         senderDetails.setName(name);
+        String userId = "test-user-id";
         senderDetails.setUserId(userId);
         senderDetails.setEmailAddress(emailAddress);
         return senderDetails;

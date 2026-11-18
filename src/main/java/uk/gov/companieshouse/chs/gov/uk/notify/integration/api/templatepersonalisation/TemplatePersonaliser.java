@@ -18,6 +18,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.TRIGGERING_EVENT_DATE;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class TemplatePersonaliser {
             .concat(LetterTemplateKey.CSIDVDEFLET_TEMPLATES.stream(),
                     LetterTemplateKey.IDVPSCDEFAULT_TEMPLATES.stream())
             .collect(Collectors.toSet());
-    
+
     private final ITemplateEngine templateEngine;
     private final TemplateLookup templateLookup;
     private final AbstractConfigurableTemplateResolver templateResolver;
@@ -150,7 +151,7 @@ public class TemplatePersonaliser {
                 date = personalisationDetails.get(ORIGINAL_SENDING_DATE);
             } else {
                 // Else we are sending the letter now. Use today's date.
-                date = LocalDate.now().format(DATE_FORMATTER);
+                date = LocalDate.now(ZoneId.systemDefault()).format(DATE_FORMATTER);
             }
             context.setVariable(TODAYS_DATE, date);
             if(ACTION_DUE_DATE_PLUS_28.contains(templateLookupKey)) {

@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -23,8 +24,8 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
                                                @Autowired AwsProperties awsProperties,
                                                @Autowired S3Client s3Client) throws Exception {
         // Given
-        String attachmentId = RandomStringUtils.randomNumeric(10);
-        byte[] attachmentContent = "Attachment content".getBytes();
+        String attachmentId = RandomStringUtils.secure().nextNumeric(10);
+        byte[] attachmentContent = "Attachment content".getBytes(StandardCharsets.UTF_8);
         s3Client.putObject(builder -> builder
                         .bucket(awsProperties.bucketName())
                         .metadata(Map.of("filename", "test.txt" ))
@@ -46,11 +47,11 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
                                                            @Autowired AwsProperties awsProperties,
                                                            @Autowired S3Client s3Client) {
         // Given
-        String attachmentId = RandomStringUtils.randomNumeric(10);
+        String attachmentId = RandomStringUtils.secure().nextNumeric(10);
         s3Client.putObject(builder -> builder
                         .bucket(awsProperties.bucketName())
                         .key("local/" + attachmentId).build(),
-                RequestBody.fromBytes(RandomStringUtils.randomAlphanumeric(10).getBytes()));
+                RequestBody.fromBytes(RandomStringUtils.secure().nextAlphanumeric(10).getBytes(StandardCharsets.UTF_8)));
 
         // When
         AttachmentFile attachmentFile = attachmentStorageService.getAttachment(
@@ -64,7 +65,7 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
     @Test
     void shouldHandleEmptyAttachment(@Autowired AttachmentStorageService attachmentStorageService) {
         // Given
-        String attachmentId = RandomStringUtils.randomNumeric(10);
+        String attachmentId = RandomStringUtils.secure().nextNumeric(10);
 
         // When & Then
         assertThatThrownBy(() -> attachmentStorageService.getAttachment(

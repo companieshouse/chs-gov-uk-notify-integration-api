@@ -62,10 +62,9 @@ public class LetterRequestDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof LetterRequestDao other)) {
             return false;
         }
-        LetterRequestDao other = (LetterRequestDao) obj;
         return Objects.equals(createdAt, other.createdAt)
                 && Objects.equals(letterDetails, other.letterDetails)
                 && Objects.equals(recipientDetails, other.recipientDetails)
