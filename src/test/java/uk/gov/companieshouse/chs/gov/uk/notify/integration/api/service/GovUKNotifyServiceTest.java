@@ -61,7 +61,7 @@ class GovUKNotifyServiceTest {
     private NotificationClient mockClient;
 
     @Spy
-    private JsonMapper objectMapper = JsonMapper.builder().build();
+    private final JsonMapper objectMapper = JsonMapper.builder().build();
 
     @Mock
     private SendEmailResponse mockEmailResponse;

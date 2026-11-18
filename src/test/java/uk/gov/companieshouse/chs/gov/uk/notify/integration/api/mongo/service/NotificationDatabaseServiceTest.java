@@ -120,7 +120,7 @@ class NotificationDatabaseServiceTest extends AbstractMongoDBTest {
 
         assertNotNull(retrievedLetters);
         assertFalse(retrievedLetters.isEmpty());
-        LetterRequestDao mongoLetter = retrievedLetters.get(0).getRequest();
+        LetterRequestDao mongoLetter = retrievedLetters.getFirst().getRequest();
         assertEquals(reference, mongoLetter.getSenderDetails().getReference());
     }
 

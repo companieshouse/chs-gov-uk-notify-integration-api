@@ -64,7 +64,7 @@ public class TemplatePersonaliser {
      * @param reference the letter reference
      * @param personalisationDetails the {@link Map} providing the data to be substituted into the
      *                               letter template substitution variables
-     * @param address the {@link Address} providing the data to be substituted into the
+     * @param address the {@link AddressDao} providing the data to be substituted into the
      *                letter address block template substitution variables
      * @return the HTML representation of the letter
      */
