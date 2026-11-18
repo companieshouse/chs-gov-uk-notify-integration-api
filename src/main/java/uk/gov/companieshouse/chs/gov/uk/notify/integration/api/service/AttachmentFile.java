@@ -1,9 +1,22 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
-public record AttachmentFile(byte[] content, String filename) {
+@SuppressWarnings("ClassCanBeRecord")
+public class AttachmentFile {
+
+    private final byte[] content;
+    private final String filename;
 
     public AttachmentFile(String filename,
                           byte[] content) {
-        this(content, filename);
+        this.filename = filename;
+        this.content = content;
+    }
+
+    public byte[] getContent() {
+        return content;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }
