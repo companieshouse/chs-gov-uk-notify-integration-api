@@ -1,5 +1,53 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.restapi;
 
+import com.google.gson.JsonParser;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.PdfXConformanceException;
+import com.lowagie.text.pdf.internal.PdfXConformanceImp;
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
+import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
+import uk.gov.service.notify.LetterResponse;
+import uk.gov.service.notify.NotificationClient;
+import uk.gov.service.notify.NotificationClientException;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Objects;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.resourceToString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,54 +76,6 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.ERROR_MESSAGE_KEY;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService.NIL_UUID;
 
-import com.google.gson.JsonParser;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.PdfXConformanceException;
-import com.lowagie.text.pdf.internal.PdfXConformanceImp;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.system.CapturedOutput;
-import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterDispatcher;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.letterdispatcher.LetterReference;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.AddressDao;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.NotificationLetterRequest;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterRequestRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.repository.NotificationLetterResponseRepository;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.HtmlPdfGenerator;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.pdfgenerator.SvgReplacedElementFactory;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.GovUkNotifyService;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service.Postage;
-import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
-import uk.gov.service.notify.LetterResponse;
-import uk.gov.service.notify.NotificationClient;
-import uk.gov.service.notify.NotificationClientException;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith({SystemStubsExtension.class, OutputCaptureExtension.class, MockitoExtension.class})
@@ -90,8 +90,8 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
             INVALID_REQUEST_ID_ERROR_MESSAGE_PREFIX + "\"" + REQUEST_ID_PATTERN + "\"";
     private static final String EXPECTED_NULL_FIELDS_ERRORS =
             "Error(s) in chs-gov-uk-notify-integration-api: "
-            + "[letterRequest appId must not be null, "
-            + "letterRequest reference must not be null]";
+                    + "[letterRequest appId must not be null, "
+                    + "letterRequest reference must not be null]";
     private static final String NON_INTERNAL_USER_ROLES = "role1 role2";
     private static final String X_REQUEST_ID = "X-Request-ID";
     private static final String ERIC_IDENTITY = "ERIC-Identity";
@@ -109,7 +109,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
                     + "byte offset: #UNKNOWN]";
     private static final String UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE =
             UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_1 + "\n"
-            + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
+                    + UNPARSABLE_PERSONALISATION_DETAILS_ERROR_MESSAGE_LINE_2;
     private static final String UNKNOWN_APPLICATION_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
                     + "LetterTemplateKey[appId=unknown_application, letterId=IDVPSCDIRNEW, templateId=v1.0]";
@@ -120,10 +120,10 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
             "Error in chs-gov-uk-notify-integration-api: Unable to find a valid context for "
                     + "LetterTemplateKey[appId=chips, letterId=new_letter, templateId=v1.0]";
     private static final String TEMPLATE_NOT_FOUND_ERROR_MESSAGE =
-    "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
-            + "(template: \"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\") "
-            + "[cause: java.io.FileNotFoundException: ClassLoader resource "
-            + "\"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\" could not be resolved]";
+            "Error in chs-gov-uk-notify-integration-api: An error happened during template parsing "
+                    + "(template: \"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\") "
+                    + "[cause: java.io.FileNotFoundException: ClassLoader resource "
+                    + "\"unknown_directory/chips/IDVPSCDIRNEW/v1.0/template.html\" could not be resolved]";
     private static final String REFERENCE_IN_PERSONALISATIONS_ERROR_MESSAGE =
             "Error in chs-gov-uk-notify-integration-api: The key field reference must not "
                     + "appear in the personalisation details.";
@@ -415,7 +415,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
                 status().isInternalServerError());
 
         assertThat(log.getAll().contains(
-                "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
+                        "Failed to load precompiled letter PDF. Caught IOException: Thrown by test."),
                 is(true));
 
         verifyNoLetterResponsesAreStored();
@@ -487,8 +487,8 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
         try (final var pdfxConformanceChecker = mockStatic(PdfXConformanceImp.class)) {
 
             pdfxConformanceChecker.when(
-                    () -> PdfXConformanceImp.checkPDFXConformance(
-                            any(PdfWriter.class), anyInt(), any()))
+                            () -> PdfXConformanceImp.checkPDFXConformance(
+                                    any(PdfWriter.class), anyInt(), any()))
                     .thenThrow(new PdfXConformanceException("Thrown by test"));
 
             saveRequestInDatabase();
@@ -597,7 +597,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
                 .andExpect(content().string(TEMPLATE_NOT_FOUND_ERROR_MESSAGE));
 
         assertThat(log.getAll().contains(
-                TEMPLATE_NOT_FOUND_ERROR_MESSAGE.replace("\"", "\\\"")),
+                        TEMPLATE_NOT_FOUND_ERROR_MESSAGE.replace("\"", "\\\"")),
                 is(true));
 
         verifyNoLetterResponsesAreStored();
@@ -705,8 +705,8 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
     }
 
     @ParameterizedTest(name = "Send letter with economy postage for {0} {1}")
-    @CsvSource({ "CSIDVDEFLET,v1.0", "CSIDVDEFLET,v1.1", "IDVPSCDEFAULT,v1.0",
-            "IDVPSCDEFAULT,v1.1" })
+    @CsvSource({"CSIDVDEFLET,v1.0", "CSIDVDEFLET,v1.1", "IDVPSCDEFAULT,v1.0",
+            "IDVPSCDEFAULT,v1.1"})
     void sendLetterWithEconomyPostage(String letterType, String templateId)
             throws Exception {
         configureRequest(letterType, templateId, letterType);
@@ -742,7 +742,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
             "IDVPSCEXT2,v1.0,IDVPSCEXT",
             "null,transitional_non_director_psc_information_letter_v1,IDVPSCDIRTRAN",
             "IDVPSCDIRTRAN,v1.0,IDVPSCDIRTRAN"}, nullValues = {
-                    "null" })
+            "null"})
     void sendLetterWithSecondClassPostage(String letterType, String templateId, String personalisationDetailsFile)
             throws Exception {
         configureRequest(letterType, templateId, personalisationDetailsFile);
@@ -755,7 +755,7 @@ class SenderRestApiIntegrationTest extends ApplicationIntegrationTest {
         if (StringUtils.isBlank(letterType)) {
             // Old letters do not have letter IDs and use just the reference
             govNotifyReference = reference;
-        } else  {
+        } else {
             govNotifyReference = String.join("-", appId, letterType, reference);
         }
         var responseReceived = new LetterResponse(
