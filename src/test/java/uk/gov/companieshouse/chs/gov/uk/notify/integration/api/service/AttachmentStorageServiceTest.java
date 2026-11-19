@@ -38,8 +38,8 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
                 attachmentId);
 
         // Then
-        assertThat(attachmentFile.content()).isEqualTo(attachmentContent);
-        assertThat(attachmentFile.filename()).isEqualTo("test.txt");
+        assertThat(attachmentFile.getContent()).isEqualTo(attachmentContent);
+        assertThat(attachmentFile.getFilename()).isEqualTo("test.txt");
     }
 
     @Test
@@ -59,7 +59,7 @@ class AttachmentStorageServiceTest extends ApplicationIntegrationTest {
                 attachmentId);
 
         // Then
-        assertThat(attachmentFile.filename()).isEqualTo("attachment");
+        assertThat(attachmentFile.getFilename()).isEqualTo("attachment");
     }
 
     @Test

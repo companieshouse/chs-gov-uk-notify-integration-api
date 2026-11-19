@@ -60,8 +60,8 @@ public class GovUkNotifyService {
         Map<String, Object> personalisationWithAttachment = new HashMap<>(govNotificationEmailRequest.personalisationDetails());
         try {
             personalisationWithAttachment.put(FILE_DOWNLOAD_LINK_KEY, NotificationClient.prepareUpload(
-                    govNotificationEmailRequest.attachment().content(),
-                    govNotificationEmailRequest.attachment().filename()));
+                    govNotificationEmailRequest.attachment().getContent(),
+                    govNotificationEmailRequest.attachment().getFilename()));
             return sendEmail(
                     govNotificationEmailRequest.emailAddress(),
                     govNotificationEmailRequest.templateId(),
