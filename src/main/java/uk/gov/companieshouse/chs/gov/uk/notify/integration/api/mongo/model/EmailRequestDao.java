@@ -62,10 +62,9 @@ public class EmailRequestDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof EmailRequestDao other)) {
             return false;
         }
-        EmailRequestDao other = (EmailRequestDao) obj;
         return Objects.equals(createdAt, other.createdAt)
                 && Objects.equals(emailDetails, other.emailDetails)
                 && Objects.equals(recipientDetails, other.recipientDetails)

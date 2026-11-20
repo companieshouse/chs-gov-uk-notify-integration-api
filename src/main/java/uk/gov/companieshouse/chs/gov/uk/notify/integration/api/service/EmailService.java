@@ -4,8 +4,8 @@ import static java.lang.String.format;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.utils.LoggingUtils.createLogMap;
 
 import com.google.common.base.Preconditions;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.chs.notification.integration.model.EmailRequest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.exception.AlreadyProcessedException;

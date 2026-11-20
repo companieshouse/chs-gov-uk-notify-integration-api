@@ -2,7 +2,9 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,12 +25,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MockNotificationClientRateLimitTest {
 
-    private final MockNotificationClient mockClient = new MockNotificationClient(RandomStringUtils.randomNumeric(10));
+    private final MockNotificationClient mockClient = new MockNotificationClient(RandomStringUtils.secure().nextNumeric(10));
 
     private static final String MOCK_REFERENCE = MockNotificationClient.MOCK_REFERENCE_PREFIX + "-test";
     private static final String TEST_TEMPLATE_ID = UUID.randomUUID().toString();
     private static final String TEST_EMAIL = "test@example.com";
-    private static final InputStream TEST_PDF = new ByteArrayInputStream("test content".getBytes());
+    private static final InputStream TEST_PDF = new ByteArrayInputStream("test content".getBytes(StandardCharsets.UTF_8));
 
     @BeforeEach
     void setup() {
@@ -85,7 +87,7 @@ class MockNotificationClientRateLimitTest {
 
     @Test
     void When_DailyLimitReached_Expect_RateLimitExceptionAndResetNextDay() throws NotificationClientException {
-        final LocalDate baseDate = LocalDate.now();
+        final LocalDate baseDate = LocalDate.now(ZoneId.systemDefault());
         mockClient.setCurrentDateSupplier(() -> baseDate);
 
         for (int i = 0; i < mockClient.getDailyLimit(); i++) {
@@ -392,7 +394,7 @@ class MockNotificationClientRateLimitTest {
 
     @Test
     void When_DateChanges_Expect_DailyCounterReset() throws NotificationClientException {
-        final LocalDate baseDate = LocalDate.now();
+        final LocalDate baseDate = LocalDate.now(ZoneId.systemDefault());
         mockClient.setCurrentDateSupplier(() -> baseDate);
 
         for (int i = 0; i < 3; i++) {

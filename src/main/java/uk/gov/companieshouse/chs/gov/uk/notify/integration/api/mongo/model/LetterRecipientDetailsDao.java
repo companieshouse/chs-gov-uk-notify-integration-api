@@ -39,10 +39,9 @@ public class LetterRecipientDetailsDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof LetterRecipientDetailsDao other)) {
             return false;
         }
-        LetterRecipientDetailsDao other = (LetterRecipientDetailsDao) obj;
         return Objects.equals(name, other.name)
                 && Objects.equals(physicalAddress, other.physicalAddress);
     }

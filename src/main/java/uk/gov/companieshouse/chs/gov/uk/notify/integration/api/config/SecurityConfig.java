@@ -26,7 +26,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     @Bean
     @SuppressWarnings("java:S4502") // This is an internal API not at risk of CSRF attacks.
-    public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(final HttpSecurity http) {
         http.cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)

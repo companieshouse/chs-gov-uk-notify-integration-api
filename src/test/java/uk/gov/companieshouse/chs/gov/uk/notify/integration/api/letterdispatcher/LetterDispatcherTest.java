@@ -28,18 +28,24 @@ import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
+@SuppressWarnings("unused")
 class LetterDispatcherTest {
 
     @Mock
     private GovUkNotifyService govUkNotifyService;
+
     @Mock
     private NotificationDatabaseService notificationDatabaseService;
+
     @Mock
     private TemplatePersonaliser templatePersonaliser;
+
     @Mock
     private HtmlPdfGenerator pdfGenerator;
+
     @Mock
     private PersonalisationDetailsParser parser;
+
     @Mock
     private Logger logger;
 

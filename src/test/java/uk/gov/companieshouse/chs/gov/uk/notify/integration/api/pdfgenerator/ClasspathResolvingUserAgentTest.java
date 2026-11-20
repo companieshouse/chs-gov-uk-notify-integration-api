@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.xhtmlrenderer.pdf.ITextOutputDevice;
 
 import java.io.File;
 
@@ -36,9 +34,6 @@ class ClasspathResolvingUserAgentTest {
 
     @InjectMocks
     private ClasspathResolvingUserAgent agentUnderTest;
-
-    @Mock
-    private ITextOutputDevice iTextOutputDevice;
 
     @Test
     @DisplayName("Resolves URI for CSS file outside of application jar")

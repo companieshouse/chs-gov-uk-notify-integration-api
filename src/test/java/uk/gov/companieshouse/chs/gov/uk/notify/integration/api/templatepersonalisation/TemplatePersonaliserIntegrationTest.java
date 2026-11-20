@@ -25,6 +25,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatepersonalisation.WelshDatesPublisher.getWelshDate;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Map;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -41,6 +42,7 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.TemplateLookup;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.validation.TemplateContextValidator;
 
+@SuppressWarnings("TimeInStaticInitializer")
 class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
 
     private static final String LETTER_TITLE =
@@ -59,7 +61,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
         ADDRESS.setAddressLine5("Line 5");
         ADDRESS.setAddressLine6("Line 6");
         ADDRESS.setAddressLine7("Line 7");
-        
+
         SHORTER_ADDRESS.setAddressLine1("Company Name");
         SHORTER_ADDRESS.setAddressLine2("Line 2");
         SHORTER_ADDRESS.setAddressLine3("Line 3");
@@ -76,8 +78,9 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
     private static final String WELSH_EXTENSION_REQUEST_DATE = "13 Gorffennaf 2025";
     private static final String EXPECTED_TODAYS_DATE;
     private static final String EXPECTED_TODAYS_DATE_IN_WELSH;
+
     static {
-        EXPECTED_TODAYS_DATE = LocalDate.now().format(DATE_FORMATTER);
+        EXPECTED_TODAYS_DATE = LocalDate.now(ZoneId.systemDefault()).format(DATE_FORMATTER);
         EXPECTED_TODAYS_DATE_IN_WELSH = getWelshDate(EXPECTED_TODAYS_DATE);
     }
 
@@ -92,13 +95,8 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
 
     private static final String EXPECTED_ENGLISH_P1_FOOTER_NAME = "page_1_footer_artwork.svg";
     private static final String EXPECTED_WELSH_P1_FOOTER_NAME = "welsh_page_1_footer_artwork.svg";
-    private static final String EXPECTED_ENGLISH_P2_FOOTER_NAME =
-            "pages_2_onwards_footer_artwork.svg";
-    private static final String EXPECTED_WELSH_P2_FOOTER_NAME =
-            "welsh_pages_2_onwards_footer_artwork.svg";
-
-    private static final String EXPECTED_VALIDATION_ERROR_MESSAGE =
-            "Context variable(s) [extension_request_date] missing for %s.";
+    private static final String EXPECTED_ENGLISH_P2_FOOTER_NAME = "pages_2_onwards_footer_artwork.svg";
+    private static final String EXPECTED_WELSH_P2_FOOTER_NAME = "welsh_pages_2_onwards_footer_artwork.svg";
 
     private static final LetterTemplateKey LETTER_TEMPLATE_KEY = new LetterTemplateKey("chips",
             "IDVPSCDEFAULT", "v1.0");
@@ -336,7 +334,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
                             personalisationDetails,
                             ADDRESS));
 
-            String expectedErrorMessage = String.format(EXPECTED_VALIDATION_ERROR_MESSAGE,
+            String expectedErrorMessage = String.format("Context variable(s) [extension_request_date] missing for %s.",
                     templateKey);
             assertThat(validationError.getMessage(), is(expectedErrorMessage));
         }
@@ -403,7 +401,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
                             COMPANY_NUMBER, TOKEN_VALUE,
                             COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-    
+
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
             assertThat(
@@ -443,7 +441,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
                             COMPANY_NUMBER, TOKEN_VALUE,
                             COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-    
+
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
             assertThat(
@@ -550,7 +548,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
                             COMPANY_NUMBER, TOKEN_VALUE,
                             COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-    
+
             // Then
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
@@ -584,7 +582,7 @@ class TemplatePersonaliserIntegrationTest extends ApplicationIntegrationTest {
                             COMPANY_NUMBER, TOKEN_VALUE,
                             COMPANY_NAME, TOKEN_VALUE),
                     ADDRESS));
-    
+
             verifyLetterIsEnglishOnly(letter);
             verifyLetterDateIsTodaysDate(letter);
             assertThat(

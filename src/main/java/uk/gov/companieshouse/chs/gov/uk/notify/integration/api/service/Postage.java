@@ -4,11 +4,11 @@ public enum Postage {
 
     FIRST_CLASS("first"), SECOND_CLASS("second"), ECONOMY("economy");
 
-    private Postage(String type) {
+    Postage(String type) {
         this.type = type;
     }
 
-    private String type;
+    private final String type;
 
     @Override
     public String toString() {

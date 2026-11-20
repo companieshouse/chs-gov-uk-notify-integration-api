@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
+@SuppressWarnings("ClassCanBeRecord")
 public class AttachmentFile {
 
     private final byte[] content;

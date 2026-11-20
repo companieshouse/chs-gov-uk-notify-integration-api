@@ -45,13 +45,11 @@ import uk.gov.service.notify.LetterResponse;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit-test")
+@SuppressWarnings("unused")
 class SenderRestApiTests {
     private static final String VALID_REFERENCE = "valid-reference";
     private static final String XHEADER = "1";
     private static final String APP_ID = "chips";
-
-    @Mock
-    private GovUkNotifyService govUKNotifyEmailFacade;
 
     @Mock
     private NotificationDatabaseService notificationDatabaseService;
@@ -125,7 +123,7 @@ class SenderRestApiTests {
         assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.SENT);
     }
 
-    @CsvSource(value = { 
+    @CsvSource(value = {
             "null,direction_letter_v1",
             "null,new_psc_direction_letter_v1",
             "null,transitional_non_director_psc_information_letter_v1",

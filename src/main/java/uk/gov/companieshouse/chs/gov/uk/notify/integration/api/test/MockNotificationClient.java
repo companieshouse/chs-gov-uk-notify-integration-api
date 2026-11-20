@@ -1,16 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.test;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -22,6 +12,20 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Component
 @Primary
@@ -38,7 +42,7 @@ public class MockNotificationClient extends NotificationClient {
 
     private final Map<String, List<Long>> minuteRequests = new ConcurrentHashMap<>();
     private final Map<String, AtomicInteger> dailyRateLimits = new ConcurrentHashMap<>();
-    private LocalDate lastDayReset = LocalDate.now();
+    private LocalDate lastDayReset = LocalDate.now(ZoneId.systemDefault());
     private Supplier<Double> randomSupplier = Math::random;
 
     @Value("${notify.mock.minute-limit:3000}")
@@ -54,12 +58,12 @@ public class MockNotificationClient extends NotificationClient {
     private double failureRate;
 
     private Supplier<Long> currentTimeSupplier = System::currentTimeMillis;
-    private Supplier<LocalDate> currentDateSupplier = LocalDate::now;
+    private Supplier<LocalDate> currentDateSupplier = () -> LocalDate.now(ZoneId.systemDefault());
 
-    private static class NotificationClientExceptionMock extends NotificationClientException {
+    static class NotificationClientExceptionMock extends NotificationClientException {
         private final int httpResult;
 
-        public NotificationClientExceptionMock(String message, int httpResult) {
+        NotificationClientExceptionMock(String message, int httpResult) {
             super(message);
             this.httpResult = httpResult;
         }
@@ -116,6 +120,38 @@ public class MockNotificationClient extends NotificationClient {
 
         if (shouldEmulateChanceFailure()) {
             throw new NotificationClientExceptionMock(SIMULATED_SERVER_ERROR, 500);
+        }
+
+        String jsonResponse = createMockLetterResponse(reference);
+        return new LetterResponse(jsonResponse);
+    }
+
+    @Override
+    public LetterResponse sendPrecompiledLetterWithInputStream(String reference,
+                                                               InputStream precompiledPdf,
+                                                               String postage)
+            throws NotificationClientException {
+        if (useRealGovNotify(reference)) {
+            return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
+        }
+
+        if (isRateLimitExceeded()) {
+            throw new NotificationClientExceptionMock(RATE_LIMIT_EXCEEDED, 429);
+        }
+
+        if (shouldEmulateChanceFailure()) {
+            throw new NotificationClientExceptionMock(SIMULATED_SERVER_ERROR, 500);
+        }
+
+        try {
+            FileUtils.writeByteArrayToFile(
+                    new java.io.File("/tmp/mock_letter_" + reference + ".pdf"),
+                    precompiledPdf.readAllBytes());
+            LOGGER.info("Mock letter PDF written to /tmp/mock_letter_" + reference + ".pdf");
+        } catch (IOException e) {
+            String message = "Failed to write mock letter PDF to file";
+            LOGGER.error(message, e);
+            throw new NotificationClientExceptionMock(message, 500);
         }
 
         String jsonResponse = createMockLetterResponse(reference);
@@ -257,4 +293,4 @@ public class MockNotificationClient extends NotificationClient {
     public void setRandomSupplier(Supplier<Double> randomSupplier) {
         this.randomSupplier = randomSupplier;
     }
-} 
+}

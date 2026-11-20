@@ -60,10 +60,9 @@ public class EmailDetailsDao {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if(!(obj instanceof EmailDetailsDao other)) {
             return false;
         }
-        EmailDetailsDao other = (EmailDetailsDao) obj;
         return Objects.equals(attachmentId, other.attachmentId)
                 && Objects.equals(personalisationDetails, other.personalisationDetails)
                 && Objects.equals(templateId, other.templateId);

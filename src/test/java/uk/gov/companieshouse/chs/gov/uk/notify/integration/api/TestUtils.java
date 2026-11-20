@@ -8,6 +8,7 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -80,7 +81,7 @@ public class TestUtils {
         letterRequest.setSenderDetails(senderDetails);
         letterRequest.setRecipientDetails(recipientDetails);
         letterRequest.setLetterDetails(letterDetails);
-        letterRequest.setCreatedAt(OffsetDateTime.of(2025, 4, 8, 4, 49, 12, 0, OffsetDateTime.now().getOffset()));
+        letterRequest.setCreatedAt(OffsetDateTime.of(2025, 4, 8, 4, 49, 12, 0, OffsetDateTime.now(ZoneId.systemDefault()).getOffset()));
         return letterRequest;
     }
 
@@ -105,7 +106,7 @@ public class TestUtils {
         emailRequest.setSenderDetails(senderDetails);
         emailRequest.setRecipientDetails(recipientDetails);
         emailRequest.setEmailDetails(emailDetails);
-        emailRequest.setCreatedAt(OffsetDateTime.now());
+        emailRequest.setCreatedAt(OffsetDateTime.now(ZoneId.systemDefault()));
         return emailRequest;
     }
 

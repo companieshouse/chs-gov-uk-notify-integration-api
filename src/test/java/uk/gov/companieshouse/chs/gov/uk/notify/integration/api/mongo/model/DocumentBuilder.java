@@ -13,7 +13,7 @@ import org.bson.Document;
  */
 public class DocumentBuilder {
 
-    Set<Map.Entry<String, Object>> entries = new HashSet<>();
+    final Set<Map.Entry<String, Object>> entries = new HashSet<>();
 
     public static DocumentBuilder documentBuilder() {
         return new DocumentBuilder();

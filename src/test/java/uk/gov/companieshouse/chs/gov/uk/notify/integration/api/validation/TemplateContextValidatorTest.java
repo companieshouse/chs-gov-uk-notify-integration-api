@@ -32,16 +32,10 @@ import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.templatelookup.Le
 class TemplateContextValidatorTest {
 
     private static final String TOKEN_CONTEXT_VARIABLE_VALUE = "Not an empty string";
+
     private static final String NO_VALID_CONTEXT_FOUND_ERROR_MESSAGE =
             "Unable to find a valid context for LetterTemplateKey"
                     + "[appId=chips, letterId=DUMMY, templateId=v1.0]";
-    private static final String SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
-            "Context variable(s) [company_name, idv_start_date] missing for %s.";
-    private static final String ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE =
-            "Context variable(s) [address_line_1, address_line_2, address_line_3, "
-                    + "company_name, company_number, idv_start_date, idv_verification_due_date, "
-                    + "psc_appointment_date, psc_name, reference] missing for %s.";
-
 
 
     @InjectMocks
@@ -107,7 +101,7 @@ class TemplateContextValidatorTest {
             var exception = assertThrows(LetterValidationException.class,
                     () -> validator.validateContextForTemplate(context, key));
             assertThat(exception.getMessage(),
-                    is(String.format(SOME_VARIABLES_ARE_MISSING_ERROR_MESSAGE, key.toString())));
+                    is(String.format("Context variable(s) [company_name, idv_start_date] missing for %s.", key.toString())));
         }
     }
 
@@ -123,7 +117,10 @@ class TemplateContextValidatorTest {
             var exception = assertThrows(LetterValidationException.class,
                     () -> validator.validateContextForTemplate(context, key));
             assertThat(exception.getMessage(),
-                    is(String.format(ALL_VARIABLES_ARE_MISSING_ERROR_MESSAGE, key.toString())));
+                    is(String.format("""
+                            Context variable(s) [address_line_1, address_line_2, address_line_3, \
+                            company_name, company_number, idv_start_date, idv_verification_due_date, \
+                            psc_appointment_date, psc_name, reference] missing for %s.""", key.toString())));
         }
     }
 

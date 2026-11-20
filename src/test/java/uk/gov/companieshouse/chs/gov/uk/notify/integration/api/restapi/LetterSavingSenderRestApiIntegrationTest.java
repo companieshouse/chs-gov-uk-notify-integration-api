@@ -17,8 +17,6 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +43,8 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
@@ -71,7 +71,9 @@ class LetterSavingSenderRestApiIntegrationTest extends ApplicationIntegrationTes
     @MockitoBean
     private NotificationClient notificationClient;
 
-    private LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+    private final LetterRequestDao letterRequest = TestUtils.createLetterRequest();
+
+    private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     @BeforeEach
     void setUp() {
@@ -259,7 +261,7 @@ class LetterSavingSenderRestApiIntegrationTest extends ApplicationIntegrationTes
 
             // Personalisation details
             Map<String,String> personalisationDetails =
-                    new ObjectMapper().readValue(letterRequest.getLetterDetails().getPersonalisationDetails(),
+                    jsonMapper.readValue(letterRequest.getLetterDetails().getPersonalisationDetails(),
                             new TypeReference<>() {});
             var pscFullName = personalisationDetails.get("psc_name");
             assertThat(page1, containsString(pscFullName));
@@ -272,6 +274,7 @@ class LetterSavingSenderRestApiIntegrationTest extends ApplicationIntegrationTes
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static String getPageText(PDDocument document, int pageNumber) throws IOException {
         var textStripper = new PDFTextStripper();
         textStripper.setStartPage(pageNumber);

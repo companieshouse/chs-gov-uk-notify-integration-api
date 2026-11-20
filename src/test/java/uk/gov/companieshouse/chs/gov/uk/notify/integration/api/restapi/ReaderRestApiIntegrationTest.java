@@ -20,8 +20,6 @@ import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.getPageText;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.Constants.DATE_FORMATTER;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +42,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ApplicationIntegrationTest;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils;
 import uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.model.LetterRequestDao;
@@ -82,7 +82,7 @@ class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Autowired
     private NotificationLetterRequestRepository notificationLetterRequestRepository;
@@ -334,6 +334,7 @@ class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
         return saveLetter(letterRequest).getRequest();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private ResultActions viewLetterPdfByReference(String reference,
                                                    ResultMatcher expectedResponseStatus)
             throws Exception {
@@ -348,6 +349,7 @@ class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
                 .andExpect(expectedResponseStatus);
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static String getExpectedViewLetterInvocationLogMessage(String reference) {
         return   "{\"reference\":\"" + reference + "\","
                 + "\"action\":\"view_letter_pdf\","

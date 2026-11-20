@@ -2,8 +2,6 @@ package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.service;
 
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.service.notify.LetterResponse;
@@ -31,10 +31,10 @@ public class GovUkNotifyService {
     public static final UUID NIL_UUID = new UUID(0L, 0L);
 
     private final NotificationClient client;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public GovUkNotifyService(NotificationClient client,
-                              ObjectMapper objectMapper) {
+                              JsonMapper objectMapper) {
         this.client = client;
         this.objectMapper = objectMapper;
     }
@@ -93,7 +93,7 @@ public class GovUkNotifyService {
             try {
                 var response = buildLetterResponseForError(nce, reference);
                 return new LetterResp(false, response);
-            } catch (JsonProcessingException jpe) {
+            } catch (JacksonException jpe) {
                 LOGGER.error("Failed to build error response", jpe, logData);
             }
             return new LetterResp(false, null);
@@ -108,12 +108,12 @@ public class GovUkNotifyService {
      * @param reference the letter (sender details) reference
      * @return a LetterResponse, which, if stored in the responses collection, may help
      *         troubleshooting
-     * @throws JsonProcessingException should there be a problem converting the id and reference
+     * @throws JacksonException should there be a problem converting the id and reference
      *         provided nto JSON (unlikely)
      */
     private LetterResponse buildLetterResponseForError(
             NotificationClientException nce, String reference)
-        throws JsonProcessingException {
+        throws JacksonException {
         var responseData = Map.of(
                 // id is required because we are using LetterResponse to capture info (for storage).
                 // We might consider just using a different object (or a map) to avoid this,
