@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +22,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,7 +33,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -94,8 +93,6 @@ class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
     @MockitoSpyBean
     private HtmlPdfGenerator pdfGenerator;
 
-    @Mock
-    private InputStream precompiledPdfInputStream;
 
     @AfterEach
     void tearDown() {
@@ -296,9 +293,14 @@ class ReaderRestApiIntegrationTest extends ApplicationIntegrationTest {
         createLetter();
 
         doNothing().when(pdfGenerator).generatePdfFromHtml(anyString(), any(OutputStream.class));
+        var failingOnClose = new ByteArrayInputStream(new byte[0]) {
+            @Override
+            public void close() throws IOException {
+                throw new IOException("Thrown by test.");
+            }
+        };
         when(pdfGenerator.generatePdfFromHtml(anyString(), anyString()))
-                .thenReturn(precompiledPdfInputStream);
-        doThrow(new IOException("Thrown by test.")).when(precompiledPdfInputStream).close();
+                .thenReturn(failingOnClose);
 
         // When and then
        viewLetterPdfByReference(TOKEN_REFERENCE,
