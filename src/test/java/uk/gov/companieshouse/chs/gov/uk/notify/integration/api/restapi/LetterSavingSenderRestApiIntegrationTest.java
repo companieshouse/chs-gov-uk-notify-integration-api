@@ -8,7 +8,12 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_AUTHORISED_KEY_ROLES;
+import static uk.gov.companieshouse.api.util.security.EricConstants.ERIC_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.API_KEY_IDENTITY_TYPE;
+import static uk.gov.companieshouse.api.util.security.SecurityConstants.INTERNAL_USER_ROLE;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.TestUtils.postSendLetterRequest;
 import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.constants.ContextVariables.IS_WELSH;
 
@@ -35,6 +40,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.core.type.TypeReference;
@@ -90,6 +96,32 @@ class LetterSavingSenderRestApiIntegrationTest extends ApplicationIntegrationTes
                 + letterRequest.getSenderDetails().getReference();
         verifyLetterPdfContent(filename);
         deleteLetterPdf();
+    }
+
+    @Test
+    @DisplayName("View letter responds with PDF when letter PDFs are saved to file")
+    void viewLetterSuccessfullyWhenSavingLetterPdfs() throws Exception {
+        saveRequestInDatabase();
+
+        var letterPdf = mockMvc.perform(get(
+                        "/gov-uk-notify-integration/letters/view_by_reference?reference="
+                                + letterRequest.getSenderDetails().getReference())
+                        .accept(MediaType.APPLICATION_PDF_VALUE)
+                        .header("ERIC-Identity", "65e73495c8e2")
+                        .header(ERIC_IDENTITY_TYPE, API_KEY_IDENTITY_TYPE)
+                        .header(ERIC_AUTHORISED_KEY_ROLES, INTERNAL_USER_ROLE))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+
+        try (var document = Loader.loadPDF(letterPdf)) {
+            assertThat(document.getNumberOfPages() > 0, is(true));
+        }
+
+        // Confirms save.letter=true was in effect, so the PDF was served from a file stream.
+        var savedPdf = new File(HtmlPdfGenerator.getPdfFilepath(
+                letterRequest.getSenderDetails().getReference()));
+        assertThat(savedPdf.exists(), is(true));
+        savedPdf.deleteOnExit();
     }
 
     @ParameterizedTest(name = "Send English letter request: {0} {1}")

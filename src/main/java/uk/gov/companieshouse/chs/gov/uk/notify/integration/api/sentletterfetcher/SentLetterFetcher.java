@@ -51,7 +51,7 @@ public class SentLetterFetcher {
      *
      * @param reference the reference assumed to uniquely identify the letter to be viewed
      * @param contextId unique identifier for tracking the request
-     * @return the letter PDF
+     * @return the letter PDF, which the caller must close
      * @throws IOException should something unexpected happen
      */
     public InputStream fetchLetter(final String reference, final String contextId)
@@ -68,12 +68,13 @@ public class SentLetterFetcher {
         var letter = letters.getFirst().getRequest();
         var html = getHtml(letter, reference, contextId);
 
-        try (var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference)) {
-            logger.debug(
-                    "Responding with regenerated letter PDF to view for letter with reference "
-                            + reference, createLogMap(contextId, VIEW_LETTER_PDF));
-            return precompiledPdf;
-        }
+        // The caller is responsible for closing the stream. Closing it here would break
+        // file-backed streams (save.letter=true) before they could be read.
+        var precompiledPdf = pdfGenerator.generatePdfFromHtml(html, reference);
+        logger.debug(
+                "Responding with regenerated letter PDF to view for letter with reference "
+                        + reference, createLogMap(contextId, VIEW_LETTER_PDF));
+        return precompiledPdf;
     }
 
     private String getHtml(final LetterRequestDao letter,
