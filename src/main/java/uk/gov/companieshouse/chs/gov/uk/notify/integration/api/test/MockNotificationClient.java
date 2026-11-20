@@ -87,7 +87,6 @@ public class MockNotificationClient extends NotificationClient {
     public SendEmailResponse sendEmail(String templateId, String emailAddress, Map<String, ?> personalisation,
                                        String reference) throws NotificationClientException {
         if (useRealGovNotify(reference)) {
-            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
             return super.sendEmail(templateId, emailAddress, personalisation, reference);
         }
 
@@ -112,7 +111,6 @@ public class MockNotificationClient extends NotificationClient {
                                                                InputStream precompiledPdf)
             throws NotificationClientException {
         if (useRealGovNotify(reference)) {
-            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
             return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
         }
 
@@ -134,7 +132,6 @@ public class MockNotificationClient extends NotificationClient {
                                                                String postage)
             throws NotificationClientException {
         if (useRealGovNotify(reference)) {
-            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
             return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
         }
 
@@ -152,8 +149,9 @@ public class MockNotificationClient extends NotificationClient {
                     precompiledPdf.readAllBytes());
             LOGGER.info("Mock letter PDF written to /tmp/mock_letter_" + reference + ".pdf");
         } catch (IOException e) {
-            LOGGER.error("Failed to write mock letter PDF to file", e);
-            throw new RuntimeException(e);
+            String message = "Failed to write mock letter PDF to file";
+            LOGGER.error(message, e);
+            throw new NotificationClientExceptionMock(message, 500);
         }
 
         String jsonResponse = createMockLetterResponse(reference);
