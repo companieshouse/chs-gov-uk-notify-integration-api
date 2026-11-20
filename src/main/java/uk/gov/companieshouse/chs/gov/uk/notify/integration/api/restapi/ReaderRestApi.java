@@ -39,11 +39,11 @@ public class ReaderRestApi implements NotifyIntegrationRetrieverControllerInterf
         logMap.put(REFERENCE, reference);
         LOGGER.info("Starting viewLetterPdfByReference process", logMap);
 
-        try {
+        try (var pdf = fetcher.fetchLetter(reference, contextId)) {
             return ResponseEntity
                     .ok()
                     .headers(suggestFilename(reference))
-                    .body(IOUtils.toByteArray(fetcher.fetchLetter(reference, contextId)));
+                    .body(IOUtils.toByteArray(pdf));
         } catch (IOException ioe) {
             LOGGER.error(LETTER_PDF_IO_ERROR_MESSAGE + ioe.getMessage(),
                     createLogMap(contextId, "load_pdf_error"));
