@@ -1,17 +1,6 @@
 package uk.gov.companieshouse.chs.gov.uk.notify.integration.api.test;
 
-import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
-
-import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -23,6 +12,20 @@ import uk.gov.service.notify.LetterResponse;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+
+import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.ChsGovUkNotifyIntegrationService.APPLICATION_NAMESPACE;
 
 @Component
 @Primary
@@ -84,6 +87,7 @@ public class MockNotificationClient extends NotificationClient {
     public SendEmailResponse sendEmail(String templateId, String emailAddress, Map<String, ?> personalisation,
                                        String reference) throws NotificationClientException {
         if (useRealGovNotify(reference)) {
+            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
             return super.sendEmail(templateId, emailAddress, personalisation, reference);
         }
 
@@ -108,6 +112,7 @@ public class MockNotificationClient extends NotificationClient {
                                                                InputStream precompiledPdf)
             throws NotificationClientException {
         if (useRealGovNotify(reference)) {
+            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
             return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf);
         }
 
@@ -117,6 +122,38 @@ public class MockNotificationClient extends NotificationClient {
 
         if (shouldEmulateChanceFailure()) {
             throw new NotificationClientExceptionMock(SIMULATED_SERVER_ERROR, 500);
+        }
+
+        String jsonResponse = createMockLetterResponse(reference);
+        return new LetterResponse(jsonResponse);
+    }
+
+    @Override
+    public LetterResponse sendPrecompiledLetterWithInputStream(String reference,
+                                                               InputStream precompiledPdf,
+                                                               String postage)
+            throws NotificationClientException {
+        if (useRealGovNotify(reference)) {
+            LOGGER.info("Using real GOV.UK Notify for reference: " + reference);
+            return super.sendPrecompiledLetterWithInputStream(reference, precompiledPdf, postage);
+        }
+
+        if (isRateLimitExceeded()) {
+            throw new NotificationClientExceptionMock(RATE_LIMIT_EXCEEDED, 429);
+        }
+
+        if (shouldEmulateChanceFailure()) {
+            throw new NotificationClientExceptionMock(SIMULATED_SERVER_ERROR, 500);
+        }
+
+        try {
+            FileUtils.writeByteArrayToFile(
+                    new java.io.File("/tmp/mock_letter_" + reference + ".pdf"),
+                    precompiledPdf.readAllBytes());
+            LOGGER.info("Mock letter PDF written to /tmp/mock_letter_" + reference + ".pdf");
+        } catch (IOException e) {
+            LOGGER.error("Failed to write mock letter PDF to file", e);
+            throw new RuntimeException(e);
         }
 
         String jsonResponse = createMockLetterResponse(reference);

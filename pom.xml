@@ -18,17 +18,17 @@
 
         <!-- Internal Dependencies -->
         <!-- Source: https://github.com/companieshouse/ch-boms/releases -->
-        <ch-dependency-bom.version>0.1.41</ch-dependency-bom.version>
+        <ch-dependency-bom.version>0.1.42</ch-dependency-bom.version>
         <!-- Source: https://github.com/companieshouse/private-api-sdk-java/releases -->
-        <private-api-sdk-java.version>7.2.51</private-api-sdk-java.version>
+        <private-api-sdk-java.version>7.2.52</private-api-sdk-java.version>
 
         <!-- External Dependencies -->
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies -->
-        <spring-boot.version>4.1.2</spring-boot.version>
+        <spring-boot.version>4.2.0</spring-boot.version>
         <!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <!-- Source: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-        <commons-lang3.version>3.21.0</commons-lang3.version>
+        <commons-lang3.version>3.22.0</commons-lang3.version>
         <!-- Source: https://mvnrepository.com/artifact/uk.gov.service.notify/notifications-java-client -->
         <gov-uk-notify.version>5.2.1-RELEASE</gov-uk-notify.version>
         <!-- Source: https://mvnrepository.com/artifact/uk.org.webcompere/system-stubs-jupiter -->
@@ -205,16 +205,6 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
-        </dependency>
-
-        <!-- We need to stay on 3.3.5 and can't update to the 3.4.x series as it's      -->
-        <!-- a breaking change. This is dependent on Thymeleaf which is what pulls in OGNL       -->
-        <!-- Source: https://mvnrepository.com/artifact/ognl/ognl -->
-        <dependency>
-            <groupId>ognl</groupId>
-            <artifactId>ognl</artifactId>
-            <version>3.3.5</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>
