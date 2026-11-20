@@ -299,10 +299,11 @@ class MockNotificationClientTest {
         Path outputPath = Path.of("/tmp/mock_letter_" + reference + ".pdf");
         Files.deleteIfExists(outputPath);
 
-        try {
+        try (InputStream pdfContent = new ByteArrayInputStream(
+                "pdf-content".getBytes(StandardCharsets.UTF_8))) {
             LetterResponse response = mockNotificationClient.sendPrecompiledLetterWithInputStream(
                     reference,
-                    new ByteArrayInputStream("pdf-content".getBytes(StandardCharsets.UTF_8)),
+                    pdfContent,
                     "first"
             );
 
