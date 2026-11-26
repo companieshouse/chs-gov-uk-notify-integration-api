@@ -15,7 +15,7 @@ import static uk.gov.companieshouse.chs.gov.uk.notify.integration.api.mongo.mode
 
 import java.io.IOException;
 import java.util.Optional;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +48,7 @@ import uk.gov.service.notify.LetterResponse;
 @SuppressWarnings("unused")
 class SenderRestApiTests {
     private static final String VALID_REFERENCE = "valid-reference";
+    private static final String CONTEXT_ID = "context-id";
     private static final String XHEADER = "1";
     private static final String APP_ID = "chips";
 
@@ -65,6 +66,11 @@ class SenderRestApiTests {
 
     @InjectMocks
     private SenderRestApi notifyIntegrationSenderController;
+
+    @BeforeEach
+    void setUp() {
+        notifyIntegrationSenderController.setSkipLetterDispatch(false);
+    }
 
     @Test
     void shouldValidateThenSendEmail() {
@@ -97,7 +103,7 @@ class SenderRestApiTests {
             "IDVPSCDEFAULT,v1.0",
             "CSIDVDEFLET,v1.0"}, nullValues = { "null" })
     void sendLetter_shouldReturnCreated_defaultPostage(String letterId, String templateId) throws Exception {
-        String contextId = "context1234";
+        String contextId = CONTEXT_ID;
         NotificationLetterRequest notificationRequest = mockLetterRequest(letterId, templateId);
         var letterRequest = notificationRequest.getRequest();
         var senderDetails = letterRequest.getSenderDetails();
@@ -134,7 +140,7 @@ class SenderRestApiTests {
             "IDVPSCDIRNEW,v1.0",
             "IDVPSCDIRTRAN,v1.0"}, nullValues = { "null" })
     void sendLetter_shouldReturnCreated_whenSecondClassPostage(String letterId, String templateId) throws Exception {
-        String contextId = "context5678";
+        String contextId = CONTEXT_ID;
         NotificationLetterRequest notificationRequest = mockLetterRequest(letterId, templateId);
         var letterRequest = notificationRequest.getRequest();
         var senderDetails = letterRequest.getSenderDetails();
@@ -148,9 +154,30 @@ class SenderRestApiTests {
                 .thenReturn(new GovUkNotifyService.LetterResp(true, null));
 
         LetterRequest req = createSampleLetterRequest(notificationRequest);
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context5678");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, contextId);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
+
+        verify(notificationDatabaseService, times(2)).saveLetter(notificationRequest);
+        assertThat(notificationRequest.getStatus()).isEqualTo(RequestStatus.SENT);
+    }
+
+    @Test
+    void sendLetter_shouldSkipLetterDispatch() {
+        notifyIntegrationSenderController.setSkipLetterDispatch(true);
+
+        NotificationLetterRequest letterRequest = mockLetterRequest("letterId", "other");
+
+        when(notificationDatabaseService.saveLetter(letterRequest)).thenReturn(letterRequest);
+
+        LetterRequest req = createSampleLetterRequest(letterRequest);
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, CONTEXT_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(CREATED);
+
+        verify(notificationDatabaseService, times(2)).saveLetter(letterRequest);
+        verifyNoInteractions(letterDispatcher);
+        assertThat(letterRequest.getStatus()).isEqualTo(RequestStatus.SENT);
     }
 
     @Test
@@ -158,7 +185,7 @@ class SenderRestApiTests {
         NotificationLetterRequest letterRequest = mockLetterRequest("letterId", "other");
         letterRequest.setStatus(RequestStatus.SENT);
         LetterRequest req = createSampleLetterRequest(letterRequest);
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, CONTEXT_ID);
 
         assertThat(response.getStatusCode()).isEqualTo(CREATED);
         verifyNoInteractions(letterDispatcher);
@@ -171,7 +198,7 @@ class SenderRestApiTests {
         LetterRequest req = new LetterRequest(appId, reference);
         when(notificationDatabaseService.getLetter(appId, reference)).thenReturn(Optional.empty());
 
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, CONTEXT_ID);
 
         assertThat(response.getStatusCode()).isEqualTo(NOT_FOUND);
         verifyNoInteractions(letterDispatcher);
@@ -186,7 +213,7 @@ class SenderRestApiTests {
 
         when(notificationDatabaseService.saveLetter(letterRequest)).thenReturn(letterRequest);
 
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context9999");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, CONTEXT_ID);
 
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
         verify(notificationDatabaseService).saveLetter(letterRequest);
@@ -202,7 +229,7 @@ class SenderRestApiTests {
 
         when(notificationDatabaseService.saveLetter(letterRequest)).thenReturn(letterRequest);
 
-        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, "context0000");
+        ResponseEntity<Void> response = notifyIntegrationSenderController.sendLetter(req, CONTEXT_ID);
 
         assertThat(response.getStatusCode()).isEqualTo(INTERNAL_SERVER_ERROR);
         verify(notificationDatabaseService).saveLetter(letterRequest);
