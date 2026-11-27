@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -41,6 +42,9 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
     private final EmailService emailService;
     private final LetterDispatcher letterDispatcher;
     private final Logger logger;
+
+    @Value("${skip.letter.dispatch:false}")
+    private boolean skipLetterDispatch;
 
     public SenderRestApi(
             final NotificationDatabaseService notificationDatabaseService,
@@ -117,15 +121,20 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
         var personalisationDetails = letterDetails.getPersonalisationDetails();
 
         try {
-            var response = letterDispatcher.sendLetter(
-                    postage,
-                    fullReference,
-                    templateId,
-                    address,
-                    personalisationDetails,
-                    contextId
-                    );
-            if (response.success()) {
+            var success = true;
+            if (!skipLetterDispatch) {
+                var response = letterDispatcher.sendLetter(
+                        postage,
+                        fullReference,
+                        templateId,
+                        address,
+                        personalisationDetails,
+                        contextId
+                        );
+                success = response.success();
+            }
+
+            if (success) {
                 letterRequest.setStatus(RequestStatus.SENT);
                 notificationDatabaseService.saveLetter(letterRequest);
                 logger.infoContext(contextId, "Letter processed successfully",
@@ -150,5 +159,13 @@ public class SenderRestApi implements NotifyIntegrationSenderControllerInterface
             // Default to economy mail
             return Postage.ECONOMY;
         }
+    }
+
+    public void setSkipLetterDispatch(boolean skipLetterDispatch) {
+        this.skipLetterDispatch = skipLetterDispatch;
+    }
+
+    public boolean isSkipLetterDispatch() {
+        return skipLetterDispatch;
     }
 }
